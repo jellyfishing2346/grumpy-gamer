@@ -193,7 +193,7 @@ This is a portfolio project, but feel free to:
 
 ## 📝 License
 
-MIT © [Your Name]
+MIT © [Faizan Khan]
 
 ---
 
