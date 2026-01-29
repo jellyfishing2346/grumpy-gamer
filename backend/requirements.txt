@@ -1,0 +1,9 @@
+# Add your backend dependencies here
+fastapi
+uvicorn
+pytest
+flake8
+passlib[bcrypt]
+bcrypt==4.0.1
+PyJWT
+pydantic[email]

@@ -1,5 +1,6 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthProvider";
 
 const navStyle: React.CSSProperties = {
   padding: "1em",
@@ -27,58 +28,99 @@ const activeStyle: React.CSSProperties = {
   color: "#fff"
 };
 
-const Navbar = () => (
-  <nav style={navStyle}>
-    <NavLink
-      to="/"
-      style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
-      end
-    >
-      Home
-    </NavLink>
-    <NavLink
-      to="/games"
-      style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
-    >
-      Game Selection
-    </NavLink>
-    <NavLink
-      to="/play"
-      style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
-    >
-      Game Play
-    </NavLink>
-    <NavLink
-      to="/dashboard"
-      style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
-    >
-      Dashboard
-    </NavLink>
-    <NavLink
-      to="/comparison"
-      style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
-    >
-      Comparison
-    </NavLink>
-    <NavLink
-      to="/human-vs-ai"
-      style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
-    >
-      Human vs AI
-    </NavLink>
-    <NavLink
-      to="/about"
-      style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
-    >
-      About
-    </NavLink>
-    <NavLink
-      to="/settings"
-      style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
-    >
-      Settings
-    </NavLink>
-  </nav>
-);
+const Navbar = () => {
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+  return (
+    <nav style={navStyle}>
+      {isAuthenticated ? (
+        <>
+          <NavLink
+            to="/"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+            end
+          >
+            Home
+          </NavLink>
+          <NavLink
+            to="/games"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            Game Selection
+          </NavLink>
+          <NavLink
+            to="/play"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            Game Play
+          </NavLink>
+          <NavLink
+            to="/dashboard"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            Dashboard
+          </NavLink>
+          <NavLink
+            to="/comparison"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            Comparison
+          </NavLink>
+          <NavLink
+            to="/human-vs-ai"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            Human vs AI
+          </NavLink>
+          <NavLink
+            to="/about"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            About
+          </NavLink>
+          <NavLink
+            to="/settings"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            Settings
+          </NavLink>
+          <button
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
+            style={{
+              marginLeft: 16,
+              padding: "0.3em 0.7em",
+              borderRadius: 4,
+              border: "none",
+              background: "#d32f2f",
+              color: "#fff",
+              fontWeight: 600,
+              cursor: "pointer"
+            }}
+          >
+            Log Out
+          </button>
+        </>
+      ) : (
+        <>
+          <NavLink
+            to="/login"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            Log In
+          </NavLink>
+          <NavLink
+            to="/signup"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            Sign Up
+          </NavLink>
+        </>
+      )}
+    </nav>
+  );
+};
 
 export default Navbar;
