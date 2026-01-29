@@ -14,15 +14,6 @@ const containerStyle: React.CSSProperties = {
   border: "1.5px solid rgba(255,255,255,0.08)",
 };
 
-const headingStyle: React.CSSProperties = {
-  fontSize: "2.6em",
-  marginBottom: "0.4em",
-  color: "#7ecbff",
-  fontWeight: 800,
-  letterSpacing: "0.01em",
-  textShadow: "0 2px 12px #23272f55"
-};
-
 const About: React.FC = () => (
   <div style={containerStyle}>
     <div style={{ textAlign: 'center', marginBottom: '0.5em' }}>
