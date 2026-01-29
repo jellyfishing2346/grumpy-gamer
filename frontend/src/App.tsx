@@ -11,6 +11,9 @@ import Comparison from "./components/pages/Comparison";
 import HumanVsAI from "./components/pages/HumanVsAI";
 import About from "./components/pages/About";
 import Settings from "./components/pages/Settings";
+import WordleGame from "./components/games/WordleGame";
+import SudokuGame from "./components/games/SudokuGame";
+import ComingSoonGame from "./components/pages/ComingSoonGame";
 
 function App() {
   return (
@@ -26,6 +29,9 @@ function App() {
         <Route path="/human-vs-ai" element={<HumanVsAI />} />
         <Route path="/about" element={<About />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/play/wordle" element={<WordleGame />} />
+        <Route path="/play/sudoku" element={<SudokuGame />} />
+        <Route path="/play/coming-soon" element={<ComingSoonGame name="Coming Soon" />} />
       </Routes>
     </Router>
   );
