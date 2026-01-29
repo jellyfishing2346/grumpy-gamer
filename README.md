@@ -17,9 +17,14 @@
 
 ## 🧠 What's This About?
 
-Ever wondered if AI could beat you at your favorite game? **Grumpy Gamer** is a full-stack reinforcement learning project where an AI agent learns to master classic games through pure trial and error—no human input, just raw computational determination.
+**Grumpy Gamer** is a project to explore whether AI can beat classic games such as Wordle, Sudoku, and more. The goal is to implement game environments and develop AI agents that can play and potentially master these games using various algorithms, including rule-based logic, search, and machine learning. 
 
-Watch as the agent goes from hilariously bad (think: walking into walls) to superhuman gameplay, all while you sip your coffee and judge its early mistakes.
+## Project Structure
+- games/: Game environments (Wordle, Sudoku, etc.)
+- agents/: AI agents for each game
+- scripts/: Utilities to run experiments and evaluate agents
+- tests/: Unit and integration tests
+- docs/: Documentation and research notes
 
 ## ✨ Key Features
 
