@@ -1,3 +1,4 @@
+
 # 🎮 Grumpy Gamer
 
 > **Teaching AI to rage-quit less than humans** *(eventually)*
@@ -7,13 +8,31 @@
 ![Status](https://img.shields.io/badge/status-in_development-yellow?style=for-the-badge)
 ![Python](https://img.shields.io/badge/python-3.9+-blue?style=for-the-badge&logo=python)
 ![PyTorch](https://img.shields.io/badge/PyTorch-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white)
+
 ![React](https://img.shields.io/badge/React-20232a?style=for-the-badge&logo=react&logoColor=61dafb)
+
+<!-- Add CI/CD and coverage badges here if available -->
 
 **[Demo]() · [Documentation]() · [Report Bug](https://github.com/jellyfish2346/grumpy-gamer/issues)**
 
 </div>
 
----
+
+## 📚 Table of Contents
+
+- [What's This About?](#-whats-this-about)
+- [Project Structure](#project-structure)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [Project Roadmap](#-project-roadmap)
+- [Quick Start](#-quick-start)
+- [Usage](#usage)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Contact](#contact)
+
 
 ## 🧠 What's This About?
 
@@ -137,8 +156,52 @@ graph LR
 git clone https://github.com/jellyfish2346/grumpy-gamer.git
 cd grumpy-gamer
 
-# Setup coming soon! 🏗️
+
+# Install dependencies and run the app
+cd frontend
+npm install
+npm start
+
+# (Optional) Backend setup
+# cd backend
+# pip install -r requirements.txt
+# uvicorn main:app --reload
 ```
+
+
+## Usage
+
+Once the app is running, open your browser to [http://localhost:3000](http://localhost:3000) to:
+- Browse and play available games (Wordle, Sudoku, more coming soon)
+- Try human vs AI mode in Wordle
+- View upcoming features on the Game Selection page
+
+## Testing
+
+Frontend:
+```bash
+cd frontend
+npm test
+```
+
+Backend (if applicable):
+```bash
+cd backend
+pytest
+```
+
+## Deployment
+
+To build the frontend for production:
+```bash
+cd frontend
+npm run build
+```
+Deploy the contents of `frontend/build` to your preferred hosting (Vercel, Netlify, etc).
+
+For backend deployment, see backend/README.md (if present).
+
+---
 
 ## 🎮 How It Works
 
@@ -177,9 +240,11 @@ cd grumpy-gamer
 
 The AI uses **Proximal Policy Optimization (PPO)** to learn optimal gameplay strategies. It starts random, fails hilariously, then gradually discovers winning tactics through millions of attempts. Think of it as speed-running human childhood gaming experience.
 
+
 ## 🎨 Screenshots
 
 > Coming soon! The AI is still learning not to run into walls...
+
 
 ## 📈 Performance
 
@@ -189,16 +254,33 @@ The AI uses **Proximal Policy Optimization (PPO)** to learn optimal gameplay str
 | Win Rate | TBD | 🚧 Training... |
 | Rage Quits | High 😤 | Zero 😎 |
 
+
 ## 🤝 Contributing
+
+We welcome contributions! To get started:
+- Fork the repo and create your branch from `main`.
+- Follow code style guidelines (see `.eslintrc` and `.prettierrc` if present).
+- Add or update tests as appropriate.
+- Open a pull request with a clear description.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details (coming soon).
 
 This is a portfolio project, but feel free to:
 - 🐛 Report bugs
 - 💡 Suggest features  
 - ⭐ Star the repo if you think it's cool!
 
+
 ## 📝 License
 
+
 MIT © [Faizan Khan]
+
+---
+
+## Contact
+
+For questions, support, or business inquiries, please open an issue or contact [Faizan Khan](mailto:your.email@example.com).
 
 ---
 
