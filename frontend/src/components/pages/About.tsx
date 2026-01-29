@@ -1,17 +1,15 @@
 import React from "react";
 
-
 const containerStyle: React.CSSProperties = {
-  padding: "2.5em 2em",
+  background: 'rgba(255, 255, 255, 0.95)',
+  borderRadius: '2rem',
+  border: '2px solid #b3d0ff',
+  boxShadow: '0 4px 32px 0 rgba(80, 120, 200, 0.10)',
+  padding: '2.5rem 2.5rem 2rem 2.5rem',
   maxWidth: 700,
-  margin: "3.5em auto",
-  background: "rgba(36, 41, 54, 0.85)",
-  borderRadius: 24,
-  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-  color: "#f5f6fa",
-  textAlign: "center",
-  backdropFilter: "blur(8px)",
-  border: "1.5px solid rgba(255,255,255,0.08)",
+  margin: '3rem auto',
+  fontFamily: 'Inter, Nunito, sans-serif',
+          color: '#000', // pure black for maximum readability
 };
 
 const About: React.FC = () => (
@@ -27,12 +25,12 @@ const About: React.FC = () => (
       margin: "0 auto 2.2em auto",
       lineHeight: 1.8,
       maxWidth: 700,
-      background: "rgba(0,0,0,0.10)",
-      borderRadius: 18,
+      background: "#fff",
+      borderRadius: 22,
       padding: "2.2em 2.5em 2.5em 2.5em",
-      boxShadow: "0 4px 32px #23272f33",
-      border: "3px solid",
-      borderImage: "linear-gradient(135deg, #7ecbff 0%, #a7ffb0 100%) 1"
+      boxShadow: "0 4px 32px 0 rgba(80, 120, 200, 0.10)",
+      border: "2.5px solid #e9f1ff",
+      fontFamily: "'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif",
     }}>
       <div style={{ marginBottom: "1.7em" }}>
         <span style={{ fontWeight: 700, fontSize: "1.25em", color: "#7ecbff", display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
@@ -42,17 +40,20 @@ const About: React.FC = () => (
           <b style={{ color: '#a7ffb0' }}>Grumpy Gamer</b> is an interactive web platform where humans and artificial intelligence (AI) compete in classic and modern games.
         </div>
       </div>
-      <div style={{ marginBottom: "1.7em" }}>
-        <span style={{ fontWeight: 700, fontSize: "1.15em", color: "#7ecbff", display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
-          <span>🎯</span> Purpose
-        </span>
-        <div style={{ marginTop: "0.7em" }}>
-          The core purpose of <span style={{ color: '#a7ffb0', fontWeight: 600 }}>Grumpy Gamer</span> is to make AI approachable, fun, and competitive by allowing users to play against AI agents in a variety of games.<br />
-          It serves as both an entertaining playground for gamers and a practical testbed for developers and students interested in AI, game theory, and web development.
-        </div>
-      </div>
-      <div style={{ marginBottom: "1.7em" }}>
-        <span style={{ fontWeight: 700, fontSize: "1.15em", color: "#7ecbff", display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+      <div style={{
+        fontSize: "1.18em",
+        margin: "0 auto 2.2em auto",
+        lineHeight: 1.8,
+        maxWidth: 700,
+        background: "#fff",
+        borderRadius: 22,
+        padding: "2.2em 2.5em 2.5em 2.5em",
+        boxShadow: "0 4px 32px 0 rgba(80, 120, 200, 0.10)",
+        border: "2.5px solid #e9f1ff",
+        fontFamily: "'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif",
+        color: '#000', // pure black for maximum readability
+      }}>
+        <span style={{ fontWeight: 700, fontSize: "1.15em", color: "#7ecbff", display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginBottom: '0.7em' }}>
           <span>🕹️</span> What can you do here?
         </span>
         <ul style={{

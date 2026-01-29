@@ -3,15 +3,15 @@ import React from "react";
 
 const containerStyle: React.CSSProperties = {
   padding: "2.5em 2em",
-  maxWidth: 700,
+  maxWidth: "700px",
   margin: "3.5em auto",
-  background: "rgba(36, 41, 54, 0.85)",
-  borderRadius: 24,
-  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-  color: "#f5f6fa",
+  background: "#fff",
+  borderRadius: "22px",
+  boxShadow: "0 4px 32px 0 rgba(80, 120, 200, 0.10)",
+  color: "#23272f",
   textAlign: "center",
-  backdropFilter: "blur(8px)",
-  border: "1.5px solid rgba(255,255,255,0.08)",
+  border: "1.5px solid #e9f1ff",
+  fontFamily: "'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif",
 };
 
 const headingStyle: React.CSSProperties = {

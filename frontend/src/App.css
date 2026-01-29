@@ -3,11 +3,27 @@ html, body, #root {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  font-family: 'Nunito', 'Inter', 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #23272f 0%, #3a4256 100%);
+  font-family: 'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(120deg, #f8fafc 0%, #e9f1ff 100%);
   background-attachment: fixed;
-  color: #f5f6fa;
+  color: #23272f;
   letter-spacing: 0.01em;
+  transition: background 0.5s;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  left: -10%;
+  width: 120vw;
+  height: 120vh;
+  z-index: 0;
+  background: radial-gradient(circle at 20% 20%, #a7ffb0 0%, transparent 60%),
+              radial-gradient(circle at 80% 10%, #7ecbff 0%, transparent 60%),
+              radial-gradient(circle at 70% 80%, #ffe6a7 0%, transparent 60%);
+  opacity: 0.18;
+  pointer-events: none;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Nunito:wght@400;700&display=swap');
