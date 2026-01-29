@@ -32,4 +32,4 @@ coverage.xml
 *.log
 
 # Ignore data outputs (optional)
-data/output/
+data/output/users.db
