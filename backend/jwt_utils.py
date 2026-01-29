@@ -1,10 +1,11 @@
 import jwt
+import os
 from datetime import datetime, timedelta
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, status
 
-SECRET_KEY = "your-secret-key"  # Change this in production
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

@@ -4,14 +4,16 @@ from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
 from typing import Optional
 import sqlite3
+import os
 from .jwt_utils import create_access_token
 
 app = FastAPI()
 
 # CORS middleware to allow frontend requests
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
