@@ -5,7 +5,12 @@ from passlib.context import CryptContext
 from typing import Optional
 import sqlite3
 import os
-from .jwt_utils import create_access_token
+
+# Handle both local (relative import) and production (absolute import)
+try:
+    from .jwt_utils import create_access_token
+except ImportError:
+    from jwt_utils import create_access_token
 
 app = FastAPI()
 
