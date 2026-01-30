@@ -24,6 +24,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Root endpoint
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "Grumpy Gamer API is running!", "docs": "/docs"}
+
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
