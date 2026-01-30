@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
-interface FAQItem {
+interface FAQItemData {
   question: string;
   answer: string;
 }
 
-const faqData: FAQItem[] = [
+const faqData: FAQItemData[] = [
   {
     question: "What is Grumpy Gamer?",
     answer: "Grumpy Gamer is a platform for gamers to track their gaming experiences, connect with other players, and discover new games. Whether you're a casual player or a hardcore gamer, we've got something for you!"
@@ -44,7 +44,7 @@ const faqData: FAQItem[] = [
   }
 ];
 
-const FAQItem: React.FC<{ item: FAQItem; isOpen: boolean; onClick: () => void }> = ({ 
+const FAQItem: React.FC<{ item: FAQItemData; isOpen: boolean; onClick: () => void }> = ({ 
   item, 
   isOpen, 
   onClick 
