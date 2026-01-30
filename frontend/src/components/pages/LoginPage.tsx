@@ -25,7 +25,7 @@ const LoginPage: React.FC = () => {
         const data = await res.json();
         login(data.access_token);
         setSuccess("Login successful!");
-        navigate("/");
+        navigate("/home");
       } else {
         const data = await res.json();
         setError(data.detail || "Login failed");

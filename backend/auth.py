@@ -15,7 +15,7 @@ except ImportError:
 app = FastAPI()
 
 # CORS middleware to allow frontend requests
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,https://grumpy-gamer.vercel.app").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,

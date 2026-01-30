@@ -36,7 +36,7 @@ const Navbar = () => {
       {isAuthenticated ? (
         <>
           <NavLink
-            to="/"
+            to="/home"
             style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
             end
           >
@@ -105,6 +105,25 @@ const Navbar = () => {
         </>
       ) : (
         <>
+          <NavLink
+            to="/"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+            end
+          >
+            Home
+          </NavLink>
+          <NavLink
+            to="/faq"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            FAQ
+          </NavLink>
+          <NavLink
+            to="/contact"
+            style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
+          >
+            Contact
+          </NavLink>
           <NavLink
             to="/login"
             style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}
