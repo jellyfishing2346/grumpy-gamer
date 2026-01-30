@@ -18,9 +18,12 @@ import SudokuGame from "./components/games/SudokuGame";
 import ComingSoonGame from "./components/pages/ComingSoonGame";
 import LoginPage from "./components/pages/LoginPage";
 import SignupPage from "./components/pages/SignupPage";
+import ContactPage from "./components/pages/ContactPage";
+import FAQPage from "./components/pages/FAQPage";
+import LandingPage from "./components/pages/LandingPage";
 
 
-// Protect all routes except /login and /signup
+// Protect all routes except public pages
 const ProtectedRoute = ({ children }: { children: ReactElement }) => {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) {
@@ -29,20 +32,35 @@ const ProtectedRoute = ({ children }: { children: ReactElement }) => {
   return children;
 };
 
+// Show landing page for non-authenticated users, otherwise redirect to home
+const PublicLandingRoute = () => {
+  const { isAuthenticated } = useAuth();
+  if (isAuthenticated) {
+    return <Navigate to="/home" replace />;
+  }
+  return <LandingPage />;
+};
+
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Navbar />
         <Routes>
+          {/* Public routes - accessible to everyone */}
+          <Route path="/" element={<PublicLandingRoute />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/faq" element={<FAQPage />} />
+          
+          {/* Protected routes - require authentication */}
           <Route
             path="/*"
             element={
               <ProtectedRoute>
                 <Routes>
-                  <Route path="/" element={<Home />} />
+                  <Route path="/home" element={<Home />} />
                   <Route path="/games" element={<GameSelection />} />
                   <Route path="/play/:game" element={<GamePlay />} />
                   <Route path="/play" element={<Navigate to="/games" replace />} />
