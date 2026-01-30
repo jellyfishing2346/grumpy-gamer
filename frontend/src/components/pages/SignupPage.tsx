@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../../config/api";
 
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ const SignupPage: React.FC = () => {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch("/signup", {
+      const res = await fetch(`${API_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
