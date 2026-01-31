@@ -261,23 +261,6 @@ The AI uses **Proximal Policy Optimization (PPO)** to learn optimal gameplay str
 | Win Rate | TBD | 🚧 Training... |
 | Rage Quits | High 😤 | Zero 😎 |
 
-
-## 🤝 Contributing
-
-We welcome contributions! To get started:
-- Fork the repo and create your branch from `main`.
-- Follow code style guidelines (see `.eslintrc` and `.prettierrc` if present).
-- Add or update tests as appropriate.
-- Open a pull request with a clear description.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details (coming soon).
-
-This is a portfolio project, but feel free to:
-- 🐛 Report bugs
-- 💡 Suggest features  
-- ⭐ Star the repo if you think it's cool!
-
-
 ## 📝 License
 
 
