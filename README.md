@@ -8,12 +8,19 @@
 ![Status](https://img.shields.io/badge/status-in_development-yellow?style=for-the-badge)
 ![Python](https://img.shields.io/badge/python-3.9+-blue?style=for-the-badge&logo=python)
 ![PyTorch](https://img.shields.io/badge/PyTorch-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white)
-
 ![React](https://img.shields.io/badge/React-20232a?style=for-the-badge&logo=react&logoColor=61dafb)
 
-<!-- Add CI/CD and coverage badges here if available -->
+**[Live Demo](https://grumpy-gamer.vercel.app) · [Documentation]() · [Report Bug](https://github.com/jellyfishing2346/grumpy-gamer/issues)**
 
-**[Demo]() · [Documentation]() · [Report Bug](https://github.com/jellyfish2346/grumpy-gamer/issues)**
+</div>
+
+---
+
+<div align="center">
+
+![Grumpy Gamer Landing Page](docs/images/landing-page.png)
+
+*Challenge yourself against AI, compete with friends, and master classic games!*
 
 </div>
 
