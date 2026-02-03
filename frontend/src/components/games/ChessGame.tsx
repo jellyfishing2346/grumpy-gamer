@@ -825,10 +825,8 @@ const ChessGame: React.FC = () => {
   const getCellStyle = (row: number, col: number): React.CSSProperties => {
     const isLight = (row + col) % 2 === 0;
     const isSelected = selectedSquare?.row === row && selectedSquare?.col === col;
-    const isLegalMove = legalMoves.some(m => m.to.row === row && m.to.col === col);
     const isLastMoveFrom = lastMove?.from.row === row && lastMove?.from.col === col;
     const isLastMoveTo = lastMove?.to.row === row && lastMove?.to.col === col;
-    const isCapture = legalMoves.some(m => m.to.row === row && m.to.col === col && (m.capture || m.enPassant));
     
     let background = isLight ? '#f0d9b5' : '#b58863';
     
