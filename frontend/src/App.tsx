@@ -17,6 +17,7 @@ import WordleGame from "./components/games/WordleGame";
 import SudokuGame from "./components/games/SudokuGame";
 import TicTacToeGame from "./components/games/TicTacToeGame";
 import ConnectFourGame from "./components/games/ConnectFourGame";
+import CheckersGame from "./components/games/CheckersGame";
 import ComingSoonGame from "./components/pages/ComingSoonGame";
 import LoginPage from "./components/pages/LoginPage";
 import SignupPage from "./components/pages/SignupPage";
@@ -75,6 +76,7 @@ function App() {
                   <Route path="/play/sudoku" element={<SudokuGame />} />
                   <Route path="/play/tictactoe" element={<TicTacToeGame />} />
                   <Route path="/play/connectfour" element={<ConnectFourGame />} />
+                  <Route path="/play/checkers" element={<CheckersGame />} />
                   <Route path="/play/coming-soon" element={<ComingSoonGame name="Coming Soon" />} />
                 </Routes>
               </ProtectedRoute>
