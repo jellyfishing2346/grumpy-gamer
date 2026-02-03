@@ -4,18 +4,18 @@ import App from './App';
 
 test('renders navigation with Home link', () => {
   render(<App />);
-  const homeLink = screen.getByText(/Home/i);
+  const homeLink = screen.getByRole('link', { name: /Home/i });
   expect(homeLink).toBeInTheDocument();
 });
 
-test('renders navigation with FAQ link', () => {
+test('renders main heading', () => {
   render(<App />);
-  const faqLink = screen.getByText(/FAQ/i);
-  expect(faqLink).toBeInTheDocument();
+  const heading = screen.getByRole('heading', { level: 1 });
+  expect(heading).toBeInTheDocument();
 });
 
-test('renders navigation with Contact link', () => {
+test('renders Get Started button', () => {
   render(<App />);
-  const contactLink = screen.getByText(/Contact/i);
-  expect(contactLink).toBeInTheDocument();
+  const button = screen.getByText(/Get Started Free/i);
+  expect(button).toBeInTheDocument();
 });
