@@ -1,8 +1,7 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
-from typing import Optional
 import sqlite3
 import os
 
@@ -15,7 +14,10 @@ except ImportError:
 app = FastAPI()
 
 # CORS middleware to allow frontend requests
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,https://grumpy-gamer.vercel.app").split(",")
+allowed_origins = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,https://grumpy-gamer.vercel.app"
+).split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -24,13 +26,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Root endpoint
 @app.get("/")
 def root():
-    return {"status": "ok", "message": "Grumpy Gamer API is running!", "docs": "/docs"}
+    return {
+        "status": "ok",
+        "message": "Grumpy Gamer API is running!",
+        "docs": "/docs"
+    }
+
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 # SQLite setup (for demo; use PostgreSQL in production)
 def get_db():
@@ -42,13 +51,16 @@ def get_db():
     )''')
     return conn
 
+
 class UserSignup(BaseModel):
     email: EmailStr
     password: str
 
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
 
 @app.post("/signup")
 def signup(user: UserSignup):
@@ -56,7 +68,10 @@ def signup(user: UserSignup):
     cursor = conn.cursor()
     hashed_pw = pwd_context.hash(user.password)
     try:
-        cursor.execute("INSERT INTO users (email, hashed_password) VALUES (?, ?)", (user.email, hashed_pw))
+        cursor.execute(
+            "INSERT INTO users (email, hashed_password) VALUES (?, ?)",
+            (user.email, hashed_pw)
+        )
         conn.commit()
     except sqlite3.IntegrityError:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -69,11 +84,17 @@ def signup(user: UserSignup):
 def login(user: UserLogin):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT hashed_password FROM users WHERE email = ?", (user.email,))
+    cursor.execute(
+        "SELECT hashed_password FROM users WHERE email = ?",
+        (user.email,)
+    )
     row = cursor.fetchone()
     conn.close()
     if not row or not pwd_context.verify(user.password, row[0]):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
     # Create JWT access token
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
