@@ -1,5 +1,4 @@
 """Tests for the authentication API."""
-import pytest
 from fastapi.testclient import TestClient
 from auth import app
 
