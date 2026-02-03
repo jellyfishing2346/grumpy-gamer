@@ -270,7 +270,7 @@ MIT © [Faizan Khan]
 
 ## Contact
 
-For questions, support, or business inquiries, please open an issue or contact [Faizan Khan](mailto:your.email@example.com).
+For questions, support, or business inquiries, please open an issue or contact [Faizan Khan](mailto:faizanakhan2003@gmail.com).
 
 ---
 
