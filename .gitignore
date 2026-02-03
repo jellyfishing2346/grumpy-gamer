@@ -33,3 +33,4 @@ coverage.xml
 
 # Ignore data outputs (optional)
 data/output/users.db
+backend/users.db
