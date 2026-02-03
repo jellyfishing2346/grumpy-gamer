@@ -34,7 +34,7 @@ const GameSelection: React.FC = () => {
     {
       icon: '🧩', name: 'Sudoku', desc: 'Classic number puzzle', route: '/play/sudoku', playable: true
     },
-    { icon: '⭕', name: 'Tic-Tac-Toe', desc: 'Get three in a row to win!', route: '/play/tictactoe', playable: false },
+    { icon: '⭕', name: 'Tic-Tac-Toe', desc: 'Get three in a row to win!', route: '/play/tictactoe', playable: true },
     { icon: '🔴', name: 'Connect Four', desc: 'Connect four discs in a row.', route: '/play/connectfour', playable: false },
     { icon: '♟️', name: 'Chess', desc: 'Classic strategy game.', route: '/play/chess', playable: false },
     { icon: '⛀', name: 'Checkers', desc: 'Jump and capture to win.', route: '/play/checkers', playable: false },
