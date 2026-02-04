@@ -23,6 +23,7 @@ import RockPaperScissorsGame from "./components/games/RockPaperScissorsGame";
 import MinesweeperGame from "./components/games/MinesweeperGame";
 import Game2048 from "./components/games/Game2048";
 import HangmanGame from "./components/games/HangmanGame";
+import OthelloGame from "./components/games/OthelloGame";
 import ComingSoonGame from "./components/pages/ComingSoonGame";
 import LoginPage from "./components/pages/LoginPage";
 import SignupPage from "./components/pages/SignupPage";
@@ -87,6 +88,7 @@ function App() {
                   <Route path="/play/minesweeper" element={<MinesweeperGame />} />
                   <Route path="/play/2048" element={<Game2048 />} />
                   <Route path="/play/hangman" element={<HangmanGame />} />
+                  <Route path="/play/othello" element={<OthelloGame />} />
                   <Route path="/play/coming-soon" element={<ComingSoonGame name="Coming Soon" />} />
                 </Routes>
               </ProtectedRoute>
