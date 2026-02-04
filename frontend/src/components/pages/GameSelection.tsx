@@ -40,7 +40,7 @@ const GameSelection: React.FC = () => {
     { icon: '⛀', name: 'Checkers', desc: 'Jump and capture to win.', route: '/play/checkers', playable: true },
     { icon: '✊', name: 'Rock Paper Scissors', desc: 'Best of luck!', route: '/play/rps', playable: true },
     { icon: '💣', name: 'Minesweeper', desc: 'Clear the board, avoid mines.', route: '/play/minesweeper', playable: true },
-    { icon: '2️⃣0️⃣4️⃣8️⃣', name: '2048', desc: 'Slide tiles to reach 2048.', route: '/play/2048', playable: false },
+    { icon: '2️⃣0️⃣4️⃣8️⃣', name: '2048', desc: 'Slide tiles to reach 2048.', route: '/play/2048', playable: true },
     { icon: '🔤', name: 'Hangman', desc: 'Guess the word, letter by letter.', route: '/play/hangman', playable: false },
     { icon: '⚫️⚪️', name: 'Othello/Reversi', desc: 'Flip discs, control the board.', route: '/play/othello', playable: false },
     { icon: '🃏', name: 'Memory', desc: 'Match pairs to win.', route: '/play/memory', playable: false },
