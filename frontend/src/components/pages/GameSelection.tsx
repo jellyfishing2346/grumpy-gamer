@@ -43,7 +43,7 @@ const GameSelection: React.FC = () => {
     { icon: '2️⃣0️⃣4️⃣8️⃣', name: '2048', desc: 'Slide tiles to reach 2048.', route: '/play/2048', playable: true },
     { icon: '🔤', name: 'Hangman', desc: 'Guess the word, letter by letter.', route: '/play/hangman', playable: true },
     { icon: '⚫️⚪️', name: 'Othello/Reversi', desc: 'Flip discs, control the board.', route: '/play/othello', playable: true },
-    { icon: '🃏', name: 'Memory', desc: 'Match pairs to win.', route: '/play/memory', playable: false },
+    { icon: '🃏', name: 'Memory', desc: 'Match pairs to win.', route: '/play/memory', playable: true },
   ];
   const btnStyle: React.CSSProperties = {
     background: 'linear-gradient(90deg, #7ecbff 0%, #b3e0ff 100%)',
