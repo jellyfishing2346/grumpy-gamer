@@ -5,6 +5,10 @@ type Player = 'black' | 'white';
 type CellState = Player | null;
 type GameStatus = 'playing' | 'ended';
 type Difficulty = 'easy' | 'medium' | 'hard';
+type AIMode = 'minimax' | 'reinforcement';
+
+// API Base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 interface Position {
   row: number;
@@ -459,6 +463,9 @@ const OthelloGame: React.FC = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [gameStarted, setGameStarted] = useState(false);
   const [playerColor, setPlayerColor] = useState<Player>('black');
+  const [aiMode, setAiMode] = useState<AIMode>('minimax');
+  const [rlModelInfo, setRlModelInfo] = useState<{ trained: boolean }>({ trained: false });
+  const [usedRLModel, setUsedRLModel] = useState(false);
   
   const [gameState, setGameState] = useState<GameState>(() => {
     const board = createInitialBoard();
@@ -480,6 +487,22 @@ const OthelloGame: React.FC = () => {
 
   const aiPlayer = getOpponent(playerColor);
 
+  // Check RL model status on mount
+  useEffect(() => {
+    const checkRLStatus = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/rl/othello/status`);
+        if (response.ok) {
+          const data = await response.json();
+          setRlModelInfo({ trained: data.model_trained });
+        }
+      } catch (error) {
+        console.log('Could not fetch Othello RL status:', error);
+      }
+    };
+    checkRLStatus();
+  }, []);
+
   // Initialize game
   const startGame = useCallback(() => {
     const board = createInitialBoard();
@@ -493,6 +516,7 @@ const OthelloGame: React.FC = () => {
       winner: null,
       lastMove: null,
     });
+    setUsedRLModel(false);
     setPassMessage(null);
     setGameStarted(true);
   }, []);
@@ -549,7 +573,7 @@ const OthelloGame: React.FC = () => {
     });
   }, [gameState, playerColor, aiThinking]);
 
-  // AI Turn
+  // AI Turn with RL support
   useEffect(() => {
     if (!gameStarted) return;
     if (gameState.status !== 'playing') return;
@@ -557,8 +581,44 @@ const OthelloGame: React.FC = () => {
     
     setAiThinking(true);
     
-    aiTimeoutRef.current = setTimeout(() => {
-      const aiMove = getAIMove(gameState.board, aiPlayer, difficulty);
+    const makeAIMove = async () => {
+      let aiMove: Position | null = null;
+      let usedRL = false;
+      
+      // Try RL API if in reinforcement mode
+      if (aiMode === 'reinforcement') {
+        try {
+          // Convert board to API format (0=empty, 1=black, -1=white)
+          const boardData = gameState.board.map(row => 
+            row.map(cell => cell === 'black' ? 1 : cell === 'white' ? -1 : 0)
+          );
+          
+          const aiPlayerValue = aiPlayer === 'black' ? 1 : -1;
+          
+          const response = await fetch(`${API_BASE_URL}/api/rl/othello/move`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ board: boardData, player: aiPlayerValue })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.position !== -1) {
+              aiMove = { row: data.row, col: data.col };
+              usedRL = data.is_rl_model;
+              setUsedRLModel(usedRL);
+            }
+          }
+        } catch (error) {
+          console.error('RL API error, falling back to minimax:', error);
+        }
+      }
+      
+      // Fall back to local minimax if RL didn't provide a move
+      if (!aiMove) {
+        aiMove = getAIMove(gameState.board, aiPlayer, difficulty);
+        setUsedRLModel(false);
+      }
       
       if (!aiMove) {
         // AI can't move, check if player can
@@ -635,14 +695,17 @@ const OthelloGame: React.FC = () => {
       });
       
       setAiThinking(false);
-    }, 600);
+    };
+    
+    // Add a small delay for UX
+    aiTimeoutRef.current = setTimeout(makeAIMove, 600);
     
     return () => {
       if (aiTimeoutRef.current) {
         clearTimeout(aiTimeoutRef.current);
       }
     };
-  }, [gameStarted, gameState, aiPlayer, playerColor, difficulty]);
+  }, [gameStarted, gameState, aiPlayer, playerColor, difficulty, aiMode]);
 
   // Cleanup
   useEffect(() => {
@@ -681,6 +744,22 @@ const OthelloGame: React.FC = () => {
             onClick={() => setDifficulty('hard')}
           >
             😤 Hard
+          </button>
+        </div>
+        
+        <div style={{ marginBottom: '2em' }}>
+          <h3 style={{ color: '#666', marginBottom: '1em' }}>AI Type</h3>
+          <button
+            style={difficultyButtonStyle(aiMode === 'minimax')}
+            onClick={() => setAiMode('minimax')}
+          >
+            🧠 Minimax AI
+          </button>
+          <button
+            style={difficultyButtonStyle(aiMode === 'reinforcement')}
+            onClick={() => setAiMode('reinforcement')}
+          >
+            🤖 RL AI {rlModelInfo.trained ? '✓' : '(training...)'}
           </button>
         </div>
         
@@ -826,7 +905,7 @@ const OthelloGame: React.FC = () => {
               borderRadius: 8,
               fontWeight: 600,
             }}>
-              🤔 AI is thinking...
+              🤔 AI is thinking... {aiMode === 'reinforcement' && '(RL)'}
             </div>
           ) : (
             <div style={{ 
@@ -837,6 +916,11 @@ const OthelloGame: React.FC = () => {
               fontWeight: 600,
             }}>
               Your turn! ({gameState.validMoves.length} valid moves)
+              {aiMode === 'reinforcement' && usedRLModel && (
+                <span style={{ fontSize: '0.8em', marginLeft: '1em', color: '#1565c0' }}>
+                  🤖 RL AI Active
+                </span>
+              )}
             </div>
           )}
         </div>

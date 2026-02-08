@@ -70,6 +70,28 @@ class RLStatusResponse(BaseModel):
     fallback_available: bool
 
 
+class OthelloMoveRequest(BaseModel):
+    board: List[List[int]]  # 8x8 board: 0=empty, 1=black, -1=white
+    player: Optional[int] = 1  # Which player the AI plays as (1=black, -1=white)
+
+
+class OthelloMoveResponse(BaseModel):
+    position: int  # Flattened position (0-63), -1 for pass
+    row: int
+    col: int
+    is_rl_model: bool
+
+
+class Game2048MoveRequest(BaseModel):
+    board: List[List[int]]  # 4x4 board with tile values (0 for empty)
+
+
+class Game2048MoveResponse(BaseModel):
+    direction: int  # 0=up, 1=right, 2=down, 3=left
+    direction_name: str  # "up", "right", "down", "left"
+    is_rl_model: bool
+
+
 # ========== RL Agent Setup ==========
 
 # Lazy loading of RL agent to avoid import errors if dependencies not installed
@@ -429,6 +451,118 @@ def get_minesweeper_rl_status():
         model_trained=model_exists and agent is not None and agent.model is not None,
         model_path=model_path if model_exists else None,
         fallback_available=True  # Rule-based logic always available
+    )
+
+
+# ----- Othello RL Endpoints -----
+
+_othello_agent = None
+
+def get_othello_agent():
+    """Lazy load Othello RL agent."""
+    global _othello_agent
+    if _othello_agent is None:
+        try:
+            from rl.agents import OthelloRLAgent
+            _othello_agent = OthelloRLAgent()
+        except ImportError as e:
+            print(f"Could not load Othello RL agent: {e}")
+            return None
+    return _othello_agent
+
+
+@app.post("/api/rl/othello/move", response_model=OthelloMoveResponse)
+def get_othello_rl_move(request: OthelloMoveRequest):
+    """
+    Get the RL agent's move for Othello.
+    Uses trained model if available, falls back to Minimax otherwise.
+    """
+    agent = get_othello_agent()
+    
+    if agent is None:
+        # No RL dependencies - return pass
+        return OthelloMoveResponse(position=-1, row=-1, col=-1, is_rl_model=False)
+    
+    # Get move from RL agent
+    action, used_model = agent.get_action_with_info(request.board, request.player)
+    
+    if action == -1:  # Pass (no valid moves)
+        return OthelloMoveResponse(position=-1, row=-1, col=-1, is_rl_model=used_model)
+    
+    row = action // 8
+    col = action % 8
+    
+    return OthelloMoveResponse(position=action, row=row, col=col, is_rl_model=used_model)
+
+
+@app.get("/api/rl/othello/status", response_model=RLStatusResponse)
+def get_othello_rl_status():
+    """Check if the Othello RL model is trained and available."""
+    model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "othello_best.zip")
+    model_exists = os.path.exists(model_path)
+    
+    agent = get_othello_agent()
+    
+    return RLStatusResponse(
+        model_trained=model_exists and agent is not None and agent.model is not None,
+        model_path=model_path if model_exists else None,
+        fallback_available=True  # Minimax always available
+    )
+
+
+# ----- 2048 RL Endpoints -----
+
+_game2048_agent = None
+
+def get_game2048_agent():
+    """Lazy load 2048 RL agent."""
+    global _game2048_agent
+    if _game2048_agent is None:
+        try:
+            from rl.agents import Game2048RLAgent
+            _game2048_agent = Game2048RLAgent()
+        except ImportError as e:
+            print(f"Could not load 2048 RL agent: {e}")
+            return None
+    return _game2048_agent
+
+
+@app.post("/api/rl/2048/move", response_model=Game2048MoveResponse)
+def get_game2048_rl_move(request: Game2048MoveRequest):
+    """
+    Get the RL agent's move for 2048.
+    Uses trained model if available, falls back to heuristic otherwise.
+    """
+    direction_names = ["up", "right", "down", "left"]
+    
+    agent = get_game2048_agent()
+    
+    if agent is None:
+        # No RL dependencies - default to up
+        return Game2048MoveResponse(direction=0, direction_name="up", is_rl_model=False)
+    
+    # Get move from RL agent
+    action, used_model = agent.get_action_with_info(request.board)
+    
+    return Game2048MoveResponse(
+        direction=action,
+        direction_name=direction_names[action],
+        is_rl_model=used_model
+    )
+
+
+@app.get("/api/rl/2048/status", response_model=RLStatusResponse)
+def get_game2048_rl_status():
+    """Check if the 2048 RL model is trained and available."""
+    model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "game2048_best.zip")
+    model_exists = os.path.exists(model_path)
+    
+    agent = get_game2048_agent()
+    
+    return RLStatusResponse(
+        model_trained=model_exists and agent is not None and agent.model is not None,
+        model_path=model_path if model_exists else None,
+        fallback_available=True  # Heuristic always available
     )
 
 

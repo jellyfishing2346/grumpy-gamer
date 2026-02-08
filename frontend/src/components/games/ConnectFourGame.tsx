@@ -1,9 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
 
+// API base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+
 // Types
 type Player = 'player' | 'ai' | null;
 type Board = Player[][];
 type Difficulty = 'easy' | 'medium' | 'hard';
+type AIMode = 'minimax' | 'reinforcement';
 
 const ROWS = 6;
 const COLS = 7;
@@ -406,11 +410,48 @@ const ConnectFourGame: React.FC = () => {
   const [winningCells, setWinningCells] = useState<number[][]>([]);
   const [isTie, setIsTie] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
+  const [aiMode, setAiMode] = useState<AIMode>('minimax');
+  const [rlModelInfo, setRlModelInfo] = useState<{ loaded: boolean; fallback: boolean } | null>(null);
   const [score, setScore] = useState({ player: 0, ai: 0, ties: 0 });
   const [isThinking, setIsThinking] = useState(false);
   const [hoverColumn, setHoverColumn] = useState<number | null>(null);
   const [lastMove, setLastMove] = useState<{ row: number; col: number } | null>(null);
   const [dropAnimation, setDropAnimation] = useState<{ col: number; row: number; player: Player } | null>(null);
+
+  // Fetch RL status on mount and when switching to RL mode
+  useEffect(() => {
+    if (aiMode === 'reinforcement') {
+      fetch(`${API_BASE_URL}/api/rl/connectfour/status`)
+        .then(res => res.json())
+        .then(data => setRlModelInfo({ loaded: data.model_trained, fallback: false }))
+        .catch(() => setRlModelInfo({ loaded: false, fallback: true }));
+    }
+  }, [aiMode]);
+
+  // Get RL move from API
+  const getRLMove = async (currentBoard: Board): Promise<{ column: number; usedModel: boolean }> => {
+    // Convert board to 2D array for API (0=empty, 1=player, 2=ai)
+    const boardArray = currentBoard.map(row => 
+      row.map(cell => cell === null ? 0 : cell === 'player' ? 1 : 2)
+    );
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/rl/connectfour/move`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ board: boardArray }),
+      });
+      
+      if (!response.ok) throw new Error('RL API error');
+      
+      const data = await response.json();
+      return { column: data.column, usedModel: data.is_rl_model };
+    } catch (error) {
+      console.error('RL API failed, falling back to minimax:', error);
+      // Fallback to minimax on error
+      return { column: getAIMove(currentBoard, difficulty), usedModel: false };
+    }
+  };
 
   // Reset game
   const resetGame = useCallback(() => {
@@ -462,8 +503,19 @@ const ConnectFourGame: React.FC = () => {
 
     setIsThinking(true);
 
-    const timer = setTimeout(() => {
-      const aiCol = getAIMove(board, difficulty);
+    const makeMove = async () => {
+      let aiCol: number;
+      
+      if (aiMode === 'reinforcement') {
+        // Use RL API
+        const rlResult = await getRLMove(board);
+        aiCol = rlResult.column;
+        setRlModelInfo(prev => prev ? { ...prev, fallback: !rlResult.usedModel } : { loaded: true, fallback: !rlResult.usedModel });
+      } else {
+        // Use local minimax
+        aiCol = getAIMove(board, difficulty);
+      }
+      
       if (aiCol === -1) return;
 
       const result = dropPiece(board, aiCol, 'ai');
@@ -493,10 +545,12 @@ const ConnectFourGame: React.FC = () => {
 
         setCurrentPlayer('player');
       }, 300);
-    }, 500);
+    };
+
+    const timer = setTimeout(makeMove, 500);
 
     return () => clearTimeout(timer);
-  }, [currentPlayer, board, winner, isTie, difficulty]);
+  }, [currentPlayer, board, winner, isTie, difficulty, aiMode]);
 
   // Check if cell is in winning cells
   const isWinningCell = (row: number, col: number): boolean => {
@@ -546,22 +600,65 @@ const ConnectFourGame: React.FC = () => {
 
       <h1 style={headerStyle}>🔴 Connect Four 🟡</h1>
 
-      {/* Difficulty Selection */}
+      {/* AI Type Selection */}
       <div style={{ marginBottom: '1em' }}>
-        <span style={{ marginRight: '1em', opacity: 0.8 }}>Difficulty:</span>
-        {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-          <button
-            key={d}
-            style={difficultyBtnStyle(difficulty === d)}
-            onClick={() => {
-              setDifficulty(d);
-              resetGame();
-            }}
-          >
-            {d === 'easy' ? '🟢 Easy' : d === 'medium' ? '🟡 Medium' : '🔴 Hard'}
-          </button>
-        ))}
+        <span style={{ marginRight: '1em', opacity: 0.8 }}>AI Type:</span>
+        <button
+          style={{
+            ...buttonStyle,
+            background: aiMode === 'minimax'
+              ? 'linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%)'
+              : 'linear-gradient(90deg, #34495e 0%, #2c3e50 100%)',
+            boxShadow: aiMode === 'minimax' ? '0 4px 12px rgba(155, 89, 182, 0.4)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
+          }}
+          onClick={() => { setAiMode('minimax'); resetGame(); }}
+        >
+          🧮 Minimax
+        </button>
+        <button
+          style={{
+            ...buttonStyle,
+            background: aiMode === 'reinforcement'
+              ? 'linear-gradient(90deg, #e74c3c 0%, #c0392b 100%)'
+              : 'linear-gradient(90deg, #34495e 0%, #2c3e50 100%)',
+            boxShadow: aiMode === 'reinforcement' ? '0 4px 12px rgba(231, 76, 60, 0.4)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
+          }}
+          onClick={() => { setAiMode('reinforcement'); resetGame(); }}
+        >
+          🤖 RL Agent
+        </button>
+        {aiMode === 'reinforcement' && rlModelInfo && (
+          <span style={{
+            marginLeft: '1em',
+            fontSize: '0.85em',
+            opacity: 0.7,
+            color: rlModelInfo.fallback ? '#e74c3c' : '#2ecc71'
+          }}>
+            {rlModelInfo.loaded
+              ? (rlModelInfo.fallback ? '⚠️ Using fallback' : '✅ Model loaded')
+              : '⏳ Loading...'}
+          </span>
+        )}
       </div>
+
+      {/* Difficulty Selection (only show for Minimax) */}
+      {aiMode === 'minimax' && (
+        <div style={{ marginBottom: '1em' }}>
+          <span style={{ marginRight: '1em', opacity: 0.8 }}>Difficulty:</span>
+          {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
+            <button
+              key={d}
+              style={difficultyBtnStyle(difficulty === d)}
+              onClick={() => {
+                setDifficulty(d);
+                resetGame();
+              }}
+            >
+              {d === 'easy' ? '🟢 Easy' : d === 'medium' ? '🟡 Medium' : '🔴 Hard'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Score Display */}
       <div style={{ marginBottom: '1em' }}>

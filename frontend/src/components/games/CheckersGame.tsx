@@ -1,5 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 
+// API base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+
 // Types
 type PieceColor = 'red' | 'black';
 type PieceType = 'regular' | 'king';
@@ -13,6 +16,7 @@ type Move = {
   isKinging?: boolean;
 };
 type Difficulty = 'easy' | 'medium' | 'hard';
+type AIMode = 'minimax' | 'reinforcement';
 
 const BOARD_SIZE = 8;
 
@@ -471,12 +475,70 @@ const CheckersGame: React.FC = () => {
   const [selectedPiece, setSelectedPiece] = useState<Position | null>(null);
   const [validMoves, setValidMoves] = useState<Move[]>([]);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
+  const [aiMode, setAiMode] = useState<AIMode>('minimax');
+  const [rlModelInfo, setRlModelInfo] = useState<{ loaded: boolean; fallback: boolean } | null>(null);
   const [score, setScore] = useState({ player: 0, ai: 0 });
   const [gameOver, setGameOver] = useState(false);
   const [winner, setWinner] = useState<PieceColor | 'draw' | null>(null);
   const [isThinking, setIsThinking] = useState(false);
   const [lastMove, setLastMove] = useState<Move | null>(null);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
+
+  // Fetch RL status when switching to RL mode
+  useEffect(() => {
+    if (aiMode === 'reinforcement') {
+      fetch(`${API_BASE_URL}/api/rl/checkers/status`)
+        .then(res => res.json())
+        .then(data => setRlModelInfo({ loaded: data.model_trained, fallback: false }))
+        .catch(() => setRlModelInfo({ loaded: false, fallback: true }));
+    }
+  }, [aiMode]);
+
+  // Convert board to API format (0=empty, 1=red regular, 2=red king, 3=black regular, 4=black king)
+  const boardToApiFormat = (b: Board): number[][] => {
+    return b.map(row => row.map(piece => {
+      if (!piece) return 0;
+      if (piece.color === 'red' && piece.type === 'regular') return 1;
+      if (piece.color === 'red' && piece.type === 'king') return 2;
+      if (piece.color === 'black' && piece.type === 'regular') return 3;
+      if (piece.color === 'black' && piece.type === 'king') return 4;
+      return 0;
+    }));
+  };
+
+  // Get RL move from API
+  const getRLMove = async (currentBoard: Board): Promise<{ move: Move | null; usedModel: boolean }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/rl/checkers/move`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ board: boardToApiFormat(currentBoard) }),
+      });
+      
+      if (!response.ok) throw new Error('RL API error');
+      
+      const data = await response.json();
+      
+      // Check if valid move was returned
+      if (data.from_row === 0 && data.from_col === 0 && data.to_row === 0 && data.to_col === 0 && data.captures.length === 0) {
+        return { move: null, usedModel: false };
+      }
+      
+      const move: Move = {
+        from: { row: data.from_row, col: data.from_col },
+        to: { row: data.to_row, col: data.to_col },
+        captures: data.captures.map((c: number[]) => ({ row: c[0], col: c[1] })),
+        isKinging: data.is_kinging
+      };
+      
+      return { move, usedModel: data.is_rl_model };
+    } catch (error) {
+      console.error('RL API failed, falling back to minimax:', error);
+      // Fallback to minimax on error
+      const move = getAIMove(currentBoard, difficulty);
+      return { move, usedModel: false };
+    }
+  };
 
   // Reset game
   const resetGame = useCallback(() => {
@@ -553,8 +615,18 @@ const CheckersGame: React.FC = () => {
     
     setIsThinking(true);
     
-    const timer = setTimeout(() => {
-      const move = getAIMove(board, difficulty);
+    const makeMove = async () => {
+      let move: Move | null = null;
+      
+      if (aiMode === 'reinforcement') {
+        // Use RL API
+        const rlResult = await getRLMove(board);
+        move = rlResult.move;
+        setRlModelInfo(prev => prev ? { ...prev, fallback: !rlResult.usedModel } : { loaded: true, fallback: !rlResult.usedModel });
+      } else {
+        // Use local minimax
+        move = getAIMove(board, difficulty);
+      }
       
       if (move) {
         const newBoard = applyMove(board, move);
@@ -581,10 +653,12 @@ const CheckersGame: React.FC = () => {
       }
       
       setIsThinking(false);
-    }, 600);
+    };
+    
+    const timer = setTimeout(makeMove, 600);
     
     return () => clearTimeout(timer);
-  }, [currentTurn, board, gameOver, difficulty]);
+  }, [currentTurn, board, gameOver, difficulty, aiMode]);
 
   // Get cell style
   const getCellStyle = (row: number, col: number): React.CSSProperties => {
@@ -680,19 +754,66 @@ const CheckersGame: React.FC = () => {
 
       <h1 style={headerStyle}>⛀ Checkers ⛂</h1>
 
-      {/* Difficulty Selection */}
+      {/* AI Type Selection */}
       <div style={{ marginBottom: '0.8em' }}>
-        <span style={{ marginRight: '0.8em', opacity: 0.8, fontSize: '0.95em' }}>Difficulty:</span>
-        {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-          <button
-            key={d}
-            style={difficultyBtnStyle(difficulty === d)}
-            onClick={() => { setDifficulty(d); resetGame(); }}
-          >
-            {d === 'easy' ? '🟢 Easy' : d === 'medium' ? '🟡 Medium' : '🔴 Hard'}
-          </button>
-        ))}
+        <span style={{ marginRight: '0.8em', opacity: 0.8, fontSize: '0.95em' }}>AI Type:</span>
+        <button
+          style={{
+            ...buttonStyle,
+            padding: '0.5em 1em',
+            fontSize: '0.9em',
+            background: aiMode === 'minimax'
+              ? 'linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%)'
+              : 'linear-gradient(90deg, #5d4037 0%, #4e342e 100%)',
+            boxShadow: aiMode === 'minimax' ? '0 4px 12px rgba(155, 89, 182, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.2)',
+          }}
+          onClick={() => { setAiMode('minimax'); resetGame(); }}
+        >
+          🧮 Minimax
+        </button>
+        <button
+          style={{
+            ...buttonStyle,
+            padding: '0.5em 1em',
+            fontSize: '0.9em',
+            background: aiMode === 'reinforcement'
+              ? 'linear-gradient(90deg, #e74c3c 0%, #c0392b 100%)'
+              : 'linear-gradient(90deg, #5d4037 0%, #4e342e 100%)',
+            boxShadow: aiMode === 'reinforcement' ? '0 4px 12px rgba(231, 76, 60, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.2)',
+          }}
+          onClick={() => { setAiMode('reinforcement'); resetGame(); }}
+        >
+          🤖 RL Agent
+        </button>
+        {aiMode === 'reinforcement' && rlModelInfo && (
+          <span style={{
+            marginLeft: '0.8em',
+            fontSize: '0.85em',
+            opacity: 0.7,
+            color: rlModelInfo.fallback ? '#e74c3c' : '#2ecc71'
+          }}>
+            {rlModelInfo.loaded
+              ? (rlModelInfo.fallback ? '⚠️ Using fallback' : '✅ Model loaded')
+              : '⏳ Loading...'}
+          </span>
+        )}
       </div>
+
+      {/* Difficulty Selection (only show for Minimax) */}
+      {aiMode === 'minimax' && (
+        <div style={{ marginBottom: '0.8em' }}>
+          <span style={{ marginRight: '0.8em', opacity: 0.8, fontSize: '0.95em' }}>Difficulty:</span>
+          {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
+            <button
+              key={d}
+              style={difficultyBtnStyle(difficulty === d)}
+              onClick={() => { setDifficulty(d); resetGame(); }}
+            >
+              {d === 'easy' ? '🟢 Easy' : d === 'medium' ? '🟡 Medium' : '🔴 Hard'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Score Display */}
       <div style={{ marginBottom: '0.8em', fontSize: '0.95em' }}>
