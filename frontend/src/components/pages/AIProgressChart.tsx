@@ -24,25 +24,6 @@ ChartJS.register(
   Legend
 );
 
-const data = {
-  labels: ["Game 1", "Game 2", "Game 3", "Game 4", "Game 5", "Game 6", "Game 7"],
-  datasets: [
-    {
-      label: "Your Accuracy (%)",
-      data: [70, 75, 80, 78, 82, 85, 88],
-      borderColor: "#4f8cff",
-      backgroundColor: "rgba(79,140,255,0.2)",
-      tension: 0.3,
-    },
-    {
-      label: "AI Accuracy (%)",
-      data: [65, 68, 72, 76, 80, 84, 90],
-      borderColor: "#ff7e67",
-      backgroundColor: "rgba(255,126,103,0.2)",
-      tension: 0.3,
-    },
-  ],
-};
 
 const options = {
   responsive: true,
