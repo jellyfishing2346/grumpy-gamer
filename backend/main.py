@@ -14,7 +14,7 @@ _game_stats_available = True
 
 def get_game_stats_manager(user_id: str = "anonymous"):
     """Lazy load GameStatsManager to handle sqlite3 import errors."""
-    global _game_stats_manager, _game_stats_available
+    global _game_stats_available
     if not _game_stats_available:
         return None
     try:
@@ -24,6 +24,7 @@ def get_game_stats_manager(user_id: str = "anonymous"):
         print(f"Game stats not available: {e}")
         _game_stats_available = False
         return None
+
 
 app = FastAPI(title="Grumpy Gamer API", version="1.0.0")
 
