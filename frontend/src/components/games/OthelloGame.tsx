@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { recordGame } from '../../services/gameStatsService';
 
 // Types
 type Player = 'black' | 'white';
@@ -484,6 +485,11 @@ const OthelloGame: React.FC = () => {
   const [aiThinking, setAiThinking] = useState(false);
   const [passMessage, setPassMessage] = useState<string | null>(null);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number | null>(null);
+  const statsRecordedRef = useRef<boolean>(false);
+  const moveCountRef = useRef<number>(0);
 
   const aiPlayer = getOpponent(playerColor);
 
@@ -503,8 +509,48 @@ const OthelloGame: React.FC = () => {
     checkRLStatus();
   }, []);
 
+  // Record game stats when game ends
+  useEffect(() => {
+    if (gameState.status === 'ended' && gameState.winner !== null && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      let result: 'win' | 'loss' | 'draw';
+      if (gameState.winner === 'tie') {
+        result = 'draw';
+      } else if (gameState.winner === playerColor) {
+        result = 'win';
+      } else {
+        result = 'loss';
+      }
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      recordGame({
+        gameType: 'othello',
+        result,
+        movesCount: moveCountRef.current,
+        durationSeconds,
+        opponentType: 'ai',
+        aiDifficulty: aiMode === 'reinforcement' ? 'rl' : difficulty,
+        metadata: {
+          aiMode,
+          playerColor,
+          blackCount: gameState.blackCount,
+          whiteCount: gameState.whiteCount,
+          usedRLModel,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameState.status, gameState.winner, playerColor, difficulty, aiMode, gameState.blackCount, gameState.whiteCount, usedRLModel]);
+
   // Initialize game
   const startGame = useCallback(() => {
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
+    moveCountRef.current = 0;
+    
     const board = createInitialBoard();
     setGameState({
       board,

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { recordGame } from '../../services/gameStatsService';
 
 // Types
 type CardState = 'hidden' | 'flipped' | 'matched';
@@ -305,9 +306,52 @@ const MemoryGame: React.FC = () => {
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const matchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const aiMakingMoveRef = useRef(false);
+  
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number | null>(null);
+  const statsRecordedRef = useRef<boolean>(false);
+  const moveCountRef = useRef<number>(0);
+
+  // Record game stats when game ends
+  useEffect(() => {
+    if (gameState.status === 'ended' && gameState.winner !== null && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      let result: 'win' | 'loss' | 'draw';
+      if (gameState.winner === 'tie') {
+        result = 'draw';
+      } else if (gameState.winner === 'player') {
+        result = 'win';
+      } else {
+        result = 'loss';
+      }
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      recordGame({
+        gameType: 'memory',
+        result,
+        movesCount: moveCountRef.current,
+        durationSeconds,
+        opponentType: 'ai',
+        aiDifficulty: difficulty,
+        metadata: {
+          gridSize,
+          playerScore: gameState.playerScore,
+          aiScore: gameState.aiScore,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameState.status, gameState.winner, gameState.playerScore, gameState.aiScore, difficulty, gridSize]);
 
   // Start a new game
   const startGame = useCallback(() => {
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
+    moveCountRef.current = 0;
+    
     const cards = createCards(gridSize);
     setGameState({
       cards,

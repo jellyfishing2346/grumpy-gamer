@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { recordGame } from '../../services/gameStatsService';
 
 // API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || "";
@@ -417,6 +418,11 @@ const ConnectFourGame: React.FC = () => {
   const [hoverColumn, setHoverColumn] = useState<number | null>(null);
   const [lastMove, setLastMove] = useState<{ row: number; col: number } | null>(null);
   const [dropAnimation, setDropAnimation] = useState<{ col: number; row: number; player: Player } | null>(null);
+  const [moveCount, setMoveCount] = useState(0);
+
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number>(Date.now());
+  const statsRecordedRef = useRef<boolean>(false);
 
   // Fetch RL status on mount and when switching to RL mode
   useEffect(() => {
@@ -463,6 +469,9 @@ const ConnectFourGame: React.FC = () => {
     setIsThinking(false);
     setLastMove(null);
     setDropAnimation(null);
+    setMoveCount(0);
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
   }, []);
 
   // Handle column click
@@ -474,6 +483,7 @@ const ConnectFourGame: React.FC = () => {
 
     setDropAnimation({ col, row: result.row, player: 'player' });
     setLastMove({ row: result.row, col });
+    setMoveCount(prev => prev + 1);
 
     setTimeout(() => {
       setBoard(result.newBoard);
@@ -523,6 +533,7 @@ const ConnectFourGame: React.FC = () => {
 
       setDropAnimation({ col: aiCol, row: result.row, player: 'ai' });
       setLastMove({ row: result.row, col: aiCol });
+      setMoveCount(prev => prev + 1);
 
       setTimeout(() => {
         setBoard(result.newBoard);
@@ -550,12 +561,47 @@ const ConnectFourGame: React.FC = () => {
     const timer = setTimeout(makeMove, 500);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPlayer, board, winner, isTie, difficulty, aiMode]);
 
   // Check if cell is in winning cells
   const isWinningCell = (row: number, col: number): boolean => {
     return winningCells.some(([r, c]) => r === row && c === col);
   };
+
+  // Record game stats when game ends
+  useEffect(() => {
+    if ((winner || isTie) && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      // Determine result from user's perspective
+      let result: "win" | "loss" | "draw";
+      if (isTie) {
+        result = "draw";
+      } else if (winner === "player") {
+        result = "win";
+      } else {
+        result = "loss";
+      }
+
+      // Calculate duration
+      const durationSeconds = Math.floor((Date.now() - gameStartTimeRef.current) / 1000);
+
+      // Record the game
+      recordGame({
+        gameType: "connectfour",
+        result,
+        movesCount: moveCount,
+        durationSeconds,
+        opponentType: "ai",
+        aiDifficulty: aiMode === "reinforcement" ? "rl" : difficulty,
+        metadata: {
+          aiMode,
+          usedRLModel: rlModelInfo?.loaded || false,
+        },
+      }).catch((err) => console.error("Failed to record game stats:", err));
+    }
+  }, [winner, isTie, moveCount, difficulty, aiMode, rlModelInfo]);
 
   // Get status message
   const getStatusMessage = (): string => {

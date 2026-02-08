@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { recordGame } from '../../services/gameStatsService';
 
 // Types
 type Board = (number | null)[][];
@@ -213,8 +214,51 @@ const SudokuGame: React.FC = () => {
     gameStarted: false,
     remainingCells: 0
   });
+  
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number | null>(null);
+  const statsRecordedRef = useRef<boolean>(false);
+  const moveCountRef = useRef<number>(0);
+
+  // Record game stats when game ends
+  useEffect(() => {
+    if (gameState.isGameOver && gameState.winner !== null && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      let result: 'win' | 'loss' | 'draw';
+      if (gameState.winner === 'tie') {
+        result = 'draw';
+      } else if (gameState.winner === 'user') {
+        result = 'win';
+      } else {
+        result = 'loss';
+      }
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      recordGame({
+        gameType: 'sudoku',
+        result,
+        movesCount: moveCountRef.current,
+        durationSeconds,
+        score: gameState.userScore,
+        opponentType: 'ai',
+        aiDifficulty: gameState.difficulty,
+        metadata: {
+          userScore: gameState.userScore,
+          aiScore: gameState.aiScore,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameState.isGameOver, gameState.winner, gameState.userScore, gameState.aiScore, gameState.difficulty]);
 
   const startNewGame = useCallback((difficulty: "easy" | "medium" | "hard") => {
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
+    moveCountRef.current = 0;
+    
     const solution = generateSolution();
     const puzzle = createPuzzle(solution, difficulty);
     const cellOwners: CellOwner = puzzle.map(row =>

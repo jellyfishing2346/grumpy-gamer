@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { recordGame } from '../../services/gameStatsService';
 
 // Types
 type GameStatus = 'playing' | 'won' | 'lost';
@@ -357,11 +358,77 @@ const HangmanGame: React.FC = () => {
   const [aiThinking, setAiThinking] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number | null>(null);
+  const statsRecordedRef = useRef<boolean>(false);
 
   const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
+  // Record game stats when classic game ends
+  useEffect(() => {
+    if (gameMode === 'classic' && classicState.status !== 'playing' && gameStarted && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      const result: 'win' | 'loss' = classicState.status === 'won' ? 'win' : 'loss';
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      recordGame({
+        gameType: 'hangman',
+        result,
+        movesCount: classicState.guessedLetters.size,
+        durationSeconds,
+        opponentType: 'self',
+        aiDifficulty: difficulty,
+        metadata: {
+          wordLength: classicState.word.length,
+          wrongGuesses: classicState.wrongGuesses,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameMode, classicState.status, classicState.guessedLetters.size, classicState.word.length, classicState.wrongGuesses, difficulty, gameStarted]);
+
+  // Record game stats when VS AI game ends
+  useEffect(() => {
+    if (gameMode === 'vs-ai' && vsAIState.winner !== null && gameStarted && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      let result: 'win' | 'loss' | 'draw';
+      if (vsAIState.winner === 'tie') {
+        result = 'draw';
+      } else if (vsAIState.winner === 'player') {
+        result = 'win';
+      } else {
+        result = 'loss';
+      }
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      recordGame({
+        gameType: 'hangman',
+        result,
+        movesCount: vsAIState.playerGuessedLetters.size + vsAIState.aiGuessedLetters.size,
+        durationSeconds,
+        opponentType: 'ai',
+        aiDifficulty: difficulty,
+        metadata: {
+          playerWrongGuesses: vsAIState.playerWrongGuesses,
+          aiWrongGuesses: vsAIState.aiWrongGuesses,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameMode, vsAIState.winner, vsAIState.playerGuessedLetters.size, vsAIState.aiGuessedLetters.size, vsAIState.playerWrongGuesses, vsAIState.aiWrongGuesses, difficulty, gameStarted]);
+
   // Initialize/Reset classic game
   const startClassicGame = useCallback(() => {
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
+    
     const { word, hint } = getRandomWord(difficulty);
     setClassicState({
       word,
@@ -376,6 +443,9 @@ const HangmanGame: React.FC = () => {
 
   // Initialize VS AI game
   const startVsAIGame = useCallback(() => {
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
+    
     setShowWordInput(true);
     setPlayerInputWord('');
   }, []);
