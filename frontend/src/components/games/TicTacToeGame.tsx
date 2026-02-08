@@ -1,9 +1,14 @@
 import React, { useState, useCallback, useEffect } from "react";
 
+// API base URL - use environment variable or default to production
+// For Create React App, use process.env; for local dev with proxy, use relative URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+
 // Types
 type Player = "X" | "O" | null;
 type Board = Player[];
 type Difficulty = "easy" | "medium" | "hard";
+type AIMode = "minimax" | "reinforcement";
 
 interface GameState {
   board: Board;
@@ -14,10 +19,12 @@ interface GameState {
   userSymbol: Player;
   aiSymbol: Player;
   difficulty: Difficulty;
+  aiMode: AIMode;
   isAiThinking: boolean;
   gameStarted: boolean;
   scores: { user: number; ai: number; ties: number };
   moveHistory: number[];
+  usingRLModel: boolean; // Track if RL model is actually being used
 }
 
 // Winning combinations
@@ -144,6 +151,54 @@ const findBestMove = (
   return bestMove;
 };
 
+// Fetch RL move from backend API
+const fetchRLMove = async (
+  board: Board,
+  userSymbol: Player
+): Promise<{ row: number; col: number; isRLModel: boolean }> => {
+  // Convert board to API format: 0=empty, 1=player, 2=AI
+  const boardMatrix = [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+  ];
+  
+  board.forEach((cell, index) => {
+    const row = Math.floor(index / 3);
+    const col = index % 3;
+    if (cell === userSymbol) {
+      boardMatrix[row][col] = 1; // Player
+    } else if (cell !== null) {
+      boardMatrix[row][col] = 2; // AI
+    }
+  });
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/rl/tictactoe/move`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ board: boardMatrix }),
+    });
+    
+    if (!response.ok) {
+      throw new Error("RL API request failed");
+    }
+    
+    const data = await response.json();
+    return {
+      row: data.row,
+      col: data.col,
+      isRLModel: data.is_rl_model,
+    };
+  } catch (error) {
+    console.error("Error fetching RL move:", error);
+    // Return -1 to signal fallback to local minimax
+    throw error;
+  }
+};
+
 const TicTacToeGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
     board: Array(9).fill(null),
@@ -154,15 +209,18 @@ const TicTacToeGame: React.FC = () => {
     userSymbol: "X",
     aiSymbol: "O",
     difficulty: "medium",
+    aiMode: "minimax",
     isAiThinking: false,
     gameStarted: false,
     scores: { user: 0, ai: 0, ties: 0 },
     moveHistory: [],
+    usingRLModel: false,
   });
 
   const startGame = useCallback((
     userSymbol: Player,
-    difficulty: Difficulty
+    difficulty: Difficulty,
+    aiMode: AIMode = gameState.aiMode
   ) => {
     const aiSymbol = userSymbol === "X" ? "O" : "X";
     setGameState(prev => ({
@@ -175,11 +233,13 @@ const TicTacToeGame: React.FC = () => {
       userSymbol,
       aiSymbol,
       difficulty,
+      aiMode,
       isAiThinking: false,
       gameStarted: true,
       moveHistory: [],
+      usingRLModel: false,
     }));
-  }, []);
+  }, [gameState.aiMode]);
 
   const resetGame = useCallback(() => {
     setGameState(prev => ({
@@ -252,23 +312,53 @@ const TicTacToeGame: React.FC = () => {
 
     setGameState(prev => ({ ...prev, isAiThinking: true }));
 
-    const timer = setTimeout(() => {
-      const boardCopy = [...gameState.board];
-      const bestMove = findBestMove(
-        boardCopy,
-        gameState.aiSymbol,
-        gameState.userSymbol,
-        gameState.difficulty
-      );
+    const makeAIMove = async () => {
+      // Add a small delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
+      
+      let bestMove = -1;
+      let usedRLModel = false;
+      
+      if (gameState.aiMode === "reinforcement") {
+        // Try to get move from RL API
+        try {
+          const result = await fetchRLMove(gameState.board, gameState.userSymbol);
+          bestMove = result.row * 3 + result.col;
+          usedRLModel = result.isRLModel;
+        } catch (error) {
+          // Fallback to local minimax
+          console.warn("RL API failed, falling back to local minimax");
+          const boardCopy = [...gameState.board];
+          bestMove = findBestMove(
+            boardCopy,
+            gameState.aiSymbol,
+            gameState.userSymbol,
+            gameState.difficulty
+          );
+        }
+      } else {
+        // Use local minimax
+        const boardCopy = [...gameState.board];
+        bestMove = findBestMove(
+          boardCopy,
+          gameState.aiSymbol,
+          gameState.userSymbol,
+          gameState.difficulty
+        );
+      }
 
       if (bestMove !== -1) {
         makeMove(bestMove, gameState.aiSymbol);
       }
       
-      setGameState(prev => ({ ...prev, isAiThinking: false }));
-    }, 500 + Math.random() * 500);
+      setGameState(prev => ({ 
+        ...prev, 
+        isAiThinking: false,
+        usingRLModel: usedRLModel,
+      }));
+    };
 
-    return () => clearTimeout(timer);
+    makeAIMove();
   }, [
     gameState.currentPlayer,
     gameState.gameStarted,
@@ -276,6 +366,7 @@ const TicTacToeGame: React.FC = () => {
     gameState.aiSymbol,
     gameState.userSymbol,
     gameState.difficulty,
+    gameState.aiMode,
     gameState.board,
     makeMove,
   ]);
@@ -436,6 +527,53 @@ const TicTacToeGame: React.FC = () => {
                 ⭕ O (Second)
               </button>
             </div>
+          </div>
+
+          <div>
+            <p style={{ color: "#666", marginBottom: "0.5rem", fontWeight: 600 }}>
+              AI Type:
+            </p>
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center", marginBottom: "1rem" }}>
+              <button
+                onClick={() => setGameState(prev => ({ ...prev, aiMode: "minimax" }))}
+                style={{
+                  padding: "0.7rem 1.5rem",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  border: gameState.aiMode === "minimax" ? "none" : "2px solid #ddd",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  background: gameState.aiMode === "minimax"
+                    ? "linear-gradient(135deg, #667eea, #764ba2)"
+                    : "#fff",
+                  color: gameState.aiMode === "minimax" ? "#fff" : "#666",
+                }}
+              >
+                🧮 Minimax
+              </button>
+              <button
+                onClick={() => setGameState(prev => ({ ...prev, aiMode: "reinforcement" }))}
+                style={{
+                  padding: "0.7rem 1.5rem",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  border: gameState.aiMode === "reinforcement" ? "none" : "2px solid #ddd",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  background: gameState.aiMode === "reinforcement"
+                    ? "linear-gradient(135deg, #00b4db, #0083b0)"
+                    : "#fff",
+                  color: gameState.aiMode === "reinforcement" ? "#fff" : "#666",
+                }}
+              >
+                🤖 RL Agent
+              </button>
+            </div>
+            <p style={{ color: "#999", fontSize: "0.85rem", marginBottom: "1rem" }}>
+              {gameState.aiMode === "minimax" 
+                ? "Traditional algorithm - always plays optimally" 
+                : "🧠 Neural network trained via Reinforcement Learning!"}
+            </p>
           </div>
 
           <div>
@@ -613,7 +751,7 @@ const TicTacToeGame: React.FC = () => {
             </button>
           </div>
 
-          {/* Difficulty indicator */}
+          {/* AI Mode indicator */}
           <div
             style={{
               textAlign: "center",
@@ -622,7 +760,9 @@ const TicTacToeGame: React.FC = () => {
               fontSize: "0.9rem",
             }}
           >
-            Difficulty: {gameState.difficulty.charAt(0).toUpperCase() + gameState.difficulty.slice(1)}
+            {gameState.aiMode === "minimax" 
+              ? `Difficulty: ${gameState.difficulty.charAt(0).toUpperCase() + gameState.difficulty.slice(1)}` 
+              : `🧠 RL Agent ${gameState.usingRLModel ? "(trained model)" : "(using fallback)"}`}
           </div>
         </>
       )}

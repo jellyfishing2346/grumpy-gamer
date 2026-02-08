@@ -5,6 +5,10 @@ type Direction = 'up' | 'down' | 'left' | 'right';
 type GameStatus = 'playing' | 'won' | 'lost';
 type GameMode = 'classic' | 'vs-ai';
 type Turn = 'player' | 'ai';
+type AIMode = 'heuristic' | 'reinforcement';
+
+// API Base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 interface Tile {
   value: number;
@@ -471,6 +475,9 @@ const expectimax = (board: (Tile | null)[][], depth: number, isMax: boolean): nu
 const Game2048: React.FC = () => {
   const [gameMode, setGameMode] = useState<GameMode>('classic');
   const [gameStarted, setGameStarted] = useState(false);
+  const [aiMode, setAiMode] = useState<AIMode>('heuristic');
+  const [rlModelInfo, setRlModelInfo] = useState<{ trained: boolean }>({ trained: false });
+  const [usedRLModel, setUsedRLModel] = useState(false);
   
   // Classic mode state
   const [classicState, setClassicState] = useState<GameState>(() => ({
@@ -496,6 +503,22 @@ const Game2048: React.FC = () => {
   
   const [aiThinking, setAiThinking] = useState(false);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check RL model status on mount
+  useEffect(() => {
+    const checkRLStatus = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/rl/2048/status`);
+        if (response.ok) {
+          const data = await response.json();
+          setRlModelInfo({ trained: data.model_trained });
+        }
+      } catch (error) {
+        console.log('Could not fetch 2048 RL status:', error);
+      }
+    };
+    checkRLStatus();
+  }, []);
 
   // Reset game
   const resetGame = useCallback(() => {
@@ -606,7 +629,7 @@ const Game2048: React.FC = () => {
     });
   }, [vsAIState]);
 
-  // AI move in VS mode
+  // AI move in VS mode with RL support
   useEffect(() => {
     if (gameMode !== 'vs-ai' || vsAIState.status !== 'playing' || vsAIState.currentTurn !== 'ai') {
       return;
@@ -614,8 +637,41 @@ const Game2048: React.FC = () => {
     
     setAiThinking(true);
     
-    aiTimeoutRef.current = setTimeout(() => {
-      const aiMove = getAIMove(vsAIState.aiBoard, 2);
+    const makeAIMove = async () => {
+      let aiMove: Direction | null = null;
+      let usedRL = false;
+      
+      // Try RL API if in reinforcement mode
+      if (aiMode === 'reinforcement') {
+        try {
+          // Convert board to API format
+          const boardData = vsAIState.aiBoard.map(row =>
+            row.map(tile => tile ? tile.value : 0)
+          );
+          
+          const response = await fetch(`${API_BASE_URL}/api/rl/2048/move`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ board: boardData })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const dirMap: Direction[] = ['up', 'right', 'down', 'left'];
+            aiMove = dirMap[data.direction];
+            usedRL = data.is_rl_model;
+            setUsedRLModel(usedRL);
+          }
+        } catch (error) {
+          console.error('RL API error, falling back to heuristic:', error);
+        }
+      }
+      
+      // Fall back to local heuristic if RL didn't provide a move
+      if (!aiMove) {
+        aiMove = getAIMove(vsAIState.aiBoard, 2);
+        setUsedRLModel(false);
+      }
       
       if (!aiMove) {
         // AI can't move
@@ -681,14 +737,16 @@ const Game2048: React.FC = () => {
       });
       
       setAiThinking(false);
-    }, 600);
+    };
+    
+    aiTimeoutRef.current = setTimeout(makeAIMove, 600);
     
     return () => {
       if (aiTimeoutRef.current) {
         clearTimeout(aiTimeoutRef.current);
       }
     };
-  }, [gameMode, vsAIState.currentTurn, vsAIState.status, vsAIState.aiBoard]);
+  }, [gameMode, vsAIState.currentTurn, vsAIState.status, vsAIState.aiBoard, aiMode]);
 
   // Keyboard controls
   useEffect(() => {
@@ -779,6 +837,24 @@ const Game2048: React.FC = () => {
             🤖 VS AI Mode
           </button>
         </div>
+        
+        {gameMode === 'vs-ai' && (
+          <div style={{ marginBottom: '2em' }}>
+            <h3 style={{ color: '#776e65', marginBottom: '1em' }}>AI Type</h3>
+            <button
+              style={modeButtonStyle(aiMode === 'heuristic')}
+              onClick={() => setAiMode('heuristic')}
+            >
+              🧠 Heuristic AI
+            </button>
+            <button
+              style={modeButtonStyle(aiMode === 'reinforcement')}
+              onClick={() => setAiMode('reinforcement')}
+            >
+              🤖 RL AI {rlModelInfo.trained ? '✓' : '(training...)'}
+            </button>
+          </div>
+        )}
         
         <div style={{ 
           background: '#f5f5f5', 

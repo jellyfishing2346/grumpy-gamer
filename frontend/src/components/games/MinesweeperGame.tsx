@@ -1,11 +1,14 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 // Types
 type CellState = 'hidden' | 'revealed' | 'flagged';
 type GameStatus = 'playing' | 'won' | 'lost';
 type Difficulty = 'easy' | 'medium' | 'hard';
 type GameMode = 'classic' | 'vs-ai';
 type Turn = 'player' | 'ai';
+type AIMode = 'heuristic' | 'reinforcement';
 
 interface Cell {
   isMine: boolean;
@@ -361,6 +364,9 @@ const MinesweeperGame: React.FC = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [matchScore, setMatchScore] = useState({ player: 0, ai: 0 });
+  const [aiMode, setAiMode] = useState<AIMode>('heuristic');
+  const [rlModelInfo, setRlModelInfo] = useState<{ trained: boolean; confidence?: string }>({ trained: false });
+  const [usedRLModel, setUsedRLModel] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Timer effect
@@ -376,29 +382,83 @@ const MinesweeperGame: React.FC = () => {
     };
   }, [isTimerRunning, gameStatus]);
 
-  // AI turn effect
+  // Check RL model status on mount
+  useEffect(() => {
+    const checkRLStatus = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/rl/minesweeper/status`);
+        if (response.ok) {
+          const data = await response.json();
+          setRlModelInfo({ trained: data.model_trained });
+        }
+      } catch (error) {
+        console.log('Could not fetch RL status:', error);
+      }
+    };
+    checkRLStatus();
+  }, []);
+
+  // AI turn effect - with RL support
   useEffect(() => {
     if (gameMode === 'vs-ai' && currentTurn === 'ai' && gameStatus === 'playing' && !firstClick) {
       setIsAIThinking(true);
       
-      const timeoutId = setTimeout(() => {
-        const move = getAIMove(board, difficulty);
+      const makeAIMove = async () => {
+        let move: { row: number; col: number; action: 'reveal' | 'flag' } | null = null;
         
-        if (move) {
-          if (move.action === 'flag') {
-            handleFlag(move.row, move.col, true);
-          } else {
-            handleReveal(move.row, move.col, true);
+        if (aiMode === 'reinforcement') {
+          // Use RL API
+          try {
+            const boardData = board.map(row => row.map(cell => ({
+              state: cell.state,
+              adjacentMines: cell.adjacentMines
+            })));
+            
+            const response = await fetch(`${API_BASE_URL}/api/rl/minesweeper/move`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                board: boardData,
+                rows: board.length,
+                cols: board[0].length
+              })
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              move = { row: data.row, col: data.col, action: 'reveal' };
+              setUsedRLModel(data.is_rl_model);
+              setRlModelInfo(prev => ({ ...prev, confidence: data.confidence }));
+            }
+          } catch (error) {
+            console.error('RL API error:', error);
           }
         }
         
-        setIsAIThinking(false);
-      }, 500 + Math.random() * 500);
+        // Fall back to heuristic if RL failed or not selected
+        if (!move) {
+          move = getAIMove(board, difficulty);
+          setUsedRLModel(false);
+        }
+        
+        // Apply the move after a delay
+        setTimeout(() => {
+          if (move) {
+            if (move.action === 'flag') {
+              handleFlag(move.row, move.col, true);
+            } else {
+              handleReveal(move.row, move.col, true);
+            }
+          }
+          setIsAIThinking(false);
+        }, 300);
+      };
       
+      const timeoutId = setTimeout(makeAIMove, 500 + Math.random() * 300);
       return () => clearTimeout(timeoutId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTurn, gameMode, gameStatus, board, firstClick, difficulty]);
+  }, [currentTurn, gameMode, gameStatus, board, firstClick, difficulty, aiMode]);
 
   // Reset game
   const resetGame = useCallback((newDifficulty?: Difficulty, newMode?: GameMode) => {
@@ -718,6 +778,36 @@ const MinesweeperGame: React.FC = () => {
           🤖 VS AI
         </button>
       </div>
+
+      {/* AI Type Selection (VS AI mode only) */}
+      {gameMode === 'vs-ai' && (
+        <div style={{ marginBottom: '1em' }}>
+          <span style={{ marginRight: '0.5em', opacity: 0.8 }}>AI Type:</span>
+          <button
+            style={buttonStyle(aiMode === 'heuristic')}
+            onClick={() => setAiMode('heuristic')}
+          >
+            🧠 Heuristic
+          </button>
+          <button
+            style={buttonStyle(aiMode === 'reinforcement')}
+            onClick={() => setAiMode('reinforcement')}
+          >
+            🤖 RL Agent {rlModelInfo.trained ? '✓' : '(training...)'}
+          </button>
+          {aiMode === 'reinforcement' && usedRLModel && rlModelInfo.confidence && (
+            <span style={{ 
+              marginLeft: '0.5em', 
+              fontSize: '0.8em', 
+              opacity: 0.7,
+              color: rlModelInfo.confidence === 'high' ? '#2ecc71' : 
+                     rlModelInfo.confidence === 'medium' ? '#f39c12' : '#e74c3c'
+            }}>
+              ({rlModelInfo.confidence} confidence)
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Stats Bar */}
       <div style={statsStyle}>

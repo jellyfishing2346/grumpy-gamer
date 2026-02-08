@@ -1,5 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 
+// API base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+
 // Types
 type PieceType = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn';
 type PieceColor = 'white' | 'black';
@@ -17,6 +20,7 @@ type Move = {
 };
 type Difficulty = 'easy' | 'medium' | 'hard';
 type GameStatus = 'playing' | 'check' | 'checkmate' | 'stalemate';
+type AIMode = 'minimax' | 'reinforcement';
 
 // Piece values for AI evaluation
 const PIECE_VALUES: Record<PieceType, number> = {
@@ -698,6 +702,8 @@ const ChessGame: React.FC = () => {
   const [selectedSquare, setSelectedSquare] = useState<Position | null>(null);
   const [legalMoves, setLegalMoves] = useState<Move[]>([]);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
+  const [aiMode, setAiMode] = useState<AIMode>('minimax');
+  const [rlModelInfo, setRlModelInfo] = useState<{ loaded: boolean; fallback: boolean } | null>(null);
   const [gameStatus, setGameStatus] = useState<GameStatus>('playing');
   const [score, setScore] = useState({ player: 0, ai: 0, draws: 0 });
   const [isThinking, setIsThinking] = useState(false);
@@ -709,6 +715,64 @@ const ChessGame: React.FC = () => {
   });
   const [enPassantTarget, setEnPassantTarget] = useState<Position | null>(null);
   const [showPromotion, setShowPromotion] = useState<{ move: Move; options: PieceType[] } | null>(null);
+
+  // Fetch RL status when switching to RL mode
+  useEffect(() => {
+    if (aiMode === 'reinforcement') {
+      fetch(`${API_BASE_URL}/api/rl/chess/status`)
+        .then(res => res.json())
+        .then(data => setRlModelInfo({ loaded: data.model_trained, fallback: false }))
+        .catch(() => setRlModelInfo({ loaded: false, fallback: true }));
+    }
+  }, [aiMode]);
+
+  // Convert board to API format
+  const boardToApiFormat = (b: Board): number[][] => {
+    const pieceToNum = (p: Piece): number => {
+      if (!p) return 0;
+      const typeMap: Record<PieceType, number> = {
+        pawn: 1, knight: 2, bishop: 3, rook: 4, queen: 5, king: 6
+      };
+      return p.color === 'white' ? typeMap[p.type] : typeMap[p.type] + 6;
+    };
+    return b.map(row => row.map(pieceToNum));
+  };
+
+  // Get RL move from API
+  const getRLMove = async (currentBoard: Board): Promise<{ move: Move | null; usedModel: boolean }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/rl/chess/move`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ board: boardToApiFormat(currentBoard) }),
+      });
+      
+      if (!response.ok) throw new Error('RL API error');
+      
+      const data = await response.json();
+      
+      // Check if valid move was returned
+      if (data.from_row === 0 && data.from_col === 0 && data.to_row === 0 && data.to_col === 0) {
+        return { move: null, usedModel: false };
+      }
+      
+      const piece = currentBoard[data.from_row][data.from_col];
+      const captured = currentBoard[data.to_row][data.to_col];
+      
+      const move: Move = {
+        from: { row: data.from_row, col: data.from_col },
+        to: { row: data.to_row, col: data.to_col },
+        piece: piece,
+        captured: captured || undefined
+      };
+      
+      return { move, usedModel: data.is_rl_model };
+    } catch (error) {
+      console.error('RL API failed, falling back to minimax:', error);
+      const move = getAIMove(currentBoard, difficulty, castlingRights, enPassantTarget);
+      return { move, usedModel: false };
+    }
+  };
 
   // Reset game
   const resetGame = useCallback(() => {
@@ -834,18 +898,28 @@ const ChessGame: React.FC = () => {
 
     setIsThinking(true);
 
-    const timer = setTimeout(() => {
-      const move = getAIMove(board, difficulty, castlingRights, enPassantTarget);
+    const makeMove = async () => {
+      let move: Move | null = null;
+      
+      if (aiMode === 'reinforcement') {
+        const rlResult = await getRLMove(board);
+        move = rlResult.move;
+        setRlModelInfo(prev => prev ? { ...prev, fallback: !rlResult.usedModel } : { loaded: true, fallback: !rlResult.usedModel });
+      } else {
+        move = getAIMove(board, difficulty, castlingRights, enPassantTarget);
+      }
 
       if (move) {
         executeMove(move);
       }
 
       setIsThinking(false);
-    }, 500);
+    };
+
+    const timer = setTimeout(makeMove, 500);
 
     return () => clearTimeout(timer);
-  }, [currentTurn, board, gameStatus, difficulty, castlingRights, enPassantTarget, executeMove]);
+  }, [currentTurn, board, gameStatus, difficulty, castlingRights, enPassantTarget, executeMove, aiMode]);
 
   // Get cell style
   const getCellStyle = (row: number, col: number): React.CSSProperties => {
@@ -878,7 +952,10 @@ const ChessGame: React.FC = () => {
   // Get status message
   const getStatusMessage = (): string => {
     if (gameStatus === 'checkmate') {
-      return currentTurn === 'black' ? '🎉 Checkmate! You Win!' : '🤖 Checkmate! AI Wins!';
+      // currentTurn is who MADE the checkmate move (not switched on checkmate)
+      // You are WHITE, AI is BLACK
+      // white made checkmate -> You win; black made checkmate -> AI wins
+      return currentTurn === 'white' ? '🎉 Checkmate! You Win!' : '🤖 Checkmate! AI Wins!';
     }
     if (gameStatus === 'stalemate') return '🤝 Stalemate - Draw!';
     if (isThinking) return '🤔 AI is thinking...';
@@ -897,19 +974,60 @@ const ChessGame: React.FC = () => {
 
       <h1 style={headerStyle}>♚ Chess ♔</h1>
 
-      {/* Difficulty */}
+      {/* AI Type */}
       <div style={{ marginBottom: '0.6em' }}>
-        <span style={{ marginRight: '0.6em', opacity: 0.8, fontSize: '0.9em' }}>Difficulty:</span>
-        {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-          <button
-            key={d}
-            style={difficultyBtnStyle(difficulty === d)}
-            onClick={() => { setDifficulty(d); resetGame(); }}
-          >
-            {d === 'easy' ? '🟢 Easy' : d === 'medium' ? '🟡 Medium' : '🔴 Hard'}
-          </button>
-        ))}
+        <span style={{ marginRight: '0.6em', opacity: 0.8, fontSize: '0.9em' }}>AI Type:</span>
+        <button
+          style={{
+            ...difficultyBtnStyle(aiMode === 'minimax'),
+            background: aiMode === 'minimax'
+              ? 'linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%)'
+              : 'linear-gradient(90deg, #34495e 0%, #2c3e50 100%)',
+          }}
+          onClick={() => { setAiMode('minimax'); resetGame(); }}
+        >
+          🧮 Minimax
+        </button>
+        <button
+          style={{
+            ...difficultyBtnStyle(aiMode === 'reinforcement'),
+            background: aiMode === 'reinforcement'
+              ? 'linear-gradient(90deg, #e74c3c 0%, #c0392b 100%)'
+              : 'linear-gradient(90deg, #34495e 0%, #2c3e50 100%)',
+          }}
+          onClick={() => { setAiMode('reinforcement'); resetGame(); }}
+        >
+          🤖 RL Agent
+        </button>
+        {aiMode === 'reinforcement' && rlModelInfo && (
+          <span style={{
+            marginLeft: '0.6em',
+            fontSize: '0.8em',
+            opacity: 0.7,
+            color: rlModelInfo.fallback ? '#e74c3c' : '#2ecc71'
+          }}>
+            {rlModelInfo.loaded
+              ? (rlModelInfo.fallback ? '⚠️ Using fallback' : '✅ Model loaded')
+              : '⏳ Loading...'}
+          </span>
+        )}
       </div>
+
+      {/* Difficulty (only for Minimax) */}
+      {aiMode === 'minimax' && (
+        <div style={{ marginBottom: '0.6em' }}>
+          <span style={{ marginRight: '0.6em', opacity: 0.8, fontSize: '0.9em' }}>Difficulty:</span>
+          {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
+            <button
+              key={d}
+              style={difficultyBtnStyle(difficulty === d)}
+              onClick={() => { setDifficulty(d); resetGame(); }}
+            >
+              {d === 'easy' ? '🟢 Easy' : d === 'medium' ? '🟡 Medium' : '🔴 Hard'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Score */}
       <div style={{ marginBottom: '0.6em', fontSize: '0.9em' }}>
