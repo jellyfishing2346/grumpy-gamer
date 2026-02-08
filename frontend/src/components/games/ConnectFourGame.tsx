@@ -561,6 +561,7 @@ const ConnectFourGame: React.FC = () => {
     const timer = setTimeout(makeMove, 500);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPlayer, board, winner, isTie, difficulty, aiMode]);
 
   // Check if cell is in winning cells

@@ -456,7 +456,7 @@ export function getGameDisplayName(gameType: GameType): string {
   return names[gameType] || gameType;
 }
 
-export default {
+const gameStatsService = {
   recordGame,
   getGameStats,
   getDailyStats,
@@ -467,3 +467,5 @@ export default {
   getGameDisplayName,
   GameTimer,
 };
+
+export default gameStatsService;

@@ -960,6 +960,7 @@ const ChessGame: React.FC = () => {
     const timer = setTimeout(makeMove, 500);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTurn, board, gameStatus, difficulty, castlingRights, enPassantTarget, executeMove, aiMode]);
 
   // Get cell style

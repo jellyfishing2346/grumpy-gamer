@@ -699,6 +699,7 @@ const CheckersGame: React.FC = () => {
     const timer = setTimeout(makeMove, 600);
     
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTurn, board, gameOver, difficulty, aiMode]);
 
   // Get cell style
