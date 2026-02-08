@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { recordGame } from '../../services/gameStatsService';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -368,6 +369,11 @@ const MinesweeperGame: React.FC = () => {
   const [rlModelInfo, setRlModelInfo] = useState<{ trained: boolean; confidence?: string }>({ trained: false });
   const [usedRLModel, setUsedRLModel] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number | null>(null);
+  const statsRecordedRef = useRef<boolean>(false);
+  const moveCountRef = useRef<number>(0);
 
   // Timer effect
   useEffect(() => {
@@ -460,11 +466,43 @@ const MinesweeperGame: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTurn, gameMode, gameStatus, board, firstClick, difficulty, aiMode]);
 
+  // Record game stats when game ends
+  useEffect(() => {
+    if (gameStatus !== 'playing' && !statsRecordedRef.current && !firstClick) {
+      statsRecordedRef.current = true;
+
+      const result: 'win' | 'loss' = gameStatus === 'won' ? 'win' : 'loss';
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : timer;
+
+      recordGame({
+        gameType: 'minesweeper',
+        result,
+        movesCount: moveCountRef.current,
+        durationSeconds,
+        opponentType: gameMode === 'vs-ai' ? 'ai' : 'self',
+        aiDifficulty: gameMode === 'vs-ai' ? (aiMode === 'reinforcement' ? 'rl' : 'heuristic') : difficulty,
+        metadata: {
+          difficulty,
+          gameMode,
+          playerScore: score.player,
+          aiScore: score.ai,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameStatus, firstClick, timer, difficulty, gameMode, aiMode, score]);
+
   // Reset game
   const resetGame = useCallback((newDifficulty?: Difficulty, newMode?: GameMode) => {
     const diff = newDifficulty ?? difficulty;
     const mode = newMode ?? gameMode;
     const config = DIFFICULTY_CONFIG[diff];
+    
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
+    moveCountRef.current = 0;
     
     setDifficulty(diff);
     setGameMode(mode);

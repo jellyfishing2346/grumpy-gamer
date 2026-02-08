@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
@@ -11,6 +11,10 @@ try:
 except ImportError:
     from jwt_utils import create_access_token
 
+# Create router for auth endpoints (to be included in main app)
+auth_router = APIRouter(tags=["auth"])
+
+# Standalone app for running auth.py directly (for testing)
 app = FastAPI()
 
 # CORS middleware to allow frontend requests
@@ -27,7 +31,7 @@ app.add_middleware(
 )
 
 
-# Root endpoint
+# Root endpoint (only for standalone app)
 @app.get("/")
 def root():
     return {
@@ -62,7 +66,8 @@ class UserLogin(BaseModel):
     password: str
 
 
-@app.post("/signup")
+@auth_router.post("/signup")
+@app.post("/signup")  # Also register on standalone app for testing
 def signup(user: UserSignup):
     conn = get_db()
     cursor = conn.cursor()
@@ -80,7 +85,8 @@ def signup(user: UserSignup):
     return {"msg": "Signup successful"}
 
 
-@app.post("/login")
+@auth_router.post("/login")
+@app.post("/login")  # Also register on standalone app for testing
 def login(user: UserLogin):
     conn = get_db()
     cursor = conn.cursor()
