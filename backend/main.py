@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -39,7 +39,8 @@ class ConnectFourMoveResponse(BaseModel):
 
 
 class CheckersMoveRequest(BaseModel):
-    board: List[List[int]]  # 8x8 board: 0=empty, 1=red regular, 2=red king, 3=black regular, 4=black king
+    # 8x8 board: 0=empty, 1=red regular, 2=red king, 3=black regular, 4=black king
+    board: List[List[int]]
 
 
 class CheckersMoveResponse(BaseModel):
@@ -98,6 +99,7 @@ class Game2048MoveResponse(BaseModel):
 _rl_agent = None
 _connectfour_agent = None
 
+
 def get_rl_agent():
     global _rl_agent
     if _rl_agent is None:
@@ -105,7 +107,9 @@ def get_rl_agent():
             from rl.agents.tictactoe_agent import TicTacToeRLAgent
             _rl_agent = TicTacToeRLAgent()
             # Try to load the best trained model
-            model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "tictactoe_best.zip")
+            model_path = os.path.join(
+                os.path.dirname(__file__), "rl", "models", "tictactoe_best.zip"
+            )
             if os.path.exists(model_path):
                 _rl_agent.load_model(model_path)
         except ImportError as e:
@@ -121,7 +125,9 @@ def get_connectfour_agent():
             from rl.agents.connectfour_agent import ConnectFourRLAgent
             _connectfour_agent = ConnectFourRLAgent()
             # Try to load the best trained model
-            model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "connectfour_best.zip")
+            model_path = os.path.join(
+                os.path.dirname(__file__), "rl", "models", "connectfour_best.zip"
+            )
             if os.path.exists(model_path):
                 _connectfour_agent.load_model(model_path)
         except ImportError as e:
@@ -151,22 +157,22 @@ def get_tictactoe_rl_move(request: TicTacToeMoveRequest):
     Uses trained model if available, falls back to Minimax otherwise.
     """
     agent = get_rl_agent()
-    
+
     if agent is None:
         # No RL dependencies, use simple fallback
         row, col = simple_minimax_move(request.board)
         return TicTacToeMoveResponse(row=row, col=col, is_rl_model=False)
-    
+
     # Convert board to the format expected by the agent
     board = request.board
-    
+
     # Get move from RL agent (with Minimax fallback built-in)
     action, used_model = agent.get_action_with_info(board)
-    
+
     # Convert action (0-8) to row, col
     row = action // 3
     col = action % 3
-    
+
     return TicTacToeMoveResponse(row=row, col=col, is_rl_model=used_model)
 
 
@@ -177,9 +183,9 @@ def get_tictactoe_rl_status():
     """
     model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "tictactoe_best.zip")
     model_exists = os.path.exists(model_path)
-    
+
     agent = get_rl_agent()
-    
+
     return RLStatusResponse(
         model_trained=model_exists and agent is not None and agent.model is not None,
         model_path=model_path if model_exists else None,
@@ -196,15 +202,15 @@ def get_connectfour_rl_move(request: ConnectFourMoveRequest):
     Uses trained model if available, falls back to Minimax otherwise.
     """
     agent = get_connectfour_agent()
-    
+
     if agent is None:
         # No RL dependencies, use simple fallback
         col = simple_connectfour_move(request.board)
         return ConnectFourMoveResponse(column=col, is_rl_model=False)
-    
+
     # Get move from RL agent (with Minimax fallback built-in)
     action, used_model = agent.get_action_with_info(request.board)
-    
+
     return ConnectFourMoveResponse(column=action, is_rl_model=used_model)
 
 
@@ -215,9 +221,9 @@ def get_connectfour_rl_status():
     """
     model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "connectfour_best.zip")
     model_exists = os.path.exists(model_path)
-    
+
     agent = get_connectfour_agent()
-    
+
     return RLStatusResponse(
         model_trained=model_exists and agent is not None and agent.model is not None,
         model_path=model_path if model_exists else None,
@@ -228,6 +234,7 @@ def get_connectfour_rl_status():
 # ----- Checkers RL Endpoints -----
 
 _checkers_agent = None
+
 
 def get_checkers_agent():
     """Lazy load Checkers RL agent."""
@@ -249,23 +256,23 @@ def get_checkers_rl_move(request: CheckersMoveRequest):
     Uses trained model if available, falls back to Minimax otherwise.
     """
     agent = get_checkers_agent()
-    
+
     if agent is None:
         # No RL dependencies, use simple fallback
         return CheckersMoveResponse(
             from_row=0, from_col=0, to_row=0, to_col=0,
             captures=[], is_kinging=False, is_rl_model=False
         )
-    
+
     # Get move from RL agent (with Minimax fallback built-in)
     move, used_model = agent.get_action_with_info(request.board)
-    
+
     if move is None:
         return CheckersMoveResponse(
             from_row=0, from_col=0, to_row=0, to_col=0,
             captures=[], is_kinging=False, is_rl_model=False
         )
-    
+
     return CheckersMoveResponse(
         from_row=move['from'][0],
         from_col=move['from'][1],
@@ -284,9 +291,9 @@ def get_checkers_rl_status():
     """
     model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "checkers_best.zip")
     model_exists = os.path.exists(model_path)
-    
+
     agent = get_checkers_agent()
-    
+
     return RLStatusResponse(
         model_trained=model_exists and agent is not None and agent.model is not None,
         model_path=model_path if model_exists else None,
@@ -297,6 +304,7 @@ def get_checkers_rl_status():
 # ----- Chess RL Endpoints -----
 
 _chess_agent = None
+
 
 def get_chess_agent():
     """Lazy load Chess RL agent."""
@@ -318,19 +326,19 @@ def get_chess_rl_move(request: ChessMoveRequest):
     Uses trained model if available, falls back to Minimax otherwise.
     """
     agent = get_chess_agent()
-    
+
     if agent is None:
         return ChessMoveResponse(
             from_row=0, from_col=0, to_row=0, to_col=0, is_rl_model=False
         )
-    
+
     move, used_model = agent.get_action_with_info(request.board)
-    
+
     if move is None:
         return ChessMoveResponse(
             from_row=0, from_col=0, to_row=0, to_col=0, is_rl_model=False
         )
-    
+
     return ChessMoveResponse(
         from_row=move['from'][0],
         from_col=move['from'][1],
@@ -345,9 +353,9 @@ def get_chess_rl_status():
     """Check if the Chess RL model is trained and available."""
     model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "chess_best.zip")
     model_exists = os.path.exists(model_path)
-    
+
     agent = get_chess_agent()
-    
+
     return RLStatusResponse(
         model_trained=model_exists and agent is not None and agent.model is not None,
         model_path=model_path if model_exists else None,
@@ -378,6 +386,7 @@ class MinesweeperMoveResponse(BaseModel):
 
 _minesweeper_agent = None
 
+
 def get_minesweeper_agent():
     """Lazy load Minesweeper RL agent."""
     global _minesweeper_agent
@@ -398,7 +407,7 @@ def get_minesweeper_rl_move(request: MinesweeperMoveRequest):
     Uses trained model if available, falls back to rule-based logic otherwise.
     """
     agent = get_minesweeper_agent()
-    
+
     # Convert board to agent format
     board = []
     for row in request.board:
@@ -409,7 +418,7 @@ def get_minesweeper_rl_move(request: MinesweeperMoveRequest):
                 "adjacentMines": cell.adjacentMines
             })
         board.append(board_row)
-    
+
     if agent is None:
         # Simple fallback - pick first hidden cell
         for r in range(request.rows):
@@ -423,13 +432,13 @@ def get_minesweeper_rl_move(request: MinesweeperMoveRequest):
             row=0, col=0, is_rl_model=False,
             confidence="low", safe_cells=[]
         )
-    
+
     # Get detailed action info from agent
     info = agent.get_action_info(board, request.rows, request.cols)
-    
+
     move = info["recommended_move"]
     safe_cells = [[c[0], c[1]] for c in info["safe_cells"]]
-    
+
     return MinesweeperMoveResponse(
         row=move[0],
         col=move[1],
@@ -444,9 +453,9 @@ def get_minesweeper_rl_status():
     """Check if the Minesweeper RL model is trained and available."""
     model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "minesweeper_best.zip")
     model_exists = os.path.exists(model_path)
-    
+
     agent = get_minesweeper_agent()
-    
+
     return RLStatusResponse(
         model_trained=model_exists and agent is not None and agent.model is not None,
         model_path=model_path if model_exists else None,
@@ -457,6 +466,7 @@ def get_minesweeper_rl_status():
 # ----- Othello RL Endpoints -----
 
 _othello_agent = None
+
 
 def get_othello_agent():
     """Lazy load Othello RL agent."""
@@ -478,20 +488,20 @@ def get_othello_rl_move(request: OthelloMoveRequest):
     Uses trained model if available, falls back to Minimax otherwise.
     """
     agent = get_othello_agent()
-    
+
     if agent is None:
         # No RL dependencies - return pass
         return OthelloMoveResponse(position=-1, row=-1, col=-1, is_rl_model=False)
-    
+
     # Get move from RL agent
     action, used_model = agent.get_action_with_info(request.board, request.player)
-    
+
     if action == -1:  # Pass (no valid moves)
         return OthelloMoveResponse(position=-1, row=-1, col=-1, is_rl_model=used_model)
-    
+
     row = action // 8
     col = action % 8
-    
+
     return OthelloMoveResponse(position=action, row=row, col=col, is_rl_model=used_model)
 
 
@@ -500,9 +510,9 @@ def get_othello_rl_status():
     """Check if the Othello RL model is trained and available."""
     model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "othello_best.zip")
     model_exists = os.path.exists(model_path)
-    
+
     agent = get_othello_agent()
-    
+
     return RLStatusResponse(
         model_trained=model_exists and agent is not None and agent.model is not None,
         model_path=model_path if model_exists else None,
@@ -513,6 +523,7 @@ def get_othello_rl_status():
 # ----- 2048 RL Endpoints -----
 
 _game2048_agent = None
+
 
 def get_game2048_agent():
     """Lazy load 2048 RL agent."""
@@ -534,16 +545,16 @@ def get_game2048_rl_move(request: Game2048MoveRequest):
     Uses trained model if available, falls back to heuristic otherwise.
     """
     direction_names = ["up", "right", "down", "left"]
-    
+
     agent = get_game2048_agent()
-    
+
     if agent is None:
         # No RL dependencies - default to up
         return Game2048MoveResponse(direction=0, direction_name="up", is_rl_model=False)
-    
+
     # Get move from RL agent
     action, used_model = agent.get_action_with_info(request.board)
-    
+
     return Game2048MoveResponse(
         direction=action,
         direction_name=direction_names[action],
@@ -556,9 +567,9 @@ def get_game2048_rl_status():
     """Check if the 2048 RL model is trained and available."""
     model_path = os.path.join(os.path.dirname(__file__), "rl", "models", "game2048_best.zip")
     model_exists = os.path.exists(model_path)
-    
+
     agent = get_game2048_agent()
-    
+
     return RLStatusResponse(
         model_trained=model_exists and agent is not None and agent.model is not None,
         model_path=model_path if model_exists else None,
@@ -585,10 +596,10 @@ def simple_minimax_move(board: List[List[int]]) -> tuple:
         if b[0][2] == b[1][1] == b[2][0] != 0:
             return b[0][2]
         return 0
-    
+
     def is_full(b):
         return all(b[i][j] != 0 for i in range(3) for j in range(3))
-    
+
     def minimax(b, is_maximizing, alpha, beta):
         winner = check_winner(b)
         if winner == 2:  # AI wins
@@ -597,7 +608,7 @@ def simple_minimax_move(board: List[List[int]]) -> tuple:
             return -10
         if is_full(b):
             return 0
-        
+
         if is_maximizing:
             max_eval = float('-inf')
             for i in range(3):
@@ -624,14 +635,14 @@ def simple_minimax_move(board: List[List[int]]) -> tuple:
                         if beta <= alpha:
                             break
             return min_eval
-    
+
     # Find best move for AI
     best_score = float('-inf')
     best_move = (0, 0)
-    
+
     # Make a copy of the board
     b = [row[:] for row in board]
-    
+
     for i in range(3):
         for j in range(3):
             if b[i][j] == 0:
@@ -641,7 +652,7 @@ def simple_minimax_move(board: List[List[int]]) -> tuple:
                 if score > best_score:
                     best_score = score
                     best_move = (i, j)
-    
+
     return best_move
 
 
@@ -651,17 +662,17 @@ def simple_connectfour_move(board: List[List[int]]) -> int:
     Board: 6x7, 0=empty, 1=player, 2=AI
     """
     ROWS, COLS = 6, 7
-    
+
     # Get valid columns
     valid_cols = [c for c in range(COLS) if board[0][c] == 0]
-    
+
     if not valid_cols:
         return 0
-    
+
     # Prefer center columns
     center = COLS // 2
     valid_cols.sort(key=lambda c: abs(c - center))
-    
+
     # Check for winning move or block
     for col in valid_cols:
         # Find row where piece would land
@@ -670,24 +681,24 @@ def simple_connectfour_move(board: List[List[int]]) -> int:
             if board[r][col] == 0:
                 row = r
                 break
-        
+
         if row == -1:
             continue
-        
+
         # Check if AI can win
         board[row][col] = 2
         if check_connect_four_win(board, row, col, 2):
             board[row][col] = 0
             return col
         board[row][col] = 0
-        
+
         # Check if need to block player
         board[row][col] = 1
         if check_connect_four_win(board, row, col, 1):
             board[row][col] = 0
             return col
         board[row][col] = 0
-    
+
     # Return center-most valid column
     return valid_cols[0]
 
@@ -696,7 +707,7 @@ def check_connect_four_win(board: List[List[int]], row: int, col: int, player: i
     """Check if there's a connect four at the given position."""
     ROWS, COLS = 6, 7
     directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
-    
+
     for dr, dc in directions:
         count = 1
         # Positive direction
@@ -711,8 +722,8 @@ def check_connect_four_win(board: List[List[int]], row: int, col: int, player: i
             count += 1
             r -= dr
             c -= dc
-        
+
         if count >= 4:
             return True
-    
+
     return False
