@@ -1,10 +1,34 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import os
 
+# Import auth router
+from auth import auth_router
+
+# Lazy import for game_stats to handle sqlite3 compatibility issues
+_game_stats_manager = None
+_game_stats_available = True
+
+
+def get_game_stats_manager(user_id: str = "anonymous"):
+    """Lazy load GameStatsManager to handle sqlite3 import errors."""
+    global _game_stats_manager, _game_stats_available
+    if not _game_stats_available:
+        return None
+    try:
+        from game_stats import GameStatsManager
+        return GameStatsManager(user_id)
+    except ImportError as e:
+        print(f"Game stats not available: {e}")
+        _game_stats_available = False
+        return None
+
 app = FastAPI(title="Grumpy Gamer API", version="1.0.0")
+
+# Include auth router
+app.include_router(auth_router)
 
 # CORS middleware for frontend
 app.add_middleware(
@@ -727,3 +751,155 @@ def check_connect_four_win(board: List[List[int]], row: int, col: int, player: i
             return True
 
     return False
+
+
+# ========== Game Statistics Endpoints ==========
+
+class RecordGameRequest(BaseModel):
+    """Request model for recording a game result."""
+    game_type: str
+    result: str  # 'win', 'loss', 'draw', 'abandoned'
+    moves_count: int = 0
+    duration_seconds: int = 0
+    score: Optional[int] = None
+    opponent_type: str = "ai"
+    ai_difficulty: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class GameStatsResponse(BaseModel):
+    """Response model for game statistics."""
+    game_type: str
+    has_played: bool
+    lifetime: Optional[Dict[str, Any]] = None
+    today: Optional[Dict[str, Any]] = None
+    recent_games: List[Dict[str, Any]] = []
+
+
+class ActivitySummaryResponse(BaseModel):
+    """Response model for activity summary."""
+    period_days: int
+    total_games: int
+    total_wins: int
+    total_losses: int
+    total_draws: int
+    total_time_seconds: int
+    win_rate: float
+    daily_breakdown: List[Dict[str, Any]]
+    game_breakdown: List[Dict[str, Any]]
+
+
+@app.post("/api/stats/record")
+def record_game_result(request: RecordGameRequest, user_id: str = "anonymous"):
+    """
+    Record a completed game result.
+
+    This endpoint saves the game result and updates daily/lifetime statistics.
+    """
+    manager = get_game_stats_manager(user_id)
+    if manager is None:
+        return {"success": False, "error": "Stats tracking unavailable"}
+    try:
+        result = manager.record_game(
+            game_type=request.game_type,
+            result=request.result,
+            moves_count=request.moves_count,
+            duration_seconds=request.duration_seconds,
+            score=request.score,
+            opponent_type=request.opponent_type,
+            ai_difficulty=request.ai_difficulty,
+            metadata=request.metadata
+        )
+        return {"success": True, **result}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/stats/game/{game_type}", response_model=GameStatsResponse)
+def get_game_stats(game_type: str, user_id: str = "anonymous"):
+    """
+    Get detailed statistics for a specific game.
+
+    Returns lifetime stats, today's activity, and recent games.
+    """
+    manager = get_game_stats_manager(user_id)
+    if manager is None:
+        return GameStatsResponse(game_type=game_type, has_played=False)
+    stats = manager.get_game_specific_stats(game_type)
+    return GameStatsResponse(**stats)
+
+
+@app.get("/api/stats/daily")
+def get_daily_stats(
+    user_id: str = "anonymous",
+    date: Optional[str] = None,
+    game_type: Optional[str] = None
+):
+    """
+    Get daily activity statistics.
+
+    If no date is provided, returns today's stats.
+    """
+    manager = get_game_stats_manager(user_id)
+    if manager is None:
+        return {"date": date, "stats": []}
+    stats = manager.get_daily_stats(activity_date=date, game_type=game_type)
+    return {"date": date, "stats": stats}
+
+
+@app.get("/api/stats/lifetime")
+def get_lifetime_stats(
+    user_id: str = "anonymous",
+    game_type: Optional[str] = None
+):
+    """
+    Get lifetime statistics for all games or a specific game.
+    """
+    manager = get_game_stats_manager(user_id)
+    if manager is None:
+        return {"stats": []}
+    stats = manager.get_lifetime_stats(game_type=game_type)
+    return {"stats": stats}
+
+
+@app.get("/api/stats/recent")
+def get_recent_games(
+    user_id: str = "anonymous",
+    limit: int = Query(default=10, ge=1, le=50),
+    game_type: Optional[str] = None
+):
+    """
+    Get recent game sessions.
+    """
+    manager = get_game_stats_manager(user_id)
+    if manager is None:
+        return {"games": []}
+    games = manager.get_recent_games(limit=limit, game_type=game_type)
+    return {"games": games}
+
+
+@app.get("/api/stats/summary", response_model=ActivitySummaryResponse)
+def get_activity_summary(
+    user_id: str = "anonymous",
+    days: int = Query(default=7, ge=1, le=365)
+):
+    """
+    Get activity summary for the last N days.
+
+    Returns daily and per-game breakdowns, along with totals.
+    """
+    manager = get_game_stats_manager(user_id)
+    if manager is None:
+        return ActivitySummaryResponse(
+            period_days=days,
+            total_games=0,
+            total_wins=0,
+            total_losses=0,
+            total_draws=0,
+            total_time_seconds=0,
+            win_rate=0.0,
+            daily_breakdown=[],
+            game_breakdown=[]
+        )
+    summary = manager.get_activity_summary(days=days)
+    return ActivitySummaryResponse(**summary)

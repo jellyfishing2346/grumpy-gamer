@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { recordGame } from '../../services/gameStatsService';
 
 const WORD_LENGTH = 5;
 const MAX_ATTEMPTS = 6;
@@ -23,6 +24,50 @@ const WordleGame: React.FC = () => {
   const [aiAttempt, setAIAttempt] = useState(0);
   const [status, setStatus] = useState<string>("");
   const [aiStatus, setAIStatus] = useState<string>("");
+  
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number>(Date.now());
+  const statsRecordedRef = useRef<boolean>(false);
+
+  // Record game stats when game ends
+  useEffect(() => {
+    const gameEnded = status !== "" || aiStatus !== "";
+    const userWon = status.includes("guessed it") && !status.includes("AI won");
+    const aiWon = aiStatus.includes("AI guessed it") || status.includes("AI won");
+    const bothFailed = status.includes("Both failed") || (status.includes("Out of attempts") && aiStatus.includes("AI failed"));
+    
+    if (gameEnded && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      let result: 'win' | 'loss' | 'draw';
+      if (userWon && aiWon) {
+        result = 'draw';
+      } else if (userWon) {
+        result = 'win';
+      } else if (aiWon) {
+        result = 'loss';
+      } else if (bothFailed) {
+        result = 'draw';
+      } else {
+        return; // Game not actually over
+      }
+
+      const durationSeconds = Math.floor((Date.now() - gameStartTimeRef.current) / 1000);
+
+      recordGame({
+        gameType: 'wordle',
+        result,
+        movesCount: attempt + 1,
+        durationSeconds,
+        opponentType: 'ai',
+        metadata: {
+          wordGuessed: answer,
+          userAttempts: attempt + 1,
+          aiAttempts: aiAttempt + 1,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [status, aiStatus, attempt, aiAttempt, answer]);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value.length <= WORD_LENGTH) {

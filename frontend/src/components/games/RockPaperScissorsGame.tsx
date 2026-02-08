@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { recordGame } from '../../services/gameStatsService';
 
 // Types
 type Choice = 'rock' | 'paper' | 'scissors' | null;
@@ -133,6 +134,37 @@ const RockPaperScissorsGame: React.FC = () => {
   const [playerMoveHistory, setPlayerMoveHistory] = useState<Choice[]>([]);
   const [showAnimation, setShowAnimation] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number>(Date.now());
+  const statsRecordedRef = useRef<boolean>(false);
+
+  // Record game stats when match ends
+  useEffect(() => {
+    if (gameState.matchWinner !== null && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      const result: 'win' | 'loss' = gameState.matchWinner === 'player' ? 'win' : 'loss';
+
+      const durationSeconds = Math.floor((Date.now() - gameStartTimeRef.current) / 1000);
+
+      recordGame({
+        gameType: 'rockpaperscissors',
+        result,
+        movesCount: gameState.roundHistory.length,
+        durationSeconds,
+        opponentType: 'ai',
+        aiDifficulty: gameState.difficulty,
+        metadata: {
+          gameMode: gameState.gameMode,
+          playerWins: gameState.scores.player,
+          aiWins: gameState.scores.ai,
+          ties: gameState.scores.ties,
+          bestStreak: gameState.bestStreak,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameState.matchWinner, gameState.roundHistory.length, gameState.difficulty, gameState.gameMode, gameState.scores, gameState.bestStreak]);
 
   // Handle game mode change
   const handleGameModeChange = useCallback((mode: GameMode) => {
@@ -261,6 +293,9 @@ const RockPaperScissorsGame: React.FC = () => {
 
   // Reset game/match
   const resetGame = useCallback((fullReset: boolean = false) => {
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
+    
     setGameState(prev => ({
       ...prev,
       playerChoice: null,

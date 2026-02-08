@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { recordGame } from '../../services/gameStatsService';
 
 // API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || "";
@@ -484,6 +485,10 @@ const CheckersGame: React.FC = () => {
   const [lastMove, setLastMove] = useState<Move | null>(null);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number | null>(null);
+  const statsRecordedRef = useRef<boolean>(false);
+
   // Fetch RL status when switching to RL mode
   useEffect(() => {
     if (aiMode === 'reinforcement') {
@@ -540,8 +545,44 @@ const CheckersGame: React.FC = () => {
     }
   };
 
+  // Record game stats when game ends
+  useEffect(() => {
+    if (gameOver && winner !== null && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      let result: 'win' | 'loss' | 'draw';
+      if (winner === 'draw') {
+        result = 'draw';
+      } else if (winner === 'red') {
+        result = 'win';
+      } else {
+        result = 'loss';
+      }
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      recordGame({
+        gameType: 'checkers',
+        result,
+        movesCount: moveHistory.length,
+        durationSeconds,
+        opponentType: 'ai',
+        aiDifficulty: aiMode === 'reinforcement' ? 'rl' : difficulty,
+        metadata: {
+          aiMode,
+          playerScore: score.player,
+          aiScore: score.ai,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameOver, winner, moveHistory.length, difficulty, aiMode, score]);
+
   // Reset game
   const resetGame = useCallback(() => {
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
     setBoard(createInitialBoard());
     setCurrentTurn('red');
     setSelectedPiece(null);

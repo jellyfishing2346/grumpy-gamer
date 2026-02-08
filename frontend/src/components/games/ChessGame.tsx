@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { recordGame } from '../../services/gameStatsService';
 
 // API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || "";
@@ -716,6 +717,10 @@ const ChessGame: React.FC = () => {
   const [enPassantTarget, setEnPassantTarget] = useState<Position | null>(null);
   const [showPromotion, setShowPromotion] = useState<{ move: Move; options: PieceType[] } | null>(null);
 
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number | null>(null);
+  const statsRecordedRef = useRef<boolean>(false);
+
   // Fetch RL status when switching to RL mode
   useEffect(() => {
     if (aiMode === 'reinforcement') {
@@ -774,8 +779,44 @@ const ChessGame: React.FC = () => {
     }
   };
 
+  // Record game stats when game ends
+  useEffect(() => {
+    if ((gameStatus === 'checkmate' || gameStatus === 'stalemate') && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      let result: 'win' | 'loss' | 'draw';
+      if (gameStatus === 'stalemate') {
+        result = 'draw';
+      } else if (currentTurn === 'black') {
+        // If it's black's turn and checkmate, white (player) won
+        result = 'win';
+      } else {
+        result = 'loss';
+      }
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      recordGame({
+        gameType: 'chess',
+        result,
+        movesCount: moveHistory.length,
+        durationSeconds,
+        opponentType: 'ai',
+        aiDifficulty: aiMode === 'reinforcement' ? 'rl' : difficulty,
+        metadata: {
+          aiMode,
+          gameStatus,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameStatus, currentTurn, moveHistory.length, difficulty, aiMode]);
+
   // Reset game
   const resetGame = useCallback(() => {
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
     setBoard(createInitialBoard());
     setCurrentTurn('white');
     setSelectedSquare(null);

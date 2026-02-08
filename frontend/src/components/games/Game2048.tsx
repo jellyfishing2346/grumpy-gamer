@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { recordGame } from '../../services/gameStatsService';
 
 // Types
 type Direction = 'up' | 'down' | 'left' | 'right';
@@ -503,6 +504,11 @@ const Game2048: React.FC = () => {
   
   const [aiThinking, setAiThinking] = useState(false);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number | null>(null);
+  const statsRecordedRef = useRef<boolean>(false);
+  const moveCountRef = useRef<number>(0);
 
   // Check RL model status on mount
   useEffect(() => {
@@ -520,9 +526,74 @@ const Game2048: React.FC = () => {
     checkRLStatus();
   }, []);
 
+  // Record game stats when classic game ends
+  useEffect(() => {
+    if (gameMode === 'classic' && classicState.status !== 'playing' && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      const result: 'win' | 'loss' = classicState.status === 'won' || classicState.hasWon ? 'win' : 'loss';
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      recordGame({
+        gameType: '2048',
+        result,
+        movesCount: moveCountRef.current,
+        durationSeconds,
+        score: classicState.score,
+        opponentType: 'self',
+        metadata: {
+          maxTile: Math.max(...classicState.board.flat().map(t => t?.value || 0)),
+          hasWon: classicState.hasWon,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameMode, classicState.status, classicState.hasWon, classicState.score, classicState.board]);
+
+  // Record game stats when VS AI game ends
+  useEffect(() => {
+    if (gameMode === 'vs-ai' && vsAIState.winner !== null && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      let result: 'win' | 'loss' | 'draw';
+      if (vsAIState.winner === 'tie') {
+        result = 'draw';
+      } else if (vsAIState.winner === 'player') {
+        result = 'win';
+      } else {
+        result = 'loss';
+      }
+
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      recordGame({
+        gameType: '2048',
+        result,
+        movesCount: moveCountRef.current,
+        durationSeconds,
+        score: vsAIState.playerScore,
+        opponentType: 'ai',
+        aiDifficulty: aiMode === 'reinforcement' ? 'rl' : 'heuristic',
+        metadata: {
+          aiMode,
+          playerScore: vsAIState.playerScore,
+          aiScore: vsAIState.aiScore,
+          usedRLModel,
+        },
+      }).catch((err) => console.error('Failed to record game stats:', err));
+    }
+  }, [gameMode, vsAIState.winner, vsAIState.playerScore, vsAIState.aiScore, aiMode, usedRLModel]);
+
   // Reset game
   const resetGame = useCallback(() => {
     tileIdCounter = 0;
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
+    moveCountRef.current = 0;
     
     if (gameMode === 'classic') {
       setClassicState({

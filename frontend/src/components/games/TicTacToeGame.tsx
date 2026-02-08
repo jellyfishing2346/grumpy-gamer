@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { recordGame } from "../../services/gameStatsService";
 
 // API base URL - use environment variable or default to production
 // For Create React App, use process.env; for local dev with proxy, use relative URL
@@ -217,12 +218,19 @@ const TicTacToeGame: React.FC = () => {
     usingRLModel: false,
   });
 
+  // Stats tracking refs
+  const gameStartTimeRef = useRef<number | null>(null);
+  const statsRecordedRef = useRef<boolean>(false);
+
   const startGame = useCallback((
     userSymbol: Player,
     difficulty: Difficulty,
     aiMode: AIMode = gameState.aiMode
   ) => {
     const aiSymbol = userSymbol === "X" ? "O" : "X";
+    // Start tracking game time
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
     setGameState(prev => ({
       ...prev,
       board: Array(9).fill(null),
@@ -242,6 +250,9 @@ const TicTacToeGame: React.FC = () => {
   }, [gameState.aiMode]);
 
   const resetGame = useCallback(() => {
+    // Reset tracking for new game
+    gameStartTimeRef.current = Date.now();
+    statsRecordedRef.current = false;
     setGameState(prev => ({
       ...prev,
       board: Array(9).fill(null),
@@ -392,6 +403,43 @@ const TicTacToeGame: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [gameState.gameStarted, gameState.userSymbol, gameState.moveHistory.length, gameState.isAiThinking, gameState.aiSymbol, makeMove]);
+
+  // Record game stats when game ends
+  useEffect(() => {
+    if (gameState.isGameOver && gameState.winner !== null && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+
+      // Determine result from user's perspective
+      let result: "win" | "loss" | "draw";
+      if (gameState.winner === "tie") {
+        result = "draw";
+      } else if (gameState.winner === gameState.userSymbol) {
+        result = "win";
+      } else {
+        result = "loss";
+      }
+
+      // Calculate duration
+      const durationSeconds = gameStartTimeRef.current
+        ? Math.floor((Date.now() - gameStartTimeRef.current) / 1000)
+        : 0;
+
+      // Record the game
+      recordGame({
+        gameType: "tictactoe",
+        result,
+        movesCount: gameState.moveHistory.length,
+        durationSeconds,
+        opponentType: "ai",
+        aiDifficulty: gameState.aiMode === "reinforcement" ? "rl" : gameState.difficulty,
+        metadata: {
+          userSymbol: gameState.userSymbol,
+          aiMode: gameState.aiMode,
+          usedRLModel: gameState.usingRLModel,
+        },
+      }).catch((err) => console.error("Failed to record game stats:", err));
+    }
+  }, [gameState.isGameOver, gameState.winner, gameState.userSymbol, gameState.moveHistory.length, gameState.difficulty, gameState.aiMode, gameState.usingRLModel]);
 
   const getCellStyle = (index: number) => {
     const isWinningCell = gameState.winningLine?.includes(index);
