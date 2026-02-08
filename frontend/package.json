@@ -10,9 +10,9 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
     "@types/node": "^16.18.126",
-    "@types/react": "^19.2.10",
-    "@types/react-dom": "^19.2.3",
+    "chart.js": "^4.5.1",
     "react": "^19.2.4",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.4",
     "react-router-dom": "^6.30.3",
     "react-scripts": "5.0.1",
@@ -23,7 +23,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject", 
+    "eject": "react-scripts eject",
     "lint": "eslint src"
   },
   "eslintConfig": {
@@ -43,5 +43,13 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.13",
+    "@types/react-dom": "^19.2.3",
+    "babel-loader": "^10.0.0",
+    "html-webpack-plugin": "^5.6.6",
+    "webpack": "^5.105.0",
+    "webpack-dev-server": "^5.2.3"
   }
 }
