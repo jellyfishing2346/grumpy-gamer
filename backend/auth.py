@@ -3,15 +3,13 @@
 from fastapi import FastAPI, HTTPException, APIRouter, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
-from passlib.context import CryptContext
-import sqlite3
 import os
+import sqlite3
+from passlib.context import CryptContext
 try:
     from .jwt_utils import create_access_token, verify_access_token
 except ImportError:
     from jwt_utils import create_access_token, verify_access_token
-
-# Create router for auth endpoints (to be included in main app)
 auth_router = APIRouter(tags=["auth"])
 
 
@@ -22,7 +20,6 @@ class UserUpdate(BaseModel):
 
 
 @auth_router.put("/user/update")
-
 def update_user(
     update: UserUpdate,
     token_email: str = Depends(verify_access_token),
@@ -30,7 +27,6 @@ def update_user(
 ):
     conn = get_db()
     cursor = conn.cursor()
-    # Allow updating by query param email or authenticated user
     target_email = email if email else token_email
     if update.new_email:
         try:
@@ -59,18 +55,16 @@ def update_user(
     return {"msg": f"User info updated for {target_email}"}
 
 
-
 from fastapi import Query
 
-@auth_router.delete("/user/delete")
 
+@auth_router.delete("/user/delete")
 def delete_user(
     token_email: str = Depends(verify_access_token),
     email: str = Query(None)
 ):
     conn = get_db()
     cursor = conn.cursor()
-    # If email query param is provided, delete that user (admin use), else delete authenticated user
     target_email = email if email else token_email
     cursor.execute(
         "DELETE FROM users WHERE email = ?",
@@ -81,14 +75,9 @@ def delete_user(
     return {"msg": f"Account deleted for {target_email}"}
 
 
-    
-
-# Standalone app for running auth.py directly (for testing)
 app = FastAPI()
 
-    
 
-# CORS middleware to allow frontend requests
 allowed_origins = os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:3000,https://grumpy-gamer.vercel.app"
@@ -102,9 +91,6 @@ app.add_middleware(
 )
 
 
-    
-
-# Root endpoint (only for standalone app)
 @app.get("/")
 def root():
     return {
@@ -114,15 +100,9 @@ def root():
     }
 
 
-    
-
-# Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-    
-
-# SQLite setup (for demo; use PostgreSQL in production)
 def get_db():
     conn = sqlite3.connect("users.db")
     conn.execute(
@@ -136,23 +116,17 @@ def get_db():
     return conn
 
 
-    
-
 class UserSignup(BaseModel):
     email: EmailStr
     username: str
     password: str
 
 
-    
-
 class UserLogin(BaseModel):
     email: EmailStr
     username: str | None = None
     password: str
 
-
-    
 
 @auth_router.post("/signup")
 @app.post("/signup")  # Also register on standalone app for testing
@@ -173,8 +147,6 @@ def signup(user: UserSignup):
     return {"msg": "Signup successful"}
 
 
-    
-
 @auth_router.post("/login")
 @app.post("/login")  # Also register on standalone app for testing
 def login(user: UserLogin):
@@ -191,6 +163,20 @@ def login(user: UserLogin):
             status_code=401,
             detail="Invalid email or password"
         )
+    access_token = create_access_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
+    cursor.execute(
+        "SELECT hashed_password FROM users WHERE email = ?",
+        (user.email,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    if not row or not pwd_context.verify(user.password, row[0]):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
     # Create JWT access token
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
+    row = cursor.fetchone()
