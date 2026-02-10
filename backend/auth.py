@@ -119,7 +119,7 @@ def get_db():
 
 class UserSignup(BaseModel):
     email: EmailStr
-    username: str
+    username: Optional[str] = None
     password: str
 
 
