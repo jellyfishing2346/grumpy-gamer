@@ -49,10 +49,6 @@ const baseContainerStyle: React.CSSProperties = {
   fontFamily: "'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif",
 };
 
-const lightContainer: React.CSSProperties = {
-  background: '#fff',
-  color: '#23272f',
-};
 const darkContainer: React.CSSProperties = {
   background: '#181a1b',
   color: '#f1f1f1',
