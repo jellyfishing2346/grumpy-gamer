@@ -1,4 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useDarkModeContext } from '../DarkModeProvider';
+import { getDarkModeStyles } from '../getDarkModeStyles';
 import { recordGame } from '../../services/gameStatsService';
 
 // Types
@@ -47,17 +49,22 @@ const GRID_CONFIGS: Record<GridSize, { rows: number; cols: number; pairs: number
 };
 
 // Styles
-const containerStyle: React.CSSProperties = {
+const baseContainerStyle: React.CSSProperties = {
   padding: '2em',
   maxWidth: 900,
   margin: '2em auto',
-  background: '#fff',
   borderRadius: 22,
   boxShadow: '0 4px 32px 0 rgba(80, 120, 200, 0.10)',
-  color: '#23272f',
   textAlign: 'center',
   border: '1.5px solid #e9f1ff',
   fontFamily: "'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif",
+};
+
+// lightContainer removed (unused)
+const darkContainer: React.CSSProperties = {
+  background: '#181a1b',
+  color: '#f1f1f1',
+  border: '1.5px solid #23272f',
 };
 
 const headingStyle: React.CSSProperties = {
@@ -283,8 +290,10 @@ const getAIMove = (
   return hiddenCards[Math.floor(Math.random() * hiddenCards.length)].id;
 };
 
+
 // React Component
 const MemoryGame: React.FC = () => {
+  const [darkMode] = useDarkModeContext();
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [gridSize, setGridSize] = useState<GridSize>('4x4');
   const [gameStarted, setGameStarted] = useState(false);
@@ -351,7 +360,6 @@ const MemoryGame: React.FC = () => {
     gameStartTimeRef.current = Date.now();
     statsRecordedRef.current = false;
     moveCountRef.current = 0;
-    
     const cards = createCards(gridSize);
     setGameState({
       cards,
@@ -628,13 +636,14 @@ const MemoryGame: React.FC = () => {
     };
   }, []);
 
+  // (removed duplicate declaration)
   // Get grid dimensions
   const { rows, cols, pairs } = GRID_CONFIGS[gridSize];
 
   // Render game setup
   if (!gameStarted) {
     return (
-      <div style={containerStyle}>
+      <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
         <h1 style={headingStyle}>🃏 Memory Game</h1>
         <p style={subHeadingStyle}>
           Match pairs of cards and beat the AI!
@@ -755,7 +764,7 @@ const MemoryGame: React.FC = () => {
 
   // Main game view
   return (
-    <div style={containerStyle}>
+    <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
       <h1 style={headingStyle}>🃏 Memory Game</h1>
       
       {/* Score display */}
@@ -823,15 +832,22 @@ const MemoryGame: React.FC = () => {
       )}
       
       {/* Game board */}
-      <div style={{
-        display: 'inline-grid',
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gap: 10,
-        padding: 16,
-        background: 'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)',
-        borderRadius: 16,
-        boxShadow: '0 4px 20px rgba(156, 39, 176, 0.15)',
-      }}>
+      <div style={getDarkModeStyles(
+        darkMode,
+        {
+          display: 'inline-grid',
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gap: 10,
+          padding: 16,
+          background: 'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)',
+          borderRadius: 16,
+          boxShadow: '0 4px 20px rgba(156, 39, 176, 0.15)',
+        },
+        {
+          background: 'linear-gradient(135deg, #23272f 0%, #181a1b 100%)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+        }
+      )}>
         {gameState.cards.map((card) => {
           const isClickable = 
             gameState.canFlip && 

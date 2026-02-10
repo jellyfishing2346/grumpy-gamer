@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useDarkModeContext } from "../DarkModeProvider";
+import { getDarkModeStyles } from "../getDarkModeStyles";
 import { recordGame } from '../../services/gameStatsService';
 
 // Types
@@ -498,15 +500,27 @@ const SudokuGame: React.FC = () => {
     };
   };
 
+  const [darkMode] = useDarkModeContext();
+  const darkStyles = getDarkModeStyles(
+    darkMode,
+    {
+      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      color: "#1a1a2e"
+    },
+    {
+      background: "#181a20",
+      color: "#f5f6fa"
+    }
+  );
   return (
     <div
       style={{
         maxWidth: 600,
         margin: "2rem auto",
         padding: "2rem",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         borderRadius: 24,
-        boxShadow: "0 20px 60px rgba(0,0,0,0.3)"
+        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+        ...darkStyles
       }}
     >
       <h1

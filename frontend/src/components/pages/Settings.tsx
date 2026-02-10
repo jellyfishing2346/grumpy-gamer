@@ -1,5 +1,6 @@
 import React from "react";
 import { updateUser, deleteUser } from "../../services/userService";
+import { useDarkModeContext } from "../DarkModeProvider";
 
 
 const containerStyle: React.CSSProperties = {
@@ -30,6 +31,9 @@ const Settings: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState<any>("");
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+
+  // Dark mode toggle (global)
+  const [darkMode, setDarkMode] = useDarkModeContext();
 
   // Simulate fetching user info (replace with real API call)
   React.useEffect(() => {
@@ -71,6 +75,17 @@ const Settings: React.FC = () => {
       <p style={{ fontSize: "1.2em", marginBottom: "1.5em" }}>
         Manage your account and preferences below:
       </p>
+      <div style={{ marginBottom: 24, textAlign: "left", maxWidth: 400, marginLeft: "auto", marginRight: "auto" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 12, fontWeight: 600 }}>
+          <input
+            type="checkbox"
+            checked={darkMode}
+            onChange={e => setDarkMode(e.target.checked)}
+            style={{ width: 20, height: 20 }}
+          />
+          Enable Dark Mode
+        </label>
+      </div>
       <div style={{ textAlign: "left", maxWidth: 400, margin: "0 auto", color: "#eee" }}>
         <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
           <div style={{ display: "flex", alignItems: "center", marginBottom: "1em" }}>

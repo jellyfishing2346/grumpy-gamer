@@ -4,7 +4,10 @@ import { useNavigate } from "react-router-dom";
 import gameStatsService, { getGameDisplayName, ActivitySummary, GameType } from "../../services/gameStatsService";
 
 
-const containerStyle: React.CSSProperties = {
+import { useDarkModeContext } from "../DarkModeProvider";
+import { getDarkModeStyles } from "../getDarkModeStyles";
+
+const baseContainerStyle: React.CSSProperties = {
   padding: "2.5em 2em",
   maxWidth: 700,
   margin: "3.5em auto",
@@ -125,6 +128,17 @@ const HumanVsAI: React.FC = () => {
     navigate(`/play/${selectedGame.toLowerCase().replace(/\s+/g, "")}?difficulty=${selectedDifficulty.toLowerCase()}`);
   };
 
+  const [darkMode] = useDarkModeContext();
+  const containerStyle = getDarkModeStyles(
+    darkMode,
+    baseContainerStyle,
+    {
+      background: "#23272f",
+      color: "#f5f6fa",
+      border: "1.5px solid #444",
+      boxShadow: "0 4px 32px 0 rgba(31, 38, 135, 0.37)",
+    }
+  );
   return (
     <div style={containerStyle}>
       <h1 style={headingStyle}>Human vs AI</h1>
@@ -137,18 +151,26 @@ const HumanVsAI: React.FC = () => {
         {games.map(game => (
           <button
             key={game}
-            style={{
-              padding: "0.8em 1.2em",
-              borderRadius: 10,
-              border: selectedGame === game ? "2px solid #7ecbff" : "1.5px solid #e9f1ff",
-              background: selectedGame === game ? "#e9f7ff" : "#f7fbff",
-              color: "#23272f",
-              fontWeight: 600,
-              fontSize: "1em",
-              cursor: "pointer",
-              marginBottom: 8,
-              minWidth: 120,
-            }}
+            style={getDarkModeStyles(
+              darkMode,
+              {
+                padding: "0.8em 1.2em",
+                borderRadius: 10,
+                border: selectedGame === game ? "2px solid #7ecbff" : "1.5px solid #e9f1ff",
+                background: selectedGame === game ? "#e9f7ff" : "#f7fbff",
+                color: "#23272f",
+                fontWeight: 600,
+                fontSize: "1em",
+                cursor: "pointer",
+                marginBottom: 8,
+                minWidth: 120,
+              },
+              {
+                background: selectedGame === game ? "#23272f" : "#181a20",
+                color: selectedGame === game ? "#7ecbff" : "#f5f6fa",
+                border: selectedGame === game ? "2px solid #7ecbff" : "1.5px solid #444",
+              }
+            )}
             onClick={() => setSelectedGame(game)}
           >
             {game}
@@ -162,16 +184,24 @@ const HumanVsAI: React.FC = () => {
         {difficulties.map(diff => (
           <button
             key={diff}
-            style={{
-              marginRight: 8,
-              padding: "0.5em 1em",
-              borderRadius: 8,
-              border: selectedDifficulty === diff ? "2px solid #7ecbff" : "1.5px solid #e9f1ff",
-              background: selectedDifficulty === diff ? "#e9f7ff" : "#f7fbff",
-              color: "#23272f",
-              fontWeight: 600,
-              cursor: "pointer"
-            }}
+            style={getDarkModeStyles(
+              darkMode,
+              {
+                marginRight: 8,
+                padding: "0.5em 1em",
+                borderRadius: 8,
+                border: selectedDifficulty === diff ? "2px solid #7ecbff" : "1.5px solid #e9f1ff",
+                background: selectedDifficulty === diff ? "#e9f7ff" : "#f7fbff",
+                color: "#23272f",
+                fontWeight: 600,
+                cursor: "pointer"
+              },
+              {
+                background: selectedDifficulty === diff ? "#23272f" : "#181a20",
+                color: selectedDifficulty === diff ? "#7ecbff" : "#f5f6fa",
+                border: selectedDifficulty === diff ? "2px solid #7ecbff" : "1.5px solid #444",
+              }
+            )}
             onClick={() => setSelectedDifficulty(diff)}
           >
             {diff}
@@ -184,18 +214,26 @@ const HumanVsAI: React.FC = () => {
         <button
           onClick={handleStartChallenge}
           disabled={!selectedGame}
-          style={{
-            padding: "0.9em 2em",
-            borderRadius: 12,
-            background: selectedGame ? "#4f8cff" : "#b0cfff",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: "1.1em",
-            border: "none",
-            cursor: selectedGame ? "pointer" : "not-allowed",
-            boxShadow: selectedGame ? "0 2px 8px #4f8cff33" : undefined,
-            transition: "background 0.2s"
-          }}
+          style={getDarkModeStyles(
+            darkMode,
+            {
+              padding: "0.9em 2em",
+              borderRadius: 12,
+              background: selectedGame ? "#4f8cff" : "#b0cfff",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: "1.1em",
+              border: "none",
+              cursor: selectedGame ? "pointer" : "not-allowed",
+              boxShadow: selectedGame ? "0 2px 8px #4f8cff33" : undefined,
+              transition: "background 0.2s"
+            },
+            {
+              background: selectedGame ? "#23272f" : "#181a20",
+              color: selectedGame ? "#7ecbff" : "#b3e0ff",
+              border: selectedGame ? "2px solid #7ecbff" : "1.5px solid #444",
+            }
+          )}
         >
           Start Challenge
         </button>
@@ -204,7 +242,11 @@ const HumanVsAI: React.FC = () => {
       {/* Challenge/Tournament Mode */}
       <div style={{ margin: "1.5em 0" }}>
         <span style={{ fontWeight: 600, marginRight: 12 }}>Challenge Mode:</span>
-        <select value={challengeMode} onChange={e => setChallengeMode(e.target.value)} style={{ padding: "0.5em 1em", borderRadius: 8, fontWeight: 600 }}>
+        <select value={challengeMode} onChange={e => setChallengeMode(e.target.value)} style={getDarkModeStyles(
+          darkMode,
+          { padding: "0.5em 1em", borderRadius: 8, fontWeight: 600 },
+          { background: "#181a20", color: "#7ecbff", border: "1.5px solid #444" }
+        )}>
           <option>Single Game</option>
           <option>Best of 3</option>
           <option>Best of 5</option>
@@ -218,7 +260,11 @@ const HumanVsAI: React.FC = () => {
         {loading ? (
           <div style={{ color: "#7ecbff", textAlign: "center", padding: "1em" }}>Loading stats...</div>
         ) : (
-          <table style={{ margin: "0 auto", background: "#181a20", borderRadius: 8, color: "#fff", minWidth: 320, fontSize: "1.05em" }}>
+          <table style={getDarkModeStyles(
+            darkMode,
+            { margin: "0 auto", background: "#181a20", borderRadius: 8, color: "#fff", minWidth: 320, fontSize: "1.05em" },
+            { background: "#181a20", color: "#7ecbff", border: "1px solid #444" }
+          )}>
             <thead>
               <tr style={{ color: "#4f8cff" }}>
                 <th style={{ padding: "0.5em 1em" }}>Game</th>
@@ -248,7 +294,11 @@ const HumanVsAI: React.FC = () => {
       {/* Leaderboard/Achievements */}
       <div style={{ margin: "2em 0" }}>
         <h3 style={{ color: "#7ecbff", marginBottom: 8 }}>Leaderboard & Achievements</h3>
-        <table style={{ margin: "0 auto", background: "#23272f", borderRadius: 8, color: "#fff", minWidth: 320, fontSize: "1.05em" }}>
+        <table style={getDarkModeStyles(
+          darkMode,
+          { margin: "0 auto", background: "#23272f", borderRadius: 8, color: "#fff", minWidth: 320, fontSize: "1.05em" },
+          { background: "#23272f", color: "#7ecbff", border: "1px solid #444" }
+        )}>
           <thead>
             <tr style={{ color: "#ffd700" }}>
               <th style={{ padding: "0.5em 1em" }}>Player</th>
@@ -269,7 +319,11 @@ const HumanVsAI: React.FC = () => {
       </div>
 
       {/* AI Learning Feedback */}
-      <div style={{ background: "#181a20", borderRadius: 8, padding: "1.5em", color: "#aaa", maxWidth: 500, margin: "0 auto" }}>
+      <div style={getDarkModeStyles(
+        darkMode,
+        { background: "#181a20", borderRadius: 8, padding: "1.5em", color: "#aaa", maxWidth: 500, margin: "0 auto" },
+        { background: "#181a20", color: "#7ecbff", border: "1px solid #444" }
+      )}>
         <b>AI Feedback:</b> {aiFeedback}
       </div>
     </div>
