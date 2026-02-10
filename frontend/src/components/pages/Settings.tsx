@@ -1,4 +1,5 @@
 import React from "react";
+import { updateUser, deleteUser } from "../../services/userService";
 
 
 const containerStyle: React.CSSProperties = {
@@ -23,28 +24,137 @@ const headingStyle: React.CSSProperties = {
   textShadow: "0 2px 12px #23272f55"
 };
 
-const Settings: React.FC = () => (
-  <div style={containerStyle}>
-    <h1 style={headingStyle}>Settings</h1>
-    <p style={{ fontSize: "1.2em", marginBottom: "1.5em" }}>
-      Adjust your preferences and game options below:
-    </p>
-    <div style={{ textAlign: "left", maxWidth: 400, margin: "0 auto", color: "#aaa" }}>
-      <label style={{ display: "block", marginBottom: "1em" }}>
-        <b>Theme:</b>
-        <select style={{ marginLeft: 8 }} disabled>
-          <option>Dark</option>
-          <option>Light</option>
-        </select>
-        <span style={{ marginLeft: 8, fontSize: "0.95em" }}>(coming soon)</span>
-      </label>
-      <label style={{ display: "block", marginBottom: "1em" }}>
-        <b>Sound:</b>
-        <input type="checkbox" style={{ marginLeft: 8 }} disabled />
-        <span style={{ marginLeft: 8, fontSize: "0.95em" }}>(coming soon)</span>
-      </label>
+const Settings: React.FC = () => {
+  const [username, setUsername] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [message, setMessage] = React.useState<any>("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+
+  // Simulate fetching user info (replace with real API call)
+  React.useEffect(() => {
+    // TODO: Replace with real fetch
+    setUsername("grumpyuser");
+    setEmail("grumpyuser@email.com");
+  }, []);
+
+  const handleSave = async () => {
+    setLoading(true);
+    setMessage("");
+    const token = localStorage.getItem("access_token") || "";
+    try {
+      await updateUser({ email, username, newEmail: email, newUsername: username, token });
+      setMessage("Account info updated successfully.");
+    } catch (err) {
+      setMessage("Error updating account info.");
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    setLoading(true);
+    setMessage("");
+    const token = localStorage.getItem("access_token") || "";
+    try {
+      await deleteUser(email, token);
+      setMessage("Account deleted. You will be logged out.");
+      // TODO: Redirect or log out user
+    } catch (err) {
+      setMessage("Error deleting account.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={containerStyle}>
+      <h1 style={headingStyle}>Settings</h1>
+      <p style={{ fontSize: "1.2em", marginBottom: "1.5em" }}>
+        Manage your account and preferences below:
+      </p>
+      <div style={{ textAlign: "left", maxWidth: 400, margin: "0 auto", color: "#eee" }}>
+        <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: "1em" }}>
+            <label style={{ minWidth: 90, fontWeight: 600 }}>Username:</label>
+            <input
+              type="text"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              style={{ padding: "0.4em", borderRadius: 6, border: "1px solid #444", flex: 1 }}
+              required
+            />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: "1em" }}>
+            <label style={{ minWidth: 90, fontWeight: 600 }}>Email:</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              style={{ padding: "0.4em", borderRadius: 6, border: "1px solid #444", flex: 1 }}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{ padding: "0.7em 1.5em", borderRadius: 8, background: "#4f8cff", color: "#fff", fontWeight: 700, border: "none", cursor: loading ? "not-allowed" : "pointer", marginBottom: 16 }}
+          >
+            {loading ? "Saving..." : "Save Changes"}
+          </button>
+        </form>
+        <div style={{ margin: "1.5em 0" }}>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={loading}
+            style={{ padding: "0.7em 1.5em", borderRadius: 8, background: "#ff4f4f", color: "#fff", fontWeight: 700, border: "none", cursor: loading ? "not-allowed" : "pointer" }}
+          >
+            Delete Account
+          </button>
+        </div>
+        {showDeleteConfirm && (
+          <div style={{ background: "#23272f", borderRadius: 8, padding: "1em", color: "#ffd700", marginBottom: 16 }}>
+            <b>Are you sure you want to delete your account?</b>
+            <div style={{ marginTop: 12 }}>
+              <button
+                onClick={handleDelete}
+                disabled={loading}
+                style={{ padding: "0.5em 1.2em", borderRadius: 8, background: "#ff4f4f", color: "#fff", fontWeight: 700, border: "none", marginRight: 8 }}
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={loading}
+                style={{ padding: "0.5em 1.2em", borderRadius: 8, background: "#444", color: "#fff", fontWeight: 700, border: "none" }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        {message && (
+          <div style={{ background: "#181a20", borderRadius: 8, padding: "1em", color: "#7ecbff", marginBottom: 16 }}>
+            {Array.isArray(message)
+              ? message.map((m, i) => {
+                  if (typeof m === 'object' && m !== null) {
+                    // Render msg property if present, else stringify
+                    return <div key={i}>{typeof m.msg === 'string' ? m.msg : JSON.stringify(m)}</div>;
+                  }
+                  return <div key={i}>{String(m)}</div>;
+                })
+              : typeof message === 'object' && message !== null
+                ? typeof message.msg === 'string'
+                  ? message.msg
+                  : JSON.stringify(message)
+                : String(message)
+            }
+          </div>
+        )}
+        <div style={{ fontSize: "0.95em", color: "#aaa", marginTop: 24 }}>
+          <b>Privacy Notice:</b> Your account information is private and never shared. All changes are securely processed.
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Settings;

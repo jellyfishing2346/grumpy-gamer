@@ -1,18 +1,67 @@
-from fastapi import FastAPI, HTTPException, APIRouter
+
+
+from fastapi import FastAPI, HTTPException, APIRouter, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
 import sqlite3
 import os
-
-# Handle both local (relative import) and production (absolute import)
 try:
-    from .jwt_utils import create_access_token
+    from .jwt_utils import create_access_token, verify_access_token
 except ImportError:
-    from jwt_utils import create_access_token
+    from jwt_utils import create_access_token, verify_access_token
 
 # Create router for auth endpoints (to be included in main app)
 auth_router = APIRouter(tags=["auth"])
+
+class UserUpdate(BaseModel):
+    new_email: EmailStr | None = None
+    new_username: str | None = None
+    new_password: str | None = None
+
+@auth_router.put("/user/update")
+def update_user(
+    update: UserUpdate,
+    token_email: str = Depends(verify_access_token),
+    email: str = Query(None)
+):
+    conn = get_db()
+    cursor = conn.cursor()
+    # Allow updating by query param email or authenticated user
+    target_email = email if email else token_email
+    if update.new_email:
+        try:
+            cursor.execute("UPDATE users SET email = ? WHERE email = ?", (update.new_email, target_email))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            raise HTTPException(status_code=400, detail="Email already in use")
+    if update.new_username:
+        cursor.execute("UPDATE users SET username = ? WHERE email = ?", (update.new_username, update.new_email or target_email))
+        conn.commit()
+    if update.new_password:
+        hashed_pw = pwd_context.hash(update.new_password)
+        cursor.execute("UPDATE users SET hashed_password = ? WHERE email = ?", (hashed_pw, update.new_email or target_email))
+        conn.commit()
+    conn.close()
+    return {"msg": f"User info updated for {target_email}"}
+
+from fastapi import Query
+
+@auth_router.delete("/user/delete")
+def delete_user(
+    token_email: str = Depends(verify_access_token),
+    email: str = Query(None)
+):
+    conn = get_db()
+    cursor = conn.cursor()
+    # If email query param is provided, delete that user (admin use), else delete authenticated user
+    target_email = email if email else token_email
+    cursor.execute("DELETE FROM users WHERE email = ?", (target_email,))
+    conn.commit()
+    conn.close()
+    return {"msg": f"Account deleted for {target_email}"}
+
 
 # Standalone app for running auth.py directly (for testing)
 app = FastAPI()
@@ -51,6 +100,7 @@ def get_db():
     conn.execute('''CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
+        username TEXT,
         hashed_password TEXT NOT NULL
     )''')
     return conn
@@ -58,11 +108,13 @@ def get_db():
 
 class UserSignup(BaseModel):
     email: EmailStr
+    username: str
     password: str
 
 
 class UserLogin(BaseModel):
     email: EmailStr
+    username: str | None = None
     password: str
 
 
@@ -74,8 +126,8 @@ def signup(user: UserSignup):
     hashed_pw = pwd_context.hash(user.password)
     try:
         cursor.execute(
-            "INSERT INTO users (email, hashed_password) VALUES (?, ?)",
-            (user.email, hashed_pw)
+            "INSERT INTO users (email, username, hashed_password) VALUES (?, ?, ?)",
+            (user.email, user.username, hashed_pw)
         )
         conn.commit()
     except sqlite3.IntegrityError:
@@ -94,6 +146,7 @@ def login(user: UserLogin):
         "SELECT hashed_password FROM users WHERE email = ?",
         (user.email,)
     )
+
     row = cursor.fetchone()
     conn.close()
     if not row or not pwd_context.verify(user.password, row[0]):
