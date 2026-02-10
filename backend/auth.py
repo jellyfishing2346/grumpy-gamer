@@ -3,6 +3,7 @@
 from fastapi import FastAPI, HTTPException, APIRouter, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 import os
 import sqlite3
 from passlib.context import CryptContext
@@ -14,9 +15,9 @@ auth_router = APIRouter(tags=["auth"])
 
 
 class UserUpdate(BaseModel):
-    new_email: EmailStr | None = None
-    new_username: str | None = None
-    new_password: str | None = None
+    new_email: Optional[EmailStr] = None
+    new_username: Optional[str] = None
+    new_password: Optional[str] = None
 
 
 @auth_router.put("/user/update")
@@ -124,7 +125,7 @@ class UserSignup(BaseModel):
 
 class UserLogin(BaseModel):
     email: EmailStr
-    username: str | None = None
+    username: Optional[str] = None
     password: str
 
 
