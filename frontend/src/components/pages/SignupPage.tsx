@@ -4,6 +4,7 @@ import API_URL from "../../config/api";
 
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -14,10 +15,10 @@ const SignupPage: React.FC = () => {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${API_URL}/signup`, {
+      const res = await fetch(`${API_URL}/api/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, username, password }),
       });
       if (res.ok) {
         setSuccess("Signup successful! Please log in.");
@@ -50,6 +51,14 @@ const SignupPage: React.FC = () => {
           placeholder="Email"
           value={email}
           onChange={e => setEmail(e.target.value)}
+          required
+          style={{padding: 12, borderRadius: 6, border: "1px solid #ccc", fontSize: 16}}
+        />
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
           required
           style={{padding: 12, borderRadius: 6, border: "1px solid #ccc", fontSize: 16}}
         />

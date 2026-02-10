@@ -29,12 +29,12 @@ def get_game_stats_manager(user_id: str = "anonymous"):
 app = FastAPI(title="Grumpy Gamer API", version="1.0.0")
 
 # Include auth router
-app.include_router(auth_router)
+app.include_router(auth_router, prefix="/api")
 
 # CORS middleware for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your Vercel domain
+    allow_origins=["http://localhost:3000", "http://localhost:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
