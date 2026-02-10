@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useDarkModeContext } from "../DarkModeProvider";
+import { getDarkModeStyles } from "../getDarkModeStyles";
 import { recordGame } from '../../services/gameStatsService';
 
 const WORD_LENGTH = 5;
@@ -174,8 +176,14 @@ const WordleGame: React.FC = () => {
     return { background: "#e0e0e0", color: "#888" };
   };
 
+  const [darkMode] = useDarkModeContext();
+  const containerStyle = getDarkModeStyles(
+    darkMode,
+    { maxWidth: 700, margin: "3em auto", background: "#fff", borderRadius: 18, boxShadow: "0 4px 32px 0 rgba(80, 120, 200, 0.10)", padding: "2em 1.5em", border: "1.5px solid #e9f1ff", fontFamily: "'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif" },
+    { background: "#23272f", color: "#f5f6fa", border: "1.5px solid #444", boxShadow: "0 4px 32px 0 rgba(31, 38, 135, 0.37)" }
+  );
   return (
-    <div style={{ maxWidth: 700, margin: "3em auto", background: "#fff", borderRadius: 18, boxShadow: "0 4px 32px 0 rgba(80, 120, 200, 0.10)", padding: "2em 1.5em", border: "1.5px solid #e9f1ff", fontFamily: "'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif" }}>
+    <div style={containerStyle}>
       <h2 style={{ color: "#7ecbff", fontWeight: 800, fontSize: "2em", marginBottom: "1em" }}>Wordle: Human vs AI</h2>
       <div style={{ marginBottom: "1.5em", color: "#888" }}>Guess the 5-letter word in 6 tries! You and the AI are racing to solve it first.</div>
       <form onSubmit={handleSubmit} style={{ marginBottom: "1.5em", display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -194,7 +202,8 @@ const WordleGame: React.FC = () => {
             outline: "none",
             marginRight: 8,
             width: 160,
-            background: "#f8fbff"
+            background: "#f8fbff",
+            color: "#23272f"
           }}
           disabled={!!status || !!aiStatus}
         />

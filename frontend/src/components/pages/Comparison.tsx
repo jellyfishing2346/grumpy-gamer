@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import AIProgressChart from "./AIProgressChart";
 import gameStatsService from "../../services/gameStatsService";
+import { useDarkModeContext } from "../DarkModeProvider";
+import { getDarkModeStyles } from "../getDarkModeStyles";
 const { getGameDisplayName } = gameStatsService;
 
-
-const containerStyle: React.CSSProperties = {
+const baseContainerStyle: React.CSSProperties = {
   padding: "2.5em 2em",
   maxWidth: 700,
   margin: "3.5em auto",
@@ -29,6 +30,17 @@ const headingStyle: React.CSSProperties = {
 const Comparison: React.FC = () => {
   const [gameBreakdown, setGameBreakdown] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [darkMode] = useDarkModeContext();
+  const containerStyle = getDarkModeStyles(
+    darkMode,
+    baseContainerStyle,
+    {
+      background: "#23272f",
+      color: "#f5f6fa",
+      border: "1.5px solid #444",
+      boxShadow: "0 4px 32px 0 rgba(31, 38, 135, 0.37)",
+    }
+  );
 
   useEffect(() => {
     async function fetchStats() {
@@ -64,7 +76,11 @@ const Comparison: React.FC = () => {
       <p style={{ fontSize: "1.2em", marginBottom: "1.5em" }}>
         See how you stack up against the Grumpy AI:
       </p>
-      <table style={{ margin: "0 auto", background: "#181a20", borderRadius: 8, color: "#fff", minWidth: 320, fontSize: "1.05em" }}>
+      <table style={getDarkModeStyles(
+        darkMode,
+        { margin: "0 auto", background: "#181a20", borderRadius: 8, color: "#fff", minWidth: 320, fontSize: "1.05em" },
+        { background: "#181a20", color: "#7ecbff", border: "1px solid #444" }
+      )}>
         <thead>
           <tr style={{ color: "#4f8cff" }}>
             <th style={{ padding: "0.5em 1em" }}>Player</th>
@@ -88,7 +104,11 @@ const Comparison: React.FC = () => {
           </tr>
         </tbody>
       </table>
-      <div style={{ color: "#aaa", marginTop: "1em" }}>
+      <div style={getDarkModeStyles(
+        darkMode,
+        { color: "#aaa", marginTop: "1em" },
+        { color: "#b3e0ff" }
+      )}>
         <i>Can you turn the tables and beat the AI?</i>
       </div>
       {/* AI learning progress chart */}

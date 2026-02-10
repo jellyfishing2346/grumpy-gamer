@@ -11,6 +11,27 @@ html, body, #root {
   transition: background 0.5s;
 }
 
+body.dark-mode, html.dark-mode, #root.dark-mode {
+  background: linear-gradient(120deg, #181a20 0%, #23272f 100%) !important;
+  color: #f5f6fa !important;
+}
+
+body.dark-mode .App-header {
+  background-color: #181a20 !important;
+  color: #f5f6fa !important;
+}
+
+body.dark-mode input, body.dark-mode textarea, body.dark-mode select {
+  background: #23272f !important;
+  color: #f5f6fa !important;
+  border: 1px solid #444 !important;
+}
+
+body.dark-mode button {
+  background: #4f8cff !important;
+  color: #fff !important;
+}
+
 body::before {
   content: '';
   position: fixed;
