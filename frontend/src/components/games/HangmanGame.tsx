@@ -1,4 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useDarkModeContext } from '../DarkModeProvider';
+import { getDarkModeStyles } from '../getDarkModeStyles';
 import { recordGame } from '../../services/gameStatsService';
 
 // Types
@@ -95,17 +97,25 @@ const WORD_LISTS: Record<Difficulty, { words: string[]; hints: Record<string, st
 const MAX_WRONG_GUESSES = 6;
 
 // Styles
-const containerStyle: React.CSSProperties = {
+const baseContainerStyle: React.CSSProperties = {
   padding: '2em',
   maxWidth: 900,
   margin: '2em auto',
-  background: '#fff',
   borderRadius: 22,
   boxShadow: '0 4px 32px 0 rgba(80, 120, 200, 0.10)',
-  color: '#23272f',
   textAlign: 'center',
   border: '1.5px solid #e9f1ff',
   fontFamily: "'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif",
+};
+
+const lightContainer: React.CSSProperties = {
+  background: '#fff',
+  color: '#23272f',
+};
+const darkContainer: React.CSSProperties = {
+  background: '#181a1b',
+  color: '#f1f1f1',
+  border: '1.5px solid #23272f',
 };
 
 const headingStyle: React.CSSProperties = {
@@ -325,8 +335,10 @@ const isWordRevealed = (word: string, guessedLetters: Set<string>): boolean => {
   return word.split('').every(letter => guessedLetters.has(letter));
 };
 
+
 // React Component
 const HangmanGame: React.FC = () => {
+  const [darkMode] = useDarkModeContext();
   const [gameMode, setGameMode] = useState<GameMode>('classic');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [gameStarted, setGameStarted] = useState(false);
@@ -379,7 +391,6 @@ const HangmanGame: React.FC = () => {
       recordGame({
         gameType: 'hangman',
         result,
-        movesCount: classicState.guessedLetters.size,
         durationSeconds,
         opponentType: 'self',
         aiDifficulty: difficulty,
@@ -713,7 +724,7 @@ const HangmanGame: React.FC = () => {
   // Mode selection screen
   if (!gameStarted && !showWordInput) {
     return (
-      <div style={containerStyle}>
+      <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
         <h1 style={headingStyle}>🔤 Hangman</h1>
         <p style={subHeadingStyle}>
           Guess the word before the stick figure is complete!
@@ -802,7 +813,7 @@ const HangmanGame: React.FC = () => {
   // Word input screen for VS AI
   if (showWordInput) {
     return (
-      <div style={containerStyle}>
+      <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
         <h1 style={headingStyle}>🔤 Enter Your Word</h1>
         <p style={subHeadingStyle}>
           Pick a word for the grumpy AI to guess!
@@ -851,7 +862,7 @@ const HangmanGame: React.FC = () => {
   // Classic mode game
   if (gameMode === 'classic') {
     return (
-      <div style={containerStyle}>
+      <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
         <h1 style={headingStyle}>🔤 Hangman</h1>
         
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', gap: '2em', flexWrap: 'wrap' }}>
@@ -941,7 +952,7 @@ const HangmanGame: React.FC = () => {
   const gameOver = vsAIState.winner !== null;
   
   return (
-    <div style={containerStyle}>
+    <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
       <h1 style={headingStyle}>🔤 Hangman VS AI</h1>
       
       {vsAIState.winner && (

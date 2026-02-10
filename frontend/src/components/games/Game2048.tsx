@@ -1,4 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useDarkModeContext } from '../DarkModeProvider';
+import { getDarkModeStyles } from '../getDarkModeStyles';
 import { recordGame } from '../../services/gameStatsService';
 
 // Types
@@ -39,17 +41,25 @@ interface VsAIState {
 }
 
 // Styles
-const containerStyle: React.CSSProperties = {
+const baseContainerStyle: React.CSSProperties = {
   padding: '2em',
   maxWidth: 900,
   margin: '2em auto',
-  background: '#fff',
   borderRadius: 22,
   boxShadow: '0 4px 32px 0 rgba(80, 120, 200, 0.10)',
-  color: '#23272f',
   textAlign: 'center',
   border: '1.5px solid #e9f1ff',
   fontFamily: "'Inter', 'Nunito', 'Segoe UI', Arial, sans-serif",
+};
+
+const lightContainer: React.CSSProperties = {
+  background: '#fff',
+  color: '#23272f',
+};
+const darkContainer: React.CSSProperties = {
+  background: '#181a1b',
+  color: '#f1f1f1',
+  border: '1.5px solid #23272f',
 };
 
 const headingStyle: React.CSSProperties = {
@@ -885,9 +895,10 @@ const Game2048: React.FC = () => {
   );
 
   // Mode selection screen
+  const [darkMode] = useDarkModeContext();
   if (!gameStarted) {
     return (
-      <div style={containerStyle}>
+      <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
         <h1 style={headingStyle}>2048</h1>
         <p style={subHeadingStyle}>
           Join the numbers and get to the <strong>2048 tile!</strong>
@@ -971,7 +982,7 @@ const Game2048: React.FC = () => {
   // Classic mode game
   if (gameMode === 'classic') {
     return (
-      <div style={containerStyle}>
+      <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
         <h1 style={headingStyle}>2048</h1>
         
         <div style={{ marginBottom: '1em' }}>
@@ -1041,7 +1052,7 @@ const Game2048: React.FC = () => {
 
   // VS AI mode game
   return (
-    <div style={containerStyle}>
+    <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
       <h1 style={headingStyle}>2048 VS AI</h1>
       
       <div style={{ marginBottom: '1em' }}>

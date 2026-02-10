@@ -1,4 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useDarkModeContext } from "../DarkModeProvider";
+import { getDarkModeStyles } from "../getDarkModeStyles";
 import { recordGame } from '../../services/gameStatsService';
 
 // API base URL
@@ -777,8 +779,17 @@ const CheckersGame: React.FC = () => {
   const redCount = countPieces(board, 'red');
   const blackCount = countPieces(board, 'black');
 
+  const [darkMode] = useDarkModeContext();
+  const darkStyles = getDarkModeStyles(
+    darkMode,
+    containerStyle,
+    {
+      background: "#181a20",
+      color: "#f5f6fa"
+    }
+  );
   return (
-    <div style={containerStyle}>
+    <div style={{ ...containerStyle, ...darkStyles }}>
       <style>
         {`
           @keyframes pulse {

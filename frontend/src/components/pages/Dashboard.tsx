@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useDarkModeContext } from "../DarkModeProvider";
+import { getDarkModeStyles } from "../getDarkModeStyles";
 import {
   getActivitySummary,
   getRecentGames,
@@ -131,6 +133,7 @@ const Dashboard: React.FC = () => {
   const [recentGames, setRecentGames] = useState<GameSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(7);
+  const [darkMode] = useDarkModeContext();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -148,10 +151,10 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={containerStyle}>
-        <h1 style={headingStyle}>📊 Dashboard</h1>
-        <div style={{ ...cardStyle, textAlign: "center" }}>
-          <p style={{ fontSize: "1.2em", color: "#666" }}>Loading your stats...</p>
+      <div style={getDarkModeStyles(darkMode, containerStyle, { background: "#181a20", color: "#f5f6fa" })}>
+        <h1 style={getDarkModeStyles(darkMode, headingStyle, { color: "#7ecbff" })}>📊 Dashboard</h1>
+        <div style={{ ...cardStyle, ...(darkMode ? { background: "#23272f", color: "#f5f6fa" } : {}), textAlign: "center" }}>
+          <p style={{ fontSize: "1.2em", color: darkMode ? "#aaa" : "#666" }}>Loading your stats...</p>
         </div>
       </div>
     );
@@ -160,9 +163,9 @@ const Dashboard: React.FC = () => {
   const hasData = summary && summary.totalGames > 0;
 
   return (
-    <div style={containerStyle}>
-      <h1 style={headingStyle}>📊 Dashboard</h1>
-      <p style={{ textAlign: "center", color: "#666", marginBottom: "1.5em" }}>
+    <div style={getDarkModeStyles(darkMode, containerStyle, { background: "#181a20", color: "#f5f6fa" })}>
+      <h1 style={getDarkModeStyles(darkMode, headingStyle, { color: "#7ecbff" })}>📊 Dashboard</h1>
+      <p style={{ textAlign: "center", color: darkMode ? "#aaa" : "#666", marginBottom: "1.5em" }}>
         Track your gaming activity and statistics
       </p>
 
@@ -177,9 +180,9 @@ const Dashboard: React.FC = () => {
               padding: "0.5em 1em",
               margin: "0 0.3em",
               borderRadius: "8px",
-              border: days === d ? "2px solid #3a7bd5" : "1px solid #ddd",
-              background: days === d ? "#e3f0ff" : "#fff",
-              color: days === d ? "#3a7bd5" : "#666",
+              border: days === d ? `2px solid ${darkMode ? "#7ecbff" : "#3a7bd5"}` : `1px solid ${darkMode ? "#444" : "#ddd"}`,
+              background: days === d ? (darkMode ? "#23272f" : "#e3f0ff") : (darkMode ? "#181a20" : "#fff"),
+              color: days === d ? (darkMode ? "#7ecbff" : "#3a7bd5") : (darkMode ? "#aaa" : "#666"),
               fontWeight: days === d ? 600 : 400,
               cursor: "pointer",
             }}
@@ -190,59 +193,59 @@ const Dashboard: React.FC = () => {
       </div>
 
       {!hasData ? (
-        <div style={{ ...cardStyle, textAlign: "center" }}>
-          <h2 style={{ color: "#3a7bd5", marginBottom: "0.5em" }}>🎮 No games recorded yet!</h2>
-          <p style={{ color: "#666" }}>
+        <div style={{ ...cardStyle, ...(darkMode ? { background: "#23272f", color: "#f5f6fa" } : {}), textAlign: "center" }}>
+          <h2 style={{ color: darkMode ? "#7ecbff" : "#3a7bd5", marginBottom: "0.5em" }}>🎮 No games recorded yet!</h2>
+          <p style={{ color: darkMode ? "#aaa" : "#666" }}>
             Start playing some games and your statistics will appear here.
           </p>
         </div>
       ) : (
         <>
           {/* Summary Stats */}
-          <div style={cardStyle}>
-            <h2 style={sectionHeadingStyle}>📈 Overview (Last {days} Days)</h2>
+          <div style={{ ...cardStyle, ...(darkMode ? { background: "#23272f", color: "#f5f6fa" } : {}) }}>
+            <h2 style={{ ...sectionHeadingStyle, ...(darkMode ? { color: "#7ecbff" } : {}) }}>📈 Overview (Last {days} Days)</h2>
             <div style={statGridStyle}>
-              <div style={statBoxStyle}>
-                <div style={statValueStyle}>{summary!.totalGames}</div>
-                <div style={statLabelStyle}>Games Played</div>
+              <div style={{ ...statBoxStyle, ...(darkMode ? { background: "#181a20", color: "#7ecbff" } : {}) }}>
+                <div style={{ ...statValueStyle, ...(darkMode ? { color: "#7ecbff" } : {}) }}>{summary!.totalGames}</div>
+                <div style={{ ...statLabelStyle, ...(darkMode ? { color: "#aaa" } : {}) }}>Games Played</div>
               </div>
-              <div style={statBoxStyle}>
-                <div style={{ ...statValueStyle, color: "#28a745" }}>{summary!.totalWins}</div>
-                <div style={statLabelStyle}>Wins</div>
+              <div style={{ ...statBoxStyle, ...(darkMode ? { background: "#181a20", color: "#7ecbff" } : {}) }}>
+                <div style={{ ...statValueStyle, color: darkMode ? "#28e07b" : "#28a745" }}>{summary!.totalWins}</div>
+                <div style={{ ...statLabelStyle, ...(darkMode ? { color: "#aaa" } : {}) }}>Wins</div>
               </div>
-              <div style={statBoxStyle}>
-                <div style={{ ...statValueStyle, color: "#dc3545" }}>{summary!.totalLosses}</div>
-                <div style={statLabelStyle}>Losses</div>
+              <div style={{ ...statBoxStyle, ...(darkMode ? { background: "#181a20", color: "#7ecbff" } : {}) }}>
+                <div style={{ ...statValueStyle, color: darkMode ? "#ff7e67" : "#dc3545" }}>{summary!.totalLosses}</div>
+                <div style={{ ...statLabelStyle, ...(darkMode ? { color: "#aaa" } : {}) }}>Losses</div>
               </div>
-              <div style={statBoxStyle}>
-                <div style={{ ...statValueStyle, color: "#ffc107" }}>{summary!.totalDraws}</div>
-                <div style={statLabelStyle}>Draws</div>
+              <div style={{ ...statBoxStyle, ...(darkMode ? { background: "#181a20", color: "#7ecbff" } : {}) }}>
+                <div style={{ ...statValueStyle, color: darkMode ? "#ffe066" : "#ffc107" }}>{summary!.totalDraws}</div>
+                <div style={{ ...statLabelStyle, ...(darkMode ? { color: "#aaa" } : {}) }}>Draws</div>
               </div>
-              <div style={statBoxStyle}>
-                <div style={statValueStyle}>{summary!.winRate.toFixed(1)}%</div>
-                <div style={statLabelStyle}>Win Rate</div>
+              <div style={{ ...statBoxStyle, ...(darkMode ? { background: "#181a20", color: "#7ecbff" } : {}) }}>
+                <div style={{ ...statValueStyle, ...(darkMode ? { color: "#7ecbff" } : {}) }}>{summary!.winRate.toFixed(1)}%</div>
+                <div style={{ ...statLabelStyle, ...(darkMode ? { color: "#aaa" } : {}) }}>Win Rate</div>
               </div>
-              <div style={statBoxStyle}>
-                <div style={statValueStyle}>{formatDuration(summary!.totalTimeSeconds)}</div>
-                <div style={statLabelStyle}>Time Played</div>
+              <div style={{ ...statBoxStyle, ...(darkMode ? { background: "#181a20", color: "#7ecbff" } : {}) }}>
+                <div style={{ ...statValueStyle, ...(darkMode ? { color: "#7ecbff" } : {}) }}>{formatDuration(summary!.totalTimeSeconds)}</div>
+                <div style={{ ...statLabelStyle, ...(darkMode ? { color: "#aaa" } : {}) }}>Time Played</div>
               </div>
             </div>
           </div>
 
           {/* Per-Game Breakdown */}
           {summary!.gameBreakdown.length > 0 && (
-            <div style={cardStyle}>
-              <h2 style={sectionHeadingStyle}>🎮 Game Breakdown</h2>
+            <div style={{ ...cardStyle, ...(darkMode ? { background: "#23272f", color: "#f5f6fa" } : {}) }}>
+              <h2 style={{ ...sectionHeadingStyle, ...(darkMode ? { color: "#7ecbff" } : {}) }}>🎮 Game Breakdown</h2>
               <div style={{ overflowX: "auto" }}>
-                <table style={tableStyle}>
+                <table style={{ ...tableStyle, ...(darkMode ? { background: "#23272f", color: "#f5f6fa" } : {}) }}>
                   <thead>
                     <tr>
-                      <th style={thStyle}>Game</th>
-                      <th style={thStyle}>Played</th>
-                      <th style={thStyle}>Wins</th>
-                      <th style={thStyle}>Losses</th>
-                      <th style={thStyle}>Draws</th>
-                      <th style={thStyle}>Win Rate</th>
+                      <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Game</th>
+                      <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Played</th>
+                      <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Wins</th>
+                      <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Losses</th>
+                      <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Draws</th>
+                      <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Win Rate</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -252,23 +255,23 @@ const Dashboard: React.FC = () => {
                         : "0.0";
                       return (
                         <tr key={game.gameType}>
-                          <td style={tdStyle}>
+                          <td style={{ ...tdStyle, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>
                             <span style={{ marginRight: "0.5em" }}>
                               {gameIconMap[game.gameType] || "🎮"}
                             </span>
                             {getGameDisplayName(game.gameType as GameType)}
                           </td>
-                          <td style={tdStyle}>{game.totalGames}</td>
-                          <td style={{ ...tdStyle, color: "#28a745", fontWeight: 600 }}>
+                          <td style={{ ...tdStyle, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>{game.totalGames}</td>
+                          <td style={{ ...tdStyle, color: darkMode ? "#28e07b" : "#28a745", fontWeight: 600, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>
                             {game.wins}
                           </td>
-                          <td style={{ ...tdStyle, color: "#dc3545", fontWeight: 600 }}>
+                          <td style={{ ...tdStyle, color: darkMode ? "#ff7e67" : "#dc3545", fontWeight: 600, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>
                             {game.losses}
                           </td>
-                          <td style={{ ...tdStyle, color: "#ffc107", fontWeight: 600 }}>
+                          <td style={{ ...tdStyle, color: darkMode ? "#ffe066" : "#ffc107", fontWeight: 600, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>
                             {game.draws}
                           </td>
-                          <td style={tdStyle}>{winRate}%</td>
+                          <td style={{ ...tdStyle, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>{winRate}%</td>
                         </tr>
                       );
                     })}
@@ -280,8 +283,8 @@ const Dashboard: React.FC = () => {
 
           {/* Daily Activity Chart */}
           {summary!.dailyBreakdown.length > 0 && (
-            <div style={cardStyle}>
-              <h2 style={sectionHeadingStyle}>📅 Daily Activity</h2>
+            <div style={{ ...cardStyle, ...(darkMode ? { background: "#23272f", color: "#f5f6fa" } : {}) }}>
+              <h2 style={{ ...sectionHeadingStyle, ...(darkMode ? { color: "#7ecbff" } : {}) }}>📅 Daily Activity</h2>
               <div style={{ display: "flex", gap: "0.5em", alignItems: "flex-end", height: "120px" }}>
                 {[...summary!.dailyBreakdown].reverse().map((day, idx) => {
                   const maxGames = Math.max(...summary!.dailyBreakdown.map((d) => d.totalGames), 1);
@@ -301,13 +304,13 @@ const Dashboard: React.FC = () => {
                           width: "100%",
                           maxWidth: "40px",
                           height: `${Math.max(height, 5)}%`,
-                          background: "linear-gradient(180deg, #3a7bd5 0%, #7ecbff 100%)",
+                          background: darkMode ? "linear-gradient(180deg, #7ecbff 0%, #3a7bd5 100%)" : "linear-gradient(180deg, #3a7bd5 0%, #7ecbff 100%)",
                           borderRadius: "4px 4px 0 0",
                           minHeight: "4px",
                         }}
                         title={`${day.totalGames} games`}
                       />
-                      <span style={{ fontSize: "0.7em", color: "#999", marginTop: "0.3em" }}>
+                      <span style={{ fontSize: "0.7em", color: darkMode ? "#aaa" : "#999", marginTop: "0.3em" }}>
                         {new Date(day.activityDate).toLocaleDateString(undefined, {
                           weekday: "short",
                         })}
@@ -322,37 +325,37 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* Recent Games */}
-      <div style={cardStyle}>
-        <h2 style={sectionHeadingStyle}>🕐 Recent Games</h2>
+      <div style={{ ...cardStyle, ...(darkMode ? { background: "#23272f", color: "#f5f6fa" } : {}) }}>
+        <h2 style={{ ...sectionHeadingStyle, ...(darkMode ? { color: "#7ecbff" } : {}) }}>🕐 Recent Games</h2>
         {recentGames.length === 0 ? (
-          <p style={{ color: "#666", textAlign: "center" }}>No games played yet.</p>
+          <p style={{ color: darkMode ? "#aaa" : "#666", textAlign: "center" }}>No games played yet.</p>
         ) : (
           <div style={{ overflowX: "auto" }}>
-            <table style={tableStyle}>
+            <table style={{ ...tableStyle, ...(darkMode ? { background: "#23272f", color: "#f5f6fa" } : {}) }}>
               <thead>
                 <tr>
-                  <th style={thStyle}>Game</th>
-                  <th style={thStyle}>Result</th>
-                  <th style={thStyle}>Moves</th>
-                  <th style={thStyle}>Duration</th>
-                  <th style={thStyle}>Date</th>
+                  <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Game</th>
+                  <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Result</th>
+                  <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Moves</th>
+                  <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Duration</th>
+                  <th style={{ ...thStyle, ...(darkMode ? { color: "#aaa", borderBottom: "2px solid #444" } : {}) }}>Date</th>
                 </tr>
               </thead>
               <tbody>
                 {recentGames.map((game) => (
                   <tr key={game.id}>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>
                       <span style={{ marginRight: "0.5em" }}>
                         {gameIconMap[game.gameType] || "🎮"}
                       </span>
                       {getGameDisplayName(game.gameType as GameType)}
                     </td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>
                       <span style={resultBadgeStyle(game.result)}>{game.result}</span>
                     </td>
-                    <td style={tdStyle}>{game.movesCount}</td>
-                    <td style={tdStyle}>{formatDuration(game.durationSeconds)}</td>
-                    <td style={tdStyle}>
+                    <td style={{ ...tdStyle, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>{game.movesCount}</td>
+                    <td style={{ ...tdStyle, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>{formatDuration(game.durationSeconds)}</td>
+                    <td style={{ ...tdStyle, ...(darkMode ? { borderBottom: "1px solid #444" } : {}) }}>
                       {new Date(game.endedAt).toLocaleDateString()}
                     </td>
                   </tr>

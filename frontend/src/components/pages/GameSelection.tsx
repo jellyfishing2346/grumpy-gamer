@@ -1,8 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useDarkModeContext } from "../DarkModeProvider";
+import { getDarkModeStyles } from "../getDarkModeStyles";
 
-
-const containerStyle: React.CSSProperties = {
+const baseContainerStyle: React.CSSProperties = {
   padding: "2.5em 2em",
   maxWidth: 700,
   margin: "3.5em auto",
@@ -27,6 +28,46 @@ const headingStyle: React.CSSProperties = {
 
 const GameSelection: React.FC = () => {
   const navigate = useNavigate();
+  const [darkMode] = useDarkModeContext();
+  const containerStyle = getDarkModeStyles(
+    darkMode,
+    baseContainerStyle,
+    {
+      background: "#23272f",
+      color: "#f5f6fa",
+      border: "1.5px solid #444",
+      boxShadow: "0 4px 32px 0 rgba(31, 38, 135, 0.37)",
+    }
+  );
+  const cardStyle = getDarkModeStyles(
+    darkMode,
+    { background: '#f8fbff', borderRadius: 18, boxShadow: '0 2px 12px #b3d0ff22', padding: '1.3em 1.5em', minWidth: 220, maxWidth: 260, textAlign: 'center', border: '1.5px solid #e9f1ff', position: 'relative', opacity: 1 },
+    { background: '#23272f', border: '1.5px solid #444', color: '#7ecbff', boxShadow: '0 2px 12px #23272f55' }
+  );
+  const btnStyle = getDarkModeStyles(
+    darkMode,
+    {
+      background: 'linear-gradient(90deg, #7ecbff 0%, #b3e0ff 100%)',
+      color: '#23272f',
+      border: 'none',
+      borderRadius: '1.2em',
+      padding: '0.6em 1.3em',
+      fontWeight: 700,
+      fontSize: '1em',
+      marginTop: '0.7em',
+      cursor: 'pointer',
+      boxShadow: '0 2px 8px 0 rgba(80, 120, 200, 0.10)',
+      transition: 'background 0.2s',
+      outline: 'none',
+      opacity: 1
+    },
+    {
+      background: 'linear-gradient(90deg, #23272f 0%, #181a20 100%)',
+      color: '#7ecbff',
+      border: '1.5px solid #444',
+      boxShadow: '0 2px 8px 0 rgba(31, 38, 135, 0.37)',
+    }
+  );
   const games = [
     {
       icon: '🎯', name: 'Wordle', desc: 'Guess the word in 6 tries', route: '/play/wordle', playable: true
@@ -45,21 +86,7 @@ const GameSelection: React.FC = () => {
     { icon: '⚫️⚪️', name: 'Othello/Reversi', desc: 'Flip discs, control the board.', route: '/play/othello', playable: true },
     { icon: '🃏', name: 'Memory', desc: 'Match pairs to win.', route: '/play/memory', playable: true },
   ];
-  const btnStyle: React.CSSProperties = {
-    background: 'linear-gradient(90deg, #7ecbff 0%, #b3e0ff 100%)',
-    color: '#23272f',
-    border: 'none',
-    borderRadius: '1.2em',
-    padding: '0.6em 1.3em',
-    fontWeight: 700,
-    fontSize: '1em',
-    marginTop: '0.7em',
-    cursor: 'pointer',
-    boxShadow: '0 2px 8px 0 rgba(80, 120, 200, 0.10)',
-    transition: 'background 0.2s',
-    outline: 'none',
-    opacity: 1
-  };
+  // removed duplicate btnStyle declaration
   return (
     <div style={containerStyle}>
       <h1 style={headingStyle}>Game Selection</h1>
@@ -69,7 +96,7 @@ const GameSelection: React.FC = () => {
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1.5em' }}>
         {games.map((game) => (
-          <div key={game.name} style={{ background: '#f8fbff', borderRadius: 18, boxShadow: '0 2px 12px #b3d0ff22', padding: '1.3em 1.5em', minWidth: 220, maxWidth: 260, textAlign: 'center', border: '1.5px solid #e9f1ff', position: 'relative', opacity: game.playable ? 1 : 0.7 }}>
+          <div key={game.name} style={{ ...cardStyle, opacity: game.playable ? 1 : 0.7 }}>
             <span role="img" aria-label={game.name} style={{ fontSize: '2em' }}>{game.icon}</span>
             <div style={{ fontWeight: 700, margin: '0.5em 0 0.2em 0' }}>{game.name}</div>
             <div style={{ fontSize: '0.98em', marginBottom: '0.7em' }}>{game.desc}</div>
@@ -83,7 +110,11 @@ const GameSelection: React.FC = () => {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: '2em', color: '#aaa', fontSize: '1.05em' }}>
+      <div style={getDarkModeStyles(
+        darkMode,
+        { marginTop: '2em', color: '#aaa', fontSize: '1.05em' },
+        { color: '#b3e0ff' }
+      )}>
         Want a different game? <span style={{ color: '#7ecbff', fontWeight: 600 }}>Suggest your own!</span>
       </div>
     </div>
