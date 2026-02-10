@@ -19,6 +19,7 @@ class UserUpdate(BaseModel):
     new_username: str | None = None
     new_password: str | None = None
 
+
 @auth_router.put("/user/update")
 def update_user(
     update: UserUpdate,
@@ -31,20 +32,30 @@ def update_user(
     target_email = email if email else token_email
     if update.new_email:
         try:
-            cursor.execute("UPDATE users SET email = ? WHERE email = ?", (update.new_email, target_email))
+            cursor.execute(
+                "UPDATE users SET email = ? WHERE email = ?",
+                (update.new_email, target_email)
+            )
             conn.commit()
         except sqlite3.IntegrityError:
             conn.close()
             raise HTTPException(status_code=400, detail="Email already in use")
     if update.new_username:
-        cursor.execute("UPDATE users SET username = ? WHERE email = ?", (update.new_username, update.new_email or target_email))
+        cursor.execute(
+            "UPDATE users SET username = ? WHERE email = ?",
+            (update.new_username, update.new_email or target_email)
+        )
         conn.commit()
     if update.new_password:
         hashed_pw = pwd_context.hash(update.new_password)
-        cursor.execute("UPDATE users SET hashed_password = ? WHERE email = ?", (hashed_pw, update.new_email or target_email))
+        cursor.execute(
+            "UPDATE users SET hashed_password = ? WHERE email = ?",
+            (hashed_pw, update.new_email or target_email)
+        )
         conn.commit()
     conn.close()
     return {"msg": f"User info updated for {target_email}"}
+
 
 from fastapi import Query
 
@@ -57,15 +68,20 @@ def delete_user(
     cursor = conn.cursor()
     # If email query param is provided, delete that user (admin use), else delete authenticated user
     target_email = email if email else token_email
-    cursor.execute("DELETE FROM users WHERE email = ?", (target_email,))
+    cursor.execute(
+        "DELETE FROM users WHERE email = ?",
+        (target_email,)
+    )
     conn.commit()
     conn.close()
     return {"msg": f"Account deleted for {target_email}"}
 
 
+    
 # Standalone app for running auth.py directly (for testing)
 app = FastAPI()
 
+    
 # CORS middleware to allow frontend requests
 allowed_origins = os.getenv(
     "ALLOWED_ORIGINS",
@@ -80,6 +96,7 @@ app.add_middleware(
 )
 
 
+    
 # Root endpoint (only for standalone app)
 @app.get("/")
 def root():
@@ -90,34 +107,41 @@ def root():
     }
 
 
+    
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+    
 # SQLite setup (for demo; use PostgreSQL in production)
 def get_db():
     conn = sqlite3.connect("users.db")
-    conn.execute('''CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        username TEXT,
-        hashed_password TEXT NOT NULL
-    )''')
+    conn.execute(
+        '''CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            username TEXT,
+            hashed_password TEXT NOT NULL
+        )'''
+    )
     return conn
 
 
+    
 class UserSignup(BaseModel):
     email: EmailStr
     username: str
     password: str
 
 
+    
 class UserLogin(BaseModel):
     email: EmailStr
     username: str | None = None
     password: str
 
 
+    
 @auth_router.post("/signup")
 @app.post("/signup")  # Also register on standalone app for testing
 def signup(user: UserSignup):
@@ -137,6 +161,7 @@ def signup(user: UserSignup):
     return {"msg": "Signup successful"}
 
 
+    
 @auth_router.post("/login")
 @app.post("/login")  # Also register on standalone app for testing
 def login(user: UserLogin):
