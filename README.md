@@ -1,6 +1,4 @@
-
 # 🎮 Grumpy Gamer
-
 > **Teaching AI to rage-quit less than humans** *(eventually)*
 
 <div align="center">
@@ -9,6 +7,9 @@
 ![Python](https://img.shields.io/badge/python-3.9+-blue?style=for-the-badge&logo=python)
 ![PyTorch](https://img.shields.io/badge/PyTorch-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232a?style=for-the-badge&logo=react&logoColor=61dafb)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
 **[Live Demo](https://grumpy-gamer.vercel.app) · [Documentation]() · [Report Bug](https://github.com/jellyfishing2346/grumpy-gamer/issues)**
 
@@ -43,14 +44,17 @@
 
 ## 🧠 What's This About?
 
-**Grumpy Gamer** is a project to explore whether AI can beat classic games such as Wordle, Sudoku, and more. The goal is to implement game environments and develop AI agents that can play and potentially master these games using various algorithms, including rule-based logic, search, and machine learning. 
+**Grumpy Gamer** is a full-stack gaming platform where players challenge AI opponents powered by reinforcement learning across 7 classic games — Tic-Tac-Toe, Connect Four, Checkers, Chess, Minesweeper, Othello, and 2048. Each AI agent is trained using deep RL and falls back to classical algorithms (Minimax, heuristics) when needed, so there's always a worthy opponent waiting.
+
 
 ## Project Structure
-- games/: Game environments (Wordle, Sudoku, etc.)
-- agents/: AI agents for each game
-- scripts/: Utilities to run experiments and evaluate agents
-- tests/: Unit and integration tests
-- docs/: Documentation and research notes
+- `frontend/` — React + TypeScript UI (Vite, React Router, Tailwind CSS)
+- `backend/` — FastAPI server with game AI endpoints and auth
+- `backend/rl/` — Reinforcement learning agents and training scripts
+- `backend/rl/models/` — Trained model weights (.zip)
+- `backend/rl/agents/` — Per-game RL agent implementations
+- `tests/` — Unit and integration tests
+- `docs/` — Documentation and research notes
 
 ## ✨ Key Features
 
@@ -58,51 +62,51 @@
 <tr>
 <td width="50%">
 
-### 🤖 **Smart AI Agent**
-- Learns through reinforcement learning
-- Deep neural network decision-making  
-- Thousands of hours of practice in minutes
+### 🤖 **7 AI-Powered Games**
+- Tic-Tac-Toe, Connect Four, Checkers, Chess
+- Minesweeper, Othello, 2048
+- RL-trained models with classical fallbacks
 
 </td>
 <td width="50%">
 
-### 🎯 **Interactive Demo**
-- Watch the AI play in real-time
-- Challenge it yourself (good luck!)
-- See inside its "brain" with visualizations
+### 🎯 **Play Against the AI**
+- Real-time gameplay in your browser
+- Multiple difficulty levels
+- Smart move suggestions and hints
 
 </td>
 </tr>
 <tr>
 <td>
 
-### 📊 **Training Dashboard**
-- Live training metrics
-- Performance graphs
-- Compare different agents
+### 📊 **Game Statistics & Tracking**
+- Win/loss/draw records per game
+- Daily and lifetime stats
+- Activity summaries and streaks
 
 </td>
 <td>
 
-### 🚀 **Full-Stack Application**
-- Sleek React frontend
-- Fast Python backend
-- Deployed and ready to share
+### 🔐 **User Authentication**
+- Sign up and log in
+- Track your personal stats
+- Persistent game history
 
 </td>
 </tr>
 </table>
 
 ## 🛠️ Tech Stack
-```ascii
+```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│  Frontend:   React + TypeScript + Socket.io            │
-│  Backend:    Python + FastAPI + WebSockets             │
-│  ML Core:    PyTorch + Stable Baselines3               │
-│  Game Env:   Gymnasium + gym-retro                     │
-│  Database:   PostgreSQL + Redis                        │
-│  Deploy:     Docker + Heroku/Vercel                    │
+│  Frontend:   React + TypeScript + Vite + Tailwind CSS  │
+│  Backend:    Python + FastAPI + Uvicorn                 │
+│  ML/AI:      PyTorch + Stable Baselines3 + Gymnasium   │
+│  Auth:       JWT Authentication                        │
+│  Database:   SQLite (game stats)                       │
+│  Deploy:     Vercel (frontend) + Render (backend)      │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -111,24 +115,28 @@
 <summary><b>📦 Full Dependencies</b></summary>
 
 **Backend:**
-- 🔥 PyTorch - Deep learning framework
-- 🎯 Stable Baselines3 - RL algorithms (PPO, DQN, A2C)
-- ⚡ FastAPI - Modern web framework
-- 🎮 Gymnasium - RL environment interface
-- 🕹️ gym-retro - Classic game environments
+- ⚡ FastAPI — Modern async web framework
+- 🔥 PyTorch — Deep learning framework
+- 🎯 Stable Baselines3 — RL algorithms (PPO, DQN, A2C)
+- 🎮 Gymnasium — RL environment interface
+- 🦄 Uvicorn — ASGI server
+- 🔐 JWT — User authentication
+- 🗄️ SQLite — Lightweight game stats storage
+- 📊 Pydantic — Data validation and serialization
 
 **Frontend:**
-- ⚛️ React - UI framework
-- 📘 TypeScript - Type safety
-- 🔌 Socket.io - Real-time communication
-- 📈 Chart.js - Data visualization
-- 🎨 Tailwind CSS - Styling
+- ⚛️ React 18 — UI framework
+- 📘 TypeScript — Type safety
+- ⚡ Vite — Fast build tool and dev server
+- 🧭 React Router — Client-side routing
+- 🎨 Tailwind CSS — Utility-first styling
+- 📈 Chart.js — Data visualization
 
-**Infrastructure:**
-- 🐳 Docker - Containerization
-- 🗄️ PostgreSQL - Data storage
-- ⚡ Redis - Caching
-- ☁️ Heroku/Vercel - Deployment
+**AI Agents (per game):**
+- 🧠 RL-trained models (Stable Baselines3)
+- ♟️ Minimax with alpha-beta pruning (Tic-Tac-Toe, Connect Four, Checkers, Chess, Othello)
+- 🧩 Rule-based logic (Minesweeper)
+- 📐 Heuristic strategies (2048)
 
 </details>
 
@@ -146,42 +154,47 @@ graph LR
 - [x] Choose tech stack
 - [x] Initialize repository
 - [x] Set up development environment
-- [ ] Implement RL training pipeline
-- [ ] Train first successful agent
-- [x] Build React frontend
-- [x] Create FastAPI backend with WebSocket support
-- [x] Design training metrics dashboard
+- [x] Build React frontend with TypeScript + Vite
+- [x] Create FastAPI backend with game AI endpoints
+- [x] Implement user authentication (signup/login)
+- [x] Implement 7 game environments (Tic-Tac-Toe, Connect Four, Checkers, Chess, Minesweeper, Othello, 2048)
+- [x] Build game statistics tracking system
 - [x] Implement human vs AI gameplay
-- [x] Add model comparison features
+- [x] Deploy frontend to Vercel
+- [x] Deploy backend to Render
+- [ ] Train and optimize RL agents for all games
+- [ ] Add real-time multiplayer with WebSockets
+- [ ] Design training metrics dashboard
 - [ ] Write comprehensive documentation
-- [x] Deploy to production
 - [ ] Create demo video
 
 ## 🚀 Quick Start
 ```bash
 # Clone the repository
-git clone https://github.com/jellyfish2346/grumpy-gamer.git
+git clone https://github.com/jellyfishing2346/grumpy-gamer.git
 cd grumpy-gamer
 
-
-# Install dependencies and run the app
+# Frontend setup
 cd frontend
 npm install
-npm start
+npm run dev          # Runs on http://localhost:3000
 
-# (Optional) Backend setup
-# cd backend
-# pip install -r requirements.txt
-# uvicorn main:app --reload
+# Backend setup (separate terminal)
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload   # Runs on http://localhost:8000
 ```
 
 
 ## Usage
 
 Once the app is running, open your browser to [http://localhost:3000](http://localhost:3000) to:
-- Browse and play available games (Wordle, Sudoku, more coming soon)
-- Try human vs AI mode in Wordle
-- View upcoming features on the Game Selection page
+- Create an account or log in
+- Browse and play 7 classic games against AI opponents
+- Track your wins, losses, and streaks on the stats dashboard
+- Challenge yourself at different difficulty levels
+
+Or visit the live demo at **[grumpy-gamer.vercel.app](https://grumpy-gamer.vercel.app)**
 
 ## Testing
 
@@ -191,7 +204,7 @@ cd frontend
 npm test
 ```
 
-Backend (if applicable):
+Backend:
 ```bash
 cd backend
 pytest
@@ -199,41 +212,43 @@ pytest
 
 ## Deployment
 
-To build the frontend for production:
+**Frontend** is deployed on [Vercel](https://vercel.com):
 ```bash
 cd frontend
 npm run build
+# Push to GitHub — Vercel auto-deploys from main branch
 ```
-Deploy the contents of `frontend/build` to your preferred hosting (Vercel, Netlify, etc).
 
-For backend deployment, see backend/README.md (if present).
+**Backend** is deployed on [Render](https://render.com):
+- Uses `Procfile`: `web: uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}`
+- Auto-deploys from GitHub
 
 ---
 
 ## 🎮 How It Works
 
 <div align="center">
+
 ```
 ┌──────────────┐
 │  Game State  │
-│   (pixels)   │
+│  (board)     │
 └──────┬───────┘
        │
        ▼
 ┌──────────────┐
-│ Neural Net   │  ← Learns from experience
-│  (AI Brain)  │
+│  RL Agent    │  ← Trained via PPO / DQN
+│  (AI Brain)  │  ← Falls back to Minimax
 └──────┬───────┘
        │
        ▼
 ┌──────────────┐
-│   Actions    │  → Joystick movements
-│ (Up/Down/etc)│
+│   Action     │  → Place piece, move, click
 └──────┬───────┘
        │
        ▼
 ┌──────────────┐
-│   Reward     │  → Did we win? +1 : -1
+│   Reward     │  → Win: +1 | Lose: -1 | Draw: 0
 └──────────────┘
        │
        │ Repeat 1,000,000 times
@@ -245,7 +260,7 @@ For backend deployment, see backend/README.md (if present).
 
 </div>
 
-The AI uses **Proximal Policy Optimization (PPO)** to learn optimal gameplay strategies. It starts random, fails hilariously, then gradually discovers winning tactics through millions of attempts. Think of it as speed-running human childhood gaming experience.
+Each game AI uses **Proximal Policy Optimization (PPO)** or **Deep Q-Networks (DQN)** to learn optimal strategies through self-play. When a trained model isn't available, the agent seamlessly falls back to classical algorithms like Minimax with alpha-beta pruning — so the AI is always ready to play.
 
 
 ## 🎨 Screenshots
@@ -255,14 +270,17 @@ The AI uses **Proximal Policy Optimization (PPO)** to learn optimal gameplay str
 
 ## 📈 Performance
 
-| Metric | Human Average | Grumpy Gamer |
-|--------|--------------|--------------|
-| High Score | TBD | 🚧 Training... |
-| Win Rate | TBD | 🚧 Training... |
-| Rage Quits | High 😤 | Zero 😎 |
+| Game | AI Strategy | Fallback | Status |
+|------|------------|----------|--------|
+| Tic-Tac-Toe | PPO / DQN | Minimax (α-β) | ✅ Playable |
+| Connect Four | PPO / DQN | Minimax (heuristic) | ✅ Playable |
+| Checkers | PPO / DQN | Minimax | ✅ Playable |
+| Chess | PPO / DQN | Minimax | ✅ Playable |
+| Minesweeper | PPO / DQN | Rule-based logic | ✅ Playable |
+| Othello | PPO / DQN | Minimax | ✅ Playable |
+| 2048 | PPO / DQN | Heuristic | ✅ Playable |
 
 ## 📝 License
-
 
 MIT © [Faizan Khan]
 
