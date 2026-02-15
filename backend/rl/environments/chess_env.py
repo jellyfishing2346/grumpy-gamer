@@ -277,14 +277,14 @@ class ChessEnv(gym.Env):
         if not self.valid_moves:
             return self._get_observation(), -1.0, True, False, {"result": "loss"}
 
-        if action >= len(self.valid_moves):
-            action = self.np_random.choice(len(self.valid_moves))
+        # Validate action is in valid_moves
+        if action not in self.valid_moves:
+            move = self.np_random.choice(self.valid_moves)
             reward = -0.05
         else:
+            move = action
             reward = 0.0
 
-        # Apply agent's move
-        move = self.valid_moves[action]
         to_row, to_col = move['to']
         captured = self.board[to_row, to_col]
         self._apply_move(move)

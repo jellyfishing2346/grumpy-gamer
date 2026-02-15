@@ -246,8 +246,7 @@ class CheckersEnv(gym.Env):
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
         """
         Execute one step in the environment.
-
-        Action is an index into the valid_moves list.
+        Action is a move dict from valid_moves.
         """
         self.move_count += 1
 
@@ -256,15 +255,15 @@ class CheckersEnv(gym.Env):
             # Agent has no moves - loses
             return self._get_observation(), -1.0, True, False, {"result": "loss", "reason": "no_moves"}
 
-        if action >= len(self.valid_moves):
+        # Validate action is in valid_moves
+        if action not in self.valid_moves:
             # Invalid action - pick a random valid one but penalize
-            action = self.np_random.choice(len(self.valid_moves))
+            move = self.np_random.choice(self.valid_moves)
             reward = -0.1
         else:
+            move = action
             reward = 0.0
 
-        # Apply agent's move
-        move = self.valid_moves[action]
         captures_made = len(move['captures'])
         self._apply_move(move)
 

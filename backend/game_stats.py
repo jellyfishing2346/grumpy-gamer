@@ -117,8 +117,19 @@ def init_database():
 init_database()
 
 
+
 class GameStatsManager:
     """Manager class for game statistics operations."""
+
+    def delete_user_data(self):
+        """Delete all game stats and achievements for this user."""
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM game_sessions WHERE user_id = ?", (self.user_id,))
+            cursor.execute("DELETE FROM daily_activity WHERE user_id = ?", (self.user_id,))
+            cursor.execute("DELETE FROM lifetime_stats WHERE user_id = ?", (self.user_id,))
+            cursor.execute("DELETE FROM achievements WHERE user_id = ?", (self.user_id,))
+            conn.commit()
 
     VALID_GAMES = [
         'tictactoe', 'connectfour', 'checkers', 'chess',
