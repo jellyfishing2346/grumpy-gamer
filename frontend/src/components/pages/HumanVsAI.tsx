@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import gameStatsService, { getGameDisplayName, ActivitySummary, GameType } from "../../services/gameStatsService";
+import gameStatsService, { getGameDisplayName, ActivitySummary, GameType, getAILeaderboardStats } from "../../services/gameStatsService";
 
 
 import { useDarkModeContext } from "../DarkModeProvider";
@@ -70,16 +69,16 @@ const HumanVsAI: React.FC = () => {
   useEffect(() => {
     let mounted = true;
     async function fetchLeaderboard() {
-      // Fetch all-time best streak from backend
-      const lifetimeStats = await gameStatsService.getLifetimeStats();
-      if (!mounted) return;
-      // Sum up all games vs AI for all games
+      // Determine selected game type for API (convert display name to backend type)
+      const selectedGameType = selectedGame ? selectedGame.toLowerCase().replace(/\s+/g, "") as GameType : "tictactoe";
+      // Fetch user stats
+      const lifetimeStats = await gameStatsService.getLifetimeStats(selectedGameType);
       let bestStreak = 0;
       if (lifetimeStats && lifetimeStats.length > 0) {
         bestStreak = lifetimeStats.reduce((max, stat) => Math.max(max, stat.longestWinStreak || 0), 0);
       }
       // Still use recent games for fastest win
-      const recentGames = await gameStatsService.getRecentGames(50);
+      const recentGames = await gameStatsService.getRecentGames(50, selectedGameType);
       const aiGames = recentGames.filter(g => g.opponentType === 'ai' && g.result === 'win');
       let fastestWin: number | null = null;
       aiGames.forEach(g => {
@@ -87,14 +86,21 @@ const HumanVsAI: React.FC = () => {
           fastestWin = g.durationSeconds;
         }
       });
-      setLeaderboard([
-        { player: "You", streak: bestStreak, fastestWin: fastestWin ? gameStatsService.formatDuration(fastestWin) : "-" },
-        { player: "Grumpy AI", streak: 5, fastestWin: "8s" },
-      ]);
+      const youRow = { player: "You", streak: bestStreak, fastestWin: fastestWin ? gameStatsService.formatDuration(fastestWin) : "-" };
+      const showYou = bestStreak > 0 || (fastestWin && fastestWin > 0);
+      // Fetch dynamic AI stats
+      const aiStats = await getAILeaderboardStats(selectedGameType);
+      const aiRow = aiStats ? {
+        player: "Grumpy AI",
+        streak: aiStats.ai_best_win_streak,
+        fastestWin: aiStats.ai_fastest_win_seconds != null ? gameStatsService.formatDuration(aiStats.ai_fastest_win_seconds) : "-"
+      } : { player: "Grumpy AI", streak: 0, fastestWin: "-" };
+      const leaderboardRows = showYou ? [youRow, aiRow] : [aiRow];
+      if (mounted) setLeaderboard(leaderboardRows);
     }
     fetchLeaderboard();
     return () => { mounted = false; };
-  }, []);
+  }, [selectedGame]);
   // Dynamic AI learning feedback
   const [aiFeedback, setAiFeedback] = useState<string>("The AI is analyzing your play style...");
   useEffect(() => {

@@ -35,11 +35,30 @@ const Settings: React.FC = () => {
   // Dark mode toggle (global)
   const [darkMode, setDarkMode] = useDarkModeContext();
 
-  // Simulate fetching user info (replace with real API call)
+  // Fetch user info from backend using token
   React.useEffect(() => {
-    // TODO: Replace with real fetch
-    setUsername("grumpyuser");
-    setEmail("grumpyuser@email.com");
+    const token = localStorage.getItem("access_token") || "";
+    async function fetchUserInfo() {
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_API_BASE || "http://localhost:8000/api"}/user/info`,
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+            },
+          }
+        );
+        if (!res.ok) throw new Error("Failed to fetch user info");
+        const user = await res.json();
+        setUsername(user.username);
+        setEmail(user.email);
+      } catch (err) {
+        setUsername("");
+        setEmail("");
+      }
+    }
+    if (token) fetchUserInfo();
   }, []);
 
   const handleSave = async () => {
