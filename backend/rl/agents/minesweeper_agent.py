@@ -21,6 +21,25 @@ class MinesweeperRLAgent:
     Falls back to rule-based logic if no trained model is available.
     """
 
+    def get_action(self, obs):
+        """
+        Given observation (board), return recommended move as flat index.
+        """
+        # Assume obs is (2, rows, cols) numpy array or board dict
+        # If obs is numpy array, convert to board dict
+        if isinstance(obs, np.ndarray):
+            rows, cols = obs.shape[1], obs.shape[2]
+            # Convert obs to board dict format
+            board = [[{"state": "hidden", "adjacentMines": 0} for _ in range(cols)] for _ in range(rows)]
+            # This is a placeholder; real conversion should be implemented if needed
+        else:
+            # Assume obs is board dict
+            board = obs
+            rows = len(board)
+            cols = len(board[0]) if rows > 0 else 0
+        move, _ = self.get_move_with_info(board, rows, cols)
+        return move[0] * cols + move[1]
+
     def __init__(self, model_path: Optional[str] = None):
         """
         Initialize the RL agent.

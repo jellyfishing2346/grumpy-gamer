@@ -1,17 +1,26 @@
 
-
-from fastapi import FastAPI, HTTPException, APIRouter, Depends, Query
+from fastapi import FastAPI, HTTPException, APIRouter, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 import os
 import sqlite3
 from passlib.context import CryptContext
-try:
-    from .jwt_utils import create_access_token, verify_access_token
-except ImportError:
-    from jwt_utils import create_access_token, verify_access_token
-auth_router = APIRouter(tags=["auth"])
+from jwt_utils import verify_access_token, create_access_token
+
+auth_router = APIRouter()
+
+# Get current user info endpoint
+@auth_router.get("/user/info")
+async def get_user_info(token_email: str = Depends(verify_access_token)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT username FROM users WHERE email = ?", (token_email,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"email": token_email, "username": row[0]}
 
 
 class UserUpdate(BaseModel):
@@ -20,12 +29,19 @@ class UserUpdate(BaseModel):
     new_password: Optional[str] = None
 
 
+
+
+
 @auth_router.put("/user/update")
-def update_user(
+async def update_user(
     update: UserUpdate,
     token_email: str = Depends(verify_access_token),
-    email: str = Query(None)
+    email: str = Query(None),
+    request: Request = None
 ):
+    # Log headers and token for debugging
+    print("[update_user] Headers:", dict(request.headers))
+    print(f"[update_user] token_email from JWT: {token_email}")
     conn = get_db()
     cursor = conn.cursor()
     target_email = email if email else token_email
@@ -59,11 +75,19 @@ def update_user(
 from fastapi import Query
 
 
+
+
+from game_stats import GameStatsManager
+
 @auth_router.delete("/user/delete")
-def delete_user(
+async def delete_user(
     token_email: str = Depends(verify_access_token),
-    email: str = Query(None)
+    email: str = Query(None),
+    request: Request = None
 ):
+    # Log headers and token for debugging
+    print("[delete_user] Headers:", dict(request.headers))
+    print(f"[delete_user] token_email from JWT: {token_email}")
     conn = get_db()
     cursor = conn.cursor()
     target_email = email if email else token_email
@@ -73,7 +97,10 @@ def delete_user(
     )
     conn.commit()
     conn.close()
-    return {"msg": f"Account deleted for {target_email}"}
+    # Delete all user stats and achievements
+    stats_manager = GameStatsManager(user_id=target_email)
+    stats_manager.delete_user_data()
+    return {"msg": f"Account and all related data deleted for {target_email}"}
 
 
 app = FastAPI()
@@ -130,7 +157,6 @@ class UserLogin(BaseModel):
 
 
 @auth_router.post("/signup")
-@app.post("/signup")  # Also register on standalone app for testing
 def signup(user: UserSignup):
     conn = get_db()
     cursor = conn.cursor()
@@ -149,7 +175,6 @@ def signup(user: UserSignup):
 
 
 @auth_router.post("/login")
-@app.post("/login")  # Also register on standalone app for testing
 def login(user: UserLogin):
     conn = get_db()
     cursor = conn.cursor()

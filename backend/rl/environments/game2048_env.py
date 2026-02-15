@@ -22,6 +22,20 @@ class Game2048Env(gym.Env):
     Actions are directions: 0=up, 1=right, 2=down, 3=left
     """
 
+    def _get_valid_moves(self) -> np.ndarray:
+        """
+        Return array of valid moves (directions) where a move is possible.
+        """
+        import copy
+        valid = []
+        for direction in range(4):
+            # Deep copy the entire environment to avoid side effects
+            env_copy = copy.deepcopy(self)
+            moved, _ = env_copy._move(direction)
+            if moved:
+                valid.append(direction)
+        return np.array(valid)
+
     metadata = {"render_modes": ["human", "ansi"], "render_fps": 4}
 
     SIZE = 4
