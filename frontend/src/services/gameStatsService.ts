@@ -117,6 +117,17 @@ export interface ActivitySummary {
   }>;
 }
 
+export interface AILeaderboardStats {
+  game_type: GameType;
+  total_games: number;
+  ai_wins: number;
+  ai_losses: number;
+  ai_draws: number;
+  ai_win_rate: number;
+  ai_best_win_streak: number;
+  ai_fastest_win_seconds: number | null;
+}
+
 // Helper to get or generate a user ID
 const getUserId = (): string => {
   let userId = localStorage.getItem('grumpy_gamer_user_id');
@@ -469,3 +480,17 @@ const gameStatsService = {
 };
 
 export default gameStatsService;
+
+export async function getAILeaderboardStats(gameType: GameType): Promise<AILeaderboardStats | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/stats/ai/${gameType}`);
+    if (!response.ok) {
+      console.error('Failed to fetch AI leaderboard stats:', response.statusText);
+      return null;
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching AI leaderboard stats:', error);
+    return null;
+  }
+}
