@@ -5,8 +5,8 @@ from typing import Optional
 import os
 import sqlite3
 from passlib.context import CryptContext
-from jwt_utils import verify_access_token, create_access_token
-from game_stats import GameStatsManager
+from .jwt_utils import verify_access_token, create_access_token
+from .game_stats import GameStatsManager
 
 auth_router = APIRouter()
 
@@ -93,6 +93,8 @@ async def delete_user(
 
 app = FastAPI()
 
+app.include_router(auth_router)
+
 
 allowed_origins = os.getenv(
     "ALLOWED_ORIGINS",
@@ -114,6 +116,15 @@ def root():
         "message": "Grumpy Gamer API is running!",
         "docs": "/docs"
     }
+
+
+@app.get("/debug/routes")
+def debug_routes():
+    return {"routes": [route.path for route in app.routes]}
+
+print("Registered routes:")
+for route in app.routes:
+    print(route.path)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
