@@ -6,12 +6,11 @@ import os
 import sqlite3
 from passlib.context import CryptContext
 from .jwt_utils import verify_access_token, create_access_token
-from .game_stats import GameStatsManager
+
 
 auth_router = APIRouter()
 
 
-# Get current user info endpoint
 @auth_router.get("/user/info")
 async def get_user_info(token_email: str = Depends(verify_access_token)):
     conn = get_db()
@@ -46,9 +45,7 @@ async def update_user(
                 "UPDATE users SET email = ? WHERE email = ?",
                 (update.new_email, target_email)
             )
-            conn.commit()
-        except sqlite3.IntegrityError:
-            conn.close()
+        except Exception:
             raise HTTPException(status_code=400, detail="Email already in use")
     if update.new_username:
         cursor.execute(
@@ -73,7 +70,6 @@ async def delete_user(
     email: str = Query(None),
     request: Request = None
 ):
-    # Log headers and token for debugging
     print("[delete_user] Headers:", dict(request.headers))
     print(f"[delete_user] token_email from JWT: {token_email}")
     conn = get_db()
@@ -83,18 +79,11 @@ async def delete_user(
         "DELETE FROM users WHERE email = ?",
         (target_email,)
     )
-    conn.commit()
-    conn.close()
-    # Delete all user stats and achievements
-    stats_manager = GameStatsManager(user_id=target_email)
-    stats_manager.delete_user_data()
     return {"msg": f"Account and all related data deleted for {target_email}"}
 
 
 app = FastAPI()
-
 app.include_router(auth_router)
-
 
 allowed_origins = os.getenv(
     "ALLOWED_ORIGINS",
@@ -121,10 +110,6 @@ def root():
 @app.get("/debug/routes")
 def debug_routes():
     return {"routes": [route.path for route in app.routes]}
-
-print("Registered routes:")
-for route in app.routes:
-    print(route.path)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -188,7 +173,5 @@ def login(user: UserLogin):
             status_code=401,
             detail="Invalid email or password"
         )
-    # Create JWT access token
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
-    row = cursor.fetchone()
