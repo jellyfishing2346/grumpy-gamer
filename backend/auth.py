@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, HTTPException, APIRouter, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
@@ -7,8 +6,10 @@ import os
 import sqlite3
 from passlib.context import CryptContext
 from jwt_utils import verify_access_token, create_access_token
+from game_stats import GameStatsManager
 
 auth_router = APIRouter()
+
 
 # Get current user info endpoint
 @auth_router.get("/user/info")
@@ -29,9 +30,6 @@ class UserUpdate(BaseModel):
     new_password: Optional[str] = None
 
 
-
-
-
 @auth_router.put("/user/update")
 async def update_user(
     update: UserUpdate,
@@ -39,9 +37,6 @@ async def update_user(
     email: str = Query(None),
     request: Request = None
 ):
-    # Log headers and token for debugging
-    print("[update_user] Headers:", dict(request.headers))
-    print(f"[update_user] token_email from JWT: {token_email}")
     conn = get_db()
     cursor = conn.cursor()
     target_email = email if email else token_email
@@ -71,13 +66,6 @@ async def update_user(
     conn.close()
     return {"msg": f"User info updated for {target_email}"}
 
-
-from fastapi import Query
-
-
-
-
-from game_stats import GameStatsManager
 
 @auth_router.delete("/user/delete")
 async def delete_user(
@@ -178,19 +166,6 @@ def signup(user: UserSignup):
 def login(user: UserLogin):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT hashed_password FROM users WHERE email = ?",
-        (user.email,)
-    )
-    row = cursor.fetchone()
-    conn.close()
-    if not row or not pwd_context.verify(user.password, row[0]):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid email or password"
-        )
-    access_token = create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
     cursor.execute(
         "SELECT hashed_password FROM users WHERE email = ?",
         (user.email,)

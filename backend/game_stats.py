@@ -117,7 +117,6 @@ def init_database():
 init_database()
 
 
-
 class GameStatsManager:
     """Manager class for game statistics operations."""
 

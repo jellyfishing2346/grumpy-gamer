@@ -25,7 +25,6 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-
 def verify_access_token(token: str = Depends(oauth2_scheme)):
     print(f"[verify_access_token] Raw token: {token}")
     try:
@@ -39,8 +38,7 @@ def verify_access_token(token: str = Depends(oauth2_scheme)):
                 detail="Invalid token"
             )
         return email
-    except jwt.PyJWTError as e:
-        print(f"[verify_access_token] JWT decode error: {e}")
+    except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
