@@ -1,6 +1,6 @@
-"""Tests for the authentication API."""
 from fastapi.testclient import TestClient
-from auth import app
+
+from backend.api import app
 
 
 client = TestClient(app)
