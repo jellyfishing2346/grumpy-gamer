@@ -1,4 +1,7 @@
+
 import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from './AuthProvider';
+import './Chatbot.css'; // Create this CSS file for styling
 
 // TypeScript declaration for Google Analytics gtag
 declare global {
@@ -6,8 +9,6 @@ declare global {
     gtag?: (...args: any[]) => void;
   }
 }
-import { useAuth } from './AuthProvider';
-import './Chatbot.css'; // Create this CSS file for styling
 
 
 const CHATBOT_HISTORY_KEY = 'chatbot_history';
