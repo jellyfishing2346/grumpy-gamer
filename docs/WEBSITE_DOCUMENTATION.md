@@ -102,3 +102,47 @@ See `LICENSE.md` for licensing information.
 ---
 
 For more details, refer to the in-code documentation and the `docs/` directory.
+
+---
+
+## Chatbot
+
+The Grumpy Gamer platform includes an integrated AI-powered chatbot to assist users, answer questions, and provide guidance throughout the site.
+
+### Features
+
+- **Conversational AI**: The chatbot can answer questions about the platform, games, and features using both rule-based logic and a large language model (LLM) backend.
+- **Game Tutorials**: Ask for step-by-step instructions or tips for any supported game.
+- **FAQs**: Get instant answers to common questions about gameplay, accounts, and troubleshooting.
+- **Personalized Recommendations**: The chatbot can suggest games to try based on your activity and preferences.
+- **Contextual Help**: Receive guidance based on your current page or recent actions.
+- **Fallback to LLM**: If a rule-based answer is not available, the chatbot uses an LLM (e.g., OpenAI) for more general or complex queries.
+
+### How to Use
+
+1. **Open the Chatbot**: Click the chatbot icon in the lower-right corner of the site.
+2. **Type Your Question**: Enter any question or request for help (e.g., "How do I play Othello?" or "Show me my stats").
+3. **Get Instant Answers**: The chatbot will reply with helpful information, links, or step-by-step instructions.
+4. **Follow Up**: Continue the conversation for more details or clarification.
+
+### Technical Details
+
+- **Frontend**: Implemented as a React component (frontend/src/components/Chatbot.tsx). Handles user input, displays chat history, and communicates with the backend.
+- **Backend**: FastAPI endpoint at `/api/chatbot` processes messages, determines if a rule-based or LLM response is needed, and returns the reply.
+- **Authentication**: Only logged-in users can access the chatbot. Requests are authenticated via JWT tokens.
+- **Persistence**: Chat history is stored in the browser for session continuity.
+
+### Example Questions
+
+- "How do I play Connect Four?"
+- "What are the rules for Minesweeper?"
+- "Suggest a game for me."
+- "How do I reset my password?"
+- "Show me tips for Chess."
+
+### Limitations
+
+- The chatbot cannot perform account management actions (e.g., password reset) directly, but will guide you to the correct page.
+- Some responses may be generic if the LLM is used.
+
+For technical details, see the code in frontend/src/components/Chatbot.tsx and backend/chatbot.py.

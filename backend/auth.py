@@ -82,34 +82,7 @@ async def delete_user(
     return {"msg": f"Account and all related data deleted for {target_email}"}
 
 
-app = FastAPI()
-app.include_router(auth_router)
 
-allowed_origins = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:3000,https://grumpy-gamer.vercel.app"
-).split(",")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.get("/")
-def root():
-    return {
-        "status": "ok",
-        "message": "Grumpy Gamer API is running!",
-        "docs": "/docs"
-    }
-
-
-@app.get("/debug/routes")
-def debug_routes():
-    return {"routes": [route.path for route in app.routes]}
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
