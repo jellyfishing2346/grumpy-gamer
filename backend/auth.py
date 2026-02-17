@@ -1,8 +1,6 @@
-from fastapi import FastAPI, HTTPException, APIRouter, Depends, Query, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException, APIRouter, Depends, Query, Request
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-import os
 import sqlite3
 from passlib.context import CryptContext
 from .jwt_utils import verify_access_token, create_access_token
@@ -80,10 +78,6 @@ async def delete_user(
         (target_email,)
     )
     return {"msg": f"Account and all related data deleted for {target_email}"}
-
-
-
-
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
