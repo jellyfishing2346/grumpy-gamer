@@ -3,7 +3,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 import sqlite3
 from passlib.context import CryptContext
-from jwt_utils import verify_access_token, create_access_token
+from .jwt_utils import verify_access_token, create_access_token
 
 
 auth_router = APIRouter()
