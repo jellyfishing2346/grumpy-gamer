@@ -4,9 +4,12 @@ FastAPI app definition and router registration.
 
 from fastapi import FastAPI
 from .auth import auth_router
+from .chatbot import chatbot_router
+
 
 app = FastAPI()
-app.include_router(auth_router)
+app.include_router(auth_router, prefix="/api")
+app.include_router(chatbot_router, prefix="/api")
 
 
 # Root endpoint for health check and status
