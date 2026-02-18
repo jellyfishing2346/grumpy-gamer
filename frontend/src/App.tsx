@@ -3,6 +3,8 @@ import type { ReactElement } from 'react';
 import Navbar from "./components/Navbar";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
+
+import Chatbot from "./components/Chatbot";
 import './App.css';
 
 import Home from "./components/pages/Home";
@@ -97,6 +99,7 @@ function App() {
             }
           />
         </Routes>
+        <Chatbot />
       </Router>
     </AuthProvider>
   );
