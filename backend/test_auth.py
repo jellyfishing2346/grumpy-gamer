@@ -21,7 +21,7 @@ def test_signup_success():
     import time
     unique_email = f"test{int(time.time())}@example.com"
     response = client.post(
-        "/signup",
+        "/api/signup",
         json={"email": unique_email, "password": "testpass123"}
     )
     assert response.status_code == 200
@@ -31,7 +31,7 @@ def test_signup_success():
 def test_signup_invalid_email():
     """Test signup with invalid email format."""
     response = client.post(
-        "/signup",
+        "/api/signup",
         json={"email": "not-an-email", "password": "testpass123"}
     )
     assert response.status_code == 422  # Validation error
@@ -40,7 +40,7 @@ def test_signup_invalid_email():
 def test_login_invalid_credentials():
     """Test login with wrong credentials."""
     response = client.post(
-        "/login",
+        "/api/login",
         json={"email": "nonexistent@example.com", "password": "wrongpass"}
     )
     assert response.status_code == 401
@@ -54,14 +54,14 @@ def test_signup_and_login():
 
     # Signup
     signup_response = client.post(
-        "/signup",
+        "/api/signup",
         json={"email": unique_email, "password": "securepass123"}
     )
     assert signup_response.status_code == 200
 
     # Login
     login_response = client.post(
-        "/login",
+        "/api/login",
         json={"email": unique_email, "password": "securepass123"}
     )
     assert login_response.status_code == 200
