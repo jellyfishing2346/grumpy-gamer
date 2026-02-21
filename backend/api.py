@@ -3,8 +3,12 @@ FastAPI app definition and router registration.
 """
 
 from fastapi import FastAPI
-from auth import auth_router
-from chatbot import chatbot_router
+try:
+    from .auth import auth_router
+    from .chatbot import chatbot_router
+except ImportError:
+    from auth import auth_router
+    from chatbot import chatbot_router
 from fastapi.middleware.cors import CORSMiddleware
 
 
