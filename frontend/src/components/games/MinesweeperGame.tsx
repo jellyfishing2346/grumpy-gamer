@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { recordGame } from '../../services/gameStatsService';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import API_URL from "../../config/api";
+const API_BASE_URL = API_URL;
 
 // Types
 type CellState = 'hidden' | 'revealed' | 'flagged';

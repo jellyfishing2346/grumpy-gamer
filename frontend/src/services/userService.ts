@@ -1,7 +1,8 @@
 // userService.ts
 // Handles user account update and deletion API calls
 
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api";
+import API_URL from "../config/api";
+const API_BASE = `${API_URL}/api`;
 
 export async function updateUser({ email, username, newEmail, newUsername, token }: {
   email: string;
