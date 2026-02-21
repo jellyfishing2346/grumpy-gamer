@@ -72,28 +72,28 @@ function App() {
             element={
               <ProtectedRoute>
                 <Routes>
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/games" element={<GameSelection />} />
-                  <Route path="/play/:game" element={<GamePlay />} />
-                  <Route path="/play" element={<Navigate to="/games" replace />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/comparison" element={<Comparison />} />
-                  <Route path="/human-vs-ai" element={<HumanVsAI />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/play/wordle" element={<WordleGame />} />
-                  <Route path="/play/sudoku" element={<SudokuGame />} />
-                  <Route path="/play/tictactoe" element={<TicTacToeGame />} />
-                  <Route path="/play/connectfour" element={<ConnectFourGame />} />
-                  <Route path="/play/checkers" element={<CheckersGame />} />
-                  <Route path="/play/chess" element={<ChessGame />} />
-                  <Route path="/play/rps" element={<RockPaperScissorsGame />} />
-                  <Route path="/play/minesweeper" element={<MinesweeperGame />} />
-                  <Route path="/play/2048" element={<Game2048 />} />
-                  <Route path="/play/hangman" element={<HangmanGame />} />
-                  <Route path="/play/othello" element={<OthelloGame />} />
-                  <Route path="/play/memory" element={<MemoryGame />} />
-                  <Route path="/play/coming-soon" element={<ComingSoonGame name="Coming Soon" />} />
+                  <Route path="home" element={<Home />} />
+                  <Route path="games" element={<GameSelection />} />
+                  <Route path="play/:game" element={<GamePlay />} />
+                  <Route path="play" element={<Navigate to="games" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="comparison" element={<Comparison />} />
+                  <Route path="human-vs-ai" element={<HumanVsAI />} />
+                  <Route path="about" element={<About />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="play/wordle" element={<WordleGame />} />
+                  <Route path="play/sudoku" element={<SudokuGame />} />
+                  <Route path="play/tictactoe" element={<TicTacToeGame />} />
+                  <Route path="play/connectfour" element={<ConnectFourGame />} />
+                  <Route path="play/checkers" element={<CheckersGame />} />
+                  <Route path="play/chess" element={<ChessGame />} />
+                  <Route path="play/rps" element={<RockPaperScissorsGame />} />
+                  <Route path="play/minesweeper" element={<MinesweeperGame />} />
+                  <Route path="play/2048" element={<Game2048 />} />
+                  <Route path="play/hangman" element={<HangmanGame />} />
+                  <Route path="play/othello" element={<OthelloGame />} />
+                  <Route path="play/memory" element={<MemoryGame />} />
+                  <Route path="play/coming-soon" element={<ComingSoonGame name="Coming Soon" />} />
                 </Routes>
               </ProtectedRoute>
             }
