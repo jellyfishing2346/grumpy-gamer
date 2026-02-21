@@ -1,3 +1,4 @@
+import API_URL from "../../config/api";
 import React from "react";
 import { updateUser, deleteUser } from "../../services/userService";
 import { useDarkModeContext } from "../DarkModeProvider";
@@ -41,7 +42,7 @@ const Settings: React.FC = () => {
     async function fetchUserInfo() {
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_API_BASE || "http://localhost:8000/api"}/user/info`,
+          `${API_URL}/api/user/info`,
           {
             method: "GET",
             headers: {

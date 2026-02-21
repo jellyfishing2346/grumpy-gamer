@@ -1,3 +1,4 @@
+import API_URL from "../config/api";
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
@@ -105,7 +106,7 @@ const Chatbot = () => {
         setIsLoading(false);
         return;
       }
-      const res = await fetch('/api/chatbot', {
+      const res = await fetch(`${API_URL}/api/chatbot`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

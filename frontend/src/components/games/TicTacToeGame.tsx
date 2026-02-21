@@ -5,7 +5,8 @@ import { recordGame } from "../../services/gameStatsService";
 
 // API base URL - use environment variable or default to production
 // For Create React App, use process.env; for local dev with proxy, use relative URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+import API_URL from "../../config/api";
+const API_BASE_URL = API_URL;
 
 // Types
 type Player = "X" | "O" | null;
