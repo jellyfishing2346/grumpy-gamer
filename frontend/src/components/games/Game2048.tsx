@@ -1,3 +1,4 @@
+import API_URL from "../../config/api";
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDarkModeContext } from '../DarkModeProvider';
 import { getDarkModeStyles } from '../getDarkModeStyles';
@@ -11,7 +12,6 @@ type Turn = 'player' | 'ai';
 type AIMode = 'heuristic' | 'reinforcement';
 
 // API Base URL
-import API_URL from "../../config/api";
 const API_BASE_URL = API_URL;
 
 interface Tile {
