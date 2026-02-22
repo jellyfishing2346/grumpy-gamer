@@ -6,6 +6,7 @@ import sys
 import traceback
 from stable_baselines3.common.env_checker import check_env
 
+
 def test_env(env_class, env_name, **kwargs):
     print(f"\nTesting {env_name}...")
     try:
@@ -25,6 +26,7 @@ def test_env(env_class, env_name, **kwargs):
         print(f"  ❌ {env_name} FAILED: {e}")
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")

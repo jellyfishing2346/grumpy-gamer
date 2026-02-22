@@ -8,7 +8,7 @@ from .othello_env import OthelloEnv
 
 __all__ = [
     'TicTacToeEnv',
-    'ConnectFourEnv', 
+    'ConnectFourEnv',
     'CheckersEnv',
     'ChessEnv',
     'MinesweeperEnv',
