@@ -284,10 +284,10 @@ def analyze_convergence(csv_path, game_name, output_dir):
         else:
             f.write("Convergence: not yet detected (may need more training)\n\n")
 
-        f.write(f"Potential bottleneck state:\n")
+        f.write("Potential bottleneck state:\n")
         f.write(f"  Timestep: {bottleneck_timestep:,}\n")
         f.write(f"  Reward:   {bottleneck_reward:.3f}\n")
-        f.write(f"  Note: Longest reward plateau - agent may be stuck in local optimum\n\n")
+        f.write("  Note: Longest reward plateau - agent may be stuck in local optimum\n\n")
 
         f.write("Recommendations:\n")
         if rewards[-1] < 0:
