@@ -7,7 +7,7 @@ import traceback
 from stable_baselines3.common.env_checker import check_env
 
 
-def test_env(env_class, env_name, **kwargs):
+def run_env_check(env_class, env_name, **kwargs):
     print(f"\nTesting {env_name}...")
     try:
         env = env_class(**kwargs)
@@ -36,12 +36,12 @@ if __name__ == "__main__":
     )
 
     results = []
-    results.append(test_env(TicTacToeEnv,    "TicTacToe",   opponent="random"))
-    results.append(test_env(ConnectFourEnv,  "ConnectFour", opponent="random"))
-    results.append(test_env(CheckersEnv,     "Checkers"))
-    results.append(test_env(MinesweeperEnv,  "Minesweeper"))
-    results.append(test_env(Game2048Env,     "Game2048"))
-    results.append(test_env(OthelloEnv,      "Othello",     opponent="random"))
+    results.append(run_env_check(TicTacToeEnv,    "TicTacToe",   opponent="random"))
+    results.append(run_env_check(ConnectFourEnv,  "ConnectFour", opponent="random"))
+    results.append(run_env_check(CheckersEnv,     "Checkers"))
+    results.append(run_env_check(MinesweeperEnv,  "Minesweeper"))
+    results.append(run_env_check(Game2048Env,     "Game2048"))
+    results.append(run_env_check(OthelloEnv,      "Othello",     opponent="random"))
 
     print(f"\n{'='*40}")
     passed = sum(results)
