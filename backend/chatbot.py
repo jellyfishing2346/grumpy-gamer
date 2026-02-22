@@ -7,7 +7,10 @@ import logging
 import os
 import httpx
 from dotenv import load_dotenv
-from jwt_utils import verify_access_token
+try:
+    from .jwt_utils import verify_access_token
+except ImportError:
+    from jwt_utils import verify_access_token
 
 
 # Load environment variables from .env file
