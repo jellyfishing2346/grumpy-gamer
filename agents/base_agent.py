@@ -1,3 +1,8 @@
-class BaseAgent:
+from abc import ABC, abstractmethod
+
+
+class BaseAgent(ABC):
+    @abstractmethod
     def solve(self, game):
-        raise NotImplementedError("This method should be overridden by subclasses.")
+        """Subclasses must implement this method."""
+        pass
