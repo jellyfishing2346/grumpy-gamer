@@ -1,6 +1,20 @@
-from games.wordle import Wordle
-from agents.wordle_agent import WordleAgent
+from games.sudoku import Sudoku
+from agents.sudoku_agent import SudokuAgent
 
-game = Wordle(solution="STONE")
-agent = WordleAgent()
-agent.solve(game)
+board = [
+    [5,3,0,0,7,0,0,0,0],
+    [6,0,0,1,9,5,0,0,0],
+    [0,9,8,0,0,0,0,6,0],
+    [8,0,0,0,6,0,0,0,3],
+    [4,0,0,8,0,3,0,0,1],
+    [7,0,0,0,2,0,0,0,6],
+    [0,6,0,0,0,0,2,8,0],
+    [0,0,0,4,1,9,0,0,5],
+    [0,0,0,0,8,0,0,7,9],
+]
+
+sudoku = Sudoku(board)
+print(f"Difficulty: {sudoku.difficulty()}")
+agent = SudokuAgent()
+agent.solve(sudoku)
+sudoku.print_board()
