@@ -119,9 +119,15 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
                 last_step = tutorial_steps["wordle"].index(entry["text"])
                 break
         if msg.strip() == "next":
-            response = tutorial_steps["wordle"][last_step + 1] if last_step + 1 < len(tutorial_steps["wordle"]) else "Tutorial complete! Type 'tutorial' to start again."
+            if last_step + 1 < len(tutorial_steps["wordle"]):
+                response = tutorial_steps["wordle"][last_step + 1]
+            else:
+                response = "Tutorial complete! Type 'tutorial' to start again."
         elif msg.strip() == "back":
-            response = tutorial_steps["wordle"][last_step - 1] if last_step - 1 >= 0 else tutorial_steps["wordle"][0]
+            if last_step - 1 >= 0:
+                response = tutorial_steps["wordle"][last_step - 1]
+            else:
+                response = tutorial_steps["wordle"][0]
         elif msg.strip() == "end":
             response = "Tutorial ended. Ask for another tutorial or help if needed!"
         else:
@@ -129,7 +135,12 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
         if response:
             chat_history.append({"from": "bot", "text": response})
             resp = JSONResponse({"response": response})
-            resp.set_cookie(key="chatbot_history", value=json.dumps(chat_history[-10:]), httponly=False, max_age=3600)
+            resp.set_cookie(
+                key="chatbot_history",
+                value=json.dumps(chat_history[-10:]),
+                httponly=False,
+                max_age=3600
+            )
             return resp
 
     # --- Greetings ---
@@ -137,7 +148,11 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
         response = "Hey there! 👋 I'm Buster, your Grumpy Gamer assistant. How can I help you today?"
 
     # --- About Grumpy Gamer ---
-    elif any(kw in msg for kw in ["what is grumpy gamer", "what's grumpy gamer", "about grumpy gamer", "about this site", "about this app", "what does this do", "what is this", "tell me about"]):
+    elif any(kw in msg for kw in [
+        "what is grumpy gamer", "what's grumpy gamer", "about grumpy gamer",
+        "about this site", "about this app", "what does this do",
+        "what is this", "tell me about"
+    ]):
         response = (
             "Grumpy Gamer is a platform where you can play classic games like Wordle, Sudoku, "
             "Chess, Connect Four, Tic-Tac-Toe, Checkers, Minesweeper, 2048, and more — "
@@ -146,7 +161,10 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
         )
 
     # --- Available games ---
-    elif any(kw in msg for kw in ["what games", "which games", "list of games", "available games", "games available", "what can i play"]):
+    elif any(kw in msg for kw in [
+        "what games", "which games", "list of games",
+        "available games", "games available", "what can i play"
+    ]):
         response = (
             "We currently have: 🎯 Wordle, 🧩 Sudoku, ♟️ Chess, 🔴 Connect Four, "
             "⭕ Tic-Tac-Toe, ⛀ Checkers, 💣 Minesweeper, 2️⃣0️⃣4️⃣8️⃣ 2048, 🔤 Hangman, "
@@ -169,7 +187,8 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
     elif any(kw in msg for kw in ["how to play connect four", "connect four rules", "how does connect four work"]):
         response = (
             "In Connect Four, players take turns dropping colored discs into a 7-column, 6-row grid. "
-            "The goal is to connect four of your discs in a row — horizontally, vertically, or diagonally — before your opponent does!"
+            "The goal is to connect four of your discs in a row — "
+            "horizontally, vertically, or diagonally — before your opponent does!"
         )
     elif any(kw in msg for kw in ["how to play tic tac toe", "tic tac toe rules", "how does tic tac toe work"]):
         response = (
@@ -213,10 +232,14 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
         )
 
     # --- AI & strategy ---
-    elif any(kw in msg for kw in ["how does the ai work", "how is the ai trained", "what algorithm", "reinforcement learning", "how does ai learn"]):
+    elif any(kw in msg for kw in [
+        "how does the ai work", "how is the ai trained",
+        "what algorithm", "reinforcement learning", "how does ai learn"
+    ]):
         response = (
             "Our AI agents use a combination of reinforcement learning (PPO, DQN) and classical algorithms "
-            "like minimax with alpha-beta pruning. They learn by playing thousands of games and improving over time. 🤖"
+            "like minimax with alpha-beta pruning. "
+            "They learn by playing thousands of games and improving over time. 🤖"
         )
     elif any(kw in msg for kw in ["can i beat the ai", "is the ai hard", "how hard is the ai", "ai difficulty"]):
         response = (
@@ -233,9 +256,15 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
     elif any(kw in msg for kw in ["how do i sign up", "how to register", "create account", "make an account"]):
         response = "Click the 'Sign Up' button on the homepage and enter your email, username, and password. It's free!"
     elif any(kw in msg for kw in ["how do i log in", "how to login", "can't log in", "login problem", "sign in"]):
-        response = "Click 'Log In' on the homepage and enter your email and password. If you forgot your password, contact support."
+        response = (
+            "Click 'Log In' on the homepage and enter your email and password. "
+            "If you forgot your password, contact support."
+        )
     elif any(kw in msg for kw in ["forgot password", "reset password", "change password"]):
-        response = "You can change your password from the Settings page. If you're locked out, contact support@grumpygamer.com."
+        response = (
+            "You can change your password from the Settings page. "
+            "If you're locked out, contact support@grumpygamer.com."
+        )
     elif any(kw in msg for kw in ["forgot username"]):
         response = "If you forgot your username, check your registration email or contact support for help."
     elif any(kw in msg for kw in ["delete account", "remove account"]):
@@ -254,18 +283,27 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
     elif any(kw in msg for kw in ["compare", "comparison"]):
         response = "The Comparison page lets you compare your stats and performance against AI or other players."
     elif any(kw in msg for kw in ["human vs ai", "play against ai", "vs ai"]):
-        response = "In Human vs AI mode, you play directly against our AI opponents. Choose your game and difficulty and see if you can win!"
+        response = (
+            "In Human vs AI mode, you play directly against our AI opponents. "
+            "Choose your game and difficulty and see if you can win!"
+        )
     elif any(kw in msg for kw in ["leaderboard", "rankings", "top players"]):
         response = "The leaderboard tracks top players based on their wins and performance across all games."
     elif any(kw in msg for kw in ["streak", "progress"]):
         response = "Track your daily and lifetime streaks, wins, and progress in the Dashboard."
     elif any(kw in msg for kw in ["settings"]):
-        response = "In Settings you can update your profile, change your password, toggle dark mode, and manage your account."
+        response = (
+            "In Settings you can update your profile, change your password, "
+            "toggle dark mode, and manage your account."
+        )
     elif any(kw in msg for kw in ["dark mode", "light mode", "theme"]):
         response = "You can toggle dark mode in the Settings page. 🌙"
 
     # --- Recommendations ---
-    elif any(kw in msg for kw in ["recommend", "suggest", "bored", "what should i play", "pick a game", "don't know what to play", "any ideas", "what game should i"]):
+    elif any(kw in msg for kw in [
+        "recommend", "suggest", "bored", "what should i play",
+        "pick a game", "don't know what to play", "any ideas", "what game should i"
+    ]):
         response = (
             "Here are some suggestions! 🎮 If you love words, try Wordle. "
             "For strategy, Chess or Connect Four are great. "
@@ -288,17 +326,32 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
     elif any(kw in msg for kw in ["open source", "github", "source code", "contribute"]):
         response = "Grumpy Gamer is open source! Explore and contribute to the codebase on our GitHub repository."
     elif any(kw in msg for kw in ["free", "cost", "price", "premium", "paid", "subscription"]):
-        response = "Grumpy Gamer is completely free to use! Some premium features may be added in the future, but the core experience will always be free. 🎉"
+        response = (
+            "Grumpy Gamer is completely free to use! Some premium features may be added "
+            "in the future, but the core experience will always be free. 🎉"
+        )
     elif any(kw in msg for kw in ["friends", "multiplayer", "invite", "play with"]):
         response = "You can play solo or against AI. Invite friends to join and challenge them to your favorite games!"
     elif any(kw in msg for kw in ["language", "translation", "spanish", "french", "german"]):
-        response = "Currently Grumpy Gamer is available in English. Support for more languages may be added in the future."
+        response = (
+            "Currently Grumpy Gamer is available in English. "
+            "Support for more languages may be added in the future."
+        )
     elif any(kw in msg for kw in ["privacy", "data", "personal information", "gdpr"]):
-        response = "Your privacy is important to us. We never share your personal data with third parties. Your password is encrypted with bcrypt."
+        response = (
+            "Your privacy is important to us. We never share your personal data "
+            "with third parties. Your password is encrypted with bcrypt."
+        )
     elif any(kw in msg for kw in ["secure", "security", "safe", "hack", "encrypted"]):
-        response = "Your password is encrypted using bcrypt, and we use JWT tokens for secure authentication. Your data is safe with us. 🔒"
+        response = (
+            "Your password is encrypted using bcrypt, and we use JWT tokens for "
+            "secure authentication. Your data is safe with us. 🔒"
+        )
     elif any(kw in msg for kw in ["why grumpy", "why the name", "name mean", "what does grumpy mean"]):
-        response = "Because we've all had those gaming moments that make us a little grumpy! Embrace the grump! 😤🎮"
+        response = (
+            "Because we've all had those gaming moments that make us a little grumpy! "
+            "Embrace the grump! 😤🎮"
+        )
     elif any(kw in msg for kw in ["difficulty", "level", "easy", "hard", "medium"]):
         response = "Most games offer multiple difficulty levels: Easy, Medium, and Hard. Choose your challenge! 💪"
     elif any(kw in msg for kw in ["save", "progress saved", "auto save"]):
@@ -306,7 +359,10 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
     elif any(kw in msg for kw in ["score", "points", "how am i doing", "stats", "statistics"]):
         response = "Check your scores, stats, and game history on the Dashboard page!"
     elif any(kw in msg for kw in ["new games", "upcoming games", "coming soon", "future games", "what's next"]):
-        response = "We're constantly adding new games! Coming soon: Rock Paper Scissors, Hangman, Memory, and more. Stay tuned! 🚀"
+        response = (
+            "We're constantly adding new games! Coming soon: Rock Paper Scissors, "
+            "Hangman, Memory, and more. Stay tuned! 🚀"
+        )
     elif any(kw in msg for kw in ["who made", "who built", "who created", "developer", "team"]):
         response = "Grumpy Gamer was built by a passionate team of developers. Check out the About page for more info!"
     elif any(kw in msg for kw in ["thank", "thanks", "ty", "thx", "appreciate"]):
