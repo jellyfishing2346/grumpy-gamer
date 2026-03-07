@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useDarkModeContext } from "../DarkModeProvider";
 import { getDarkModeStyles } from "../getDarkModeStyles";
 
@@ -67,6 +67,15 @@ const GamePlay: React.FC = () => {
     name: "Unknown Game",
     description: "Game not found."
   };
+
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!game || !gameInfo[game.toLowerCase()]) {
+      navigate("/game-selection")
+    }
+  }, [game, navigate]);
+
   return (
     <div style={containerStyle}>
       <div style={{ fontSize: "3em", marginBottom: "0.2em" }}>{info.icon}</div>
