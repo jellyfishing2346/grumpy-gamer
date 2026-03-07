@@ -28,4 +28,4 @@ def test_agent_no_valid_moves():
     # Checkerboard of 2 and 4, no merges possible
     board = np.array([[2, 4, 2, 4], [4, 2, 4, 2], [2, 4, 2, 4], [4, 2, 4, 2]], dtype=np.int32)
     env.board = board
-    assert env._get_valid_moves().size == 0, "No valid moves should be available"
+    assert env.get_valid_actions().size == 0, "No valid moves should be available"
