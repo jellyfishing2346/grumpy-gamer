@@ -72,7 +72,7 @@ const GamePlay: React.FC = () => {
 
   React.useEffect(() => {
     if (!game || !gameInfo[game.toLowerCase()]) {
-      navigate("/game-selection")
+      navigate("/games")
     }
   }, [game, navigate]);
 
