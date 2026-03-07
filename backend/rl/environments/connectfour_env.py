@@ -74,7 +74,7 @@ class ConnectFourEnv(gym.Env):
 
     def _get_valid_moves(self) -> np.ndarray:
         """Get array of valid column indices."""
-        return np.where(self.board[0] == 0)[0]
+        return np.where(np.atleast_1d(self.board[0] == 0))[0]
 
     def _is_valid_move(self, col: int) -> bool:
         """Check if a column has room for a piece."""
