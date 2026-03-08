@@ -2,6 +2,7 @@ import API_URL from "../../config/api";
 import React from "react";
 import { updateUser, deleteUser } from "../../services/userService";
 import { useDarkModeContext } from "../DarkModeProvider";
+import { useNavigate } from "react-router-dom";
 
 
 const containerStyle: React.CSSProperties = {
@@ -27,6 +28,7 @@ const headingStyle: React.CSSProperties = {
 };
 
 const Settings: React.FC = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -82,7 +84,8 @@ const Settings: React.FC = () => {
     try {
       await deleteUser(email, token);
       setMessage("Account deleted. You will be logged out.");
-      // TODO: Redirect or log out user
+      localStorage.removeItem("access_token");
+      setTimeout(() => navigate("/"), 1500);
     } catch (err) {
       setMessage("Error deleting account.");
     }
@@ -171,7 +174,6 @@ const Settings: React.FC = () => {
             {Array.isArray(message)
               ? message.map((m, i) => {
                   if (typeof m === 'object' && m !== null) {
-                    // Render msg property if present, else stringify
                     return <div key={i}>{typeof m.msg === 'string' ? m.msg : JSON.stringify(m)}</div>;
                   }
                   return <div key={i}>{String(m)}</div>;
