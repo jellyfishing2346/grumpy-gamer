@@ -106,7 +106,7 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
         if entry["from"] == "bot" and "tutorial" in entry["text"].lower():
             tutorial_session = "wordle"
             break
-    if ("tutorial" in msg or "how to play wordle" in msg) and not tutorial_session:
+    if ("tutorial" in msg or "how to play wordle" in msg or "how do i play wordle" in msg) and not tutorial_session:
         response = tutorial_steps["wordle"][0]
         chat_history.append({"from": "bot", "text": response})
         resp = JSONResponse({"response": response})
@@ -253,21 +253,21 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
         )
 
     # --- Account & auth ---
-    elif any(kw in msg for kw in ["how do i sign up", "how to register", "create account", "make an account"]):
+    elif any(kw in msg for kw in ["how do i sign up", "how to register", "create account", "make an account", "sign up"]):
         response = "Click the 'Sign Up' button on the homepage and enter your email, username, and password. It's free!"
     elif any(kw in msg for kw in ["how do i log in", "how to login", "can't log in", "login problem", "sign in"]):
         response = (
             "Click 'Log In' on the homepage and enter your email and password. "
             "If you forgot your password, contact support."
         )
-    elif any(kw in msg for kw in ["forgot password", "reset password", "change password"]):
+    elif any(kw in msg for kw in ["forgot password", "reset password", "change password", "reset my password"]):
         response = (
             "You can change your password from the Settings page. "
             "If you're locked out, contact support@grumpygamer.com."
         )
     elif any(kw in msg for kw in ["forgot username"]):
         response = "If you forgot your username, check your registration email or contact support for help."
-    elif any(kw in msg for kw in ["delete account", "remove account"]):
+    elif any(kw in msg for kw in ["delete account", "remove account", "delete my account"]):
         response = (
             "You can delete your account from your profile settings. "
             "Note that this is irreversible and all your data will be permanently removed."
