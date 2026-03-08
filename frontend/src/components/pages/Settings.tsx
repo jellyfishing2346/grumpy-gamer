@@ -3,6 +3,7 @@ import React from "react";
 import { updateUser, deleteUser } from "../../services/userService";
 import { useDarkModeContext } from "../DarkModeProvider";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthProvider";
 
 
 const containerStyle: React.CSSProperties = {
@@ -29,6 +30,7 @@ const headingStyle: React.CSSProperties = {
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [username, setUsername] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -84,7 +86,7 @@ const Settings: React.FC = () => {
     try {
       await deleteUser(email, token);
       setMessage("Account deleted. You will be logged out.");
-      localStorage.removeItem("access_token");
+      logout();
       setTimeout(() => navigate("/"), 1500);
     } catch (err) {
       setMessage("Error deleting account.");
