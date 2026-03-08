@@ -87,7 +87,7 @@ const Settings: React.FC = () => {
       await deleteUser(email, token);
       setMessage("Account deleted. You will be logged out.");
       logout();
-      setTimeout(() => navigate("/"), 1500);
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       setMessage("Error deleting account.");
     }
