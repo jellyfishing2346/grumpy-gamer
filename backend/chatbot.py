@@ -253,7 +253,9 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
         )
 
     # --- Account & auth ---
-    elif any(kw in msg for kw in ["how do i sign up", "how to register", "create account", "make an account", "sign up"]):
+    elif any(kw in msg for kw in [
+        "how do i sign up", "how to register", "create account", "make an account", "sign up"
+    ]):
         response = "Click the 'Sign Up' button on the homepage and enter your email, username, and password. It's free!"
     elif any(kw in msg for kw in ["how do i log in", "how to login", "can't log in", "login problem", "sign in"]):
         response = (
