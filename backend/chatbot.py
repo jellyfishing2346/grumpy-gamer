@@ -246,7 +246,7 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
             "Our AI ranges from beginner to expert depending on the game and difficulty setting. "
             "Give it a try — you might surprise yourself! 😤"
         )
-    elif any(kw in msg for kw in ["ai", "learn", "strategy", "how"]):
+    elif any(kw in msg for kw in ["ai", "learn", "strategy"]):
         response = (
             "Our AI agents use reinforcement learning and classical algorithms to play games. "
             "You can watch how they learn and adapt in real game scenarios."
