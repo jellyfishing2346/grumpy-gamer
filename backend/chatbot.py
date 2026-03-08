@@ -144,7 +144,7 @@ async def chatbot_endpoint(request: Request, response: Response, token_email: st
             return resp
 
     # --- Greetings ---
-    if any(kw in msg for kw in ["hello", "hi", "hey", "howdy", "sup", "what's up", "greetings"]):
+    if msg.strip().rstrip("?!. ") in ["hi", "hello", "hey", "howdy", "sup", "greetings"] or "what's up" in msg:
         response = "Hey there! 👋 I'm Buster, your Grumpy Gamer assistant. How can I help you today?"
 
     # --- About Grumpy Gamer ---
