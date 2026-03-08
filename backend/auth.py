@@ -80,6 +80,8 @@ async def delete_user(
         "DELETE FROM users WHERE email = ?",
         (target_email,)
     )
+    conn.commit()
+    conn.close()
     return {"msg": f"Account and all related data deleted for {target_email}"}
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
