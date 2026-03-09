@@ -212,16 +212,50 @@ pytest
 
 ## Deployment
 
-**Frontend** is deployed on [Vercel](https://vercel.com):
+### Frontend — Vercel
 ```bash
 cd frontend
 npm run build
 # Push to GitHub — Vercel auto-deploys from main branch
 ```
+- Root directory: `frontend`
+- Auto-deploys on every push to `main`
+- Live at: https://grumpy-gamer.vercel.app
 
-**Backend** is deployed on [Render](https://render.com):
-- Uses `Procfile`: `web: uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}`
-- Auto-deploys from GitHub
+### Backend — Render
+- Uses `Procfile`: `web: uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}`
+- Auto-deploys from GitHub on every push to `main`
+- Live at: https://grumpy-gamer.onrender.com
+
+#### Required Environment Variables on Render
+| Variable | Value |
+|----------|-------|
+| `ENV` | `production` |
+| `SECRET_KEY` | your JWT secret key |
+| `CHATBOT_USE_LLM` | `false` (set to `true` to enable OpenAI) |
+
+#### ⚠️ Render Free Tier — Cold Start Issue
+Render's free tier spins down after 15 minutes of inactivity, causing the first request to take **50+ seconds**. To keep the backend alive 24/7 without upgrading:
+
+**Solution: cron-job.org keep-alive ping**
+- Service: [cron-job.org](https://cron-job.org) (free)
+- URL: `https://grumpy-gamer.onrender.com/`
+- Schedule: Every 10 minutes (`*/10 * * * *`)
+- This prevents Render from spinning down during active hours
+
+To set up:
+1. Create a free account at [cron-job.org](https://cron-job.org)
+2. Click "Create Cronjob"
+3. Set URL to `https://grumpy-gamer.onrender.com/`
+4. Set schedule to "Every 10 minutes"
+5. Save and enable
+
+> **Note:** If no one visits the site for an extended period overnight, Render may still spin down. For guaranteed uptime, upgrade to Render's paid tier ($7/month).
+
+#### ⚠️ SQLite Database Persistence
+The backend currently uses SQLite (`users.db`) for user authentication. **SQLite data is wiped on every Render redeploy.** This means all user accounts are deleted whenever the backend is redeployed.
+
+**Planned fix (Issue #68):** Migrate to PostgreSQL via Render or Supabase for persistent storage.
 
 ---
 
