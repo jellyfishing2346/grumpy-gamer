@@ -162,6 +162,11 @@ graph LR
 - [x] Implement human vs AI gameplay
 - [x] Deploy frontend to Vercel
 - [x] Deploy backend to Render
+- [x] Improve WordleAgent word list (1,243 words)
+- [x] Add Wordle hard mode strategy
+- [x] SudokuAgent performance benchmarking
+- [x] Integration testing (66 tests passing)
+- [x] Code cleanup and documentation
 - [ ] Train and optimize RL agents for all games
 - [ ] Add real-time multiplayer with WebSockets
 - [ ] Design training metrics dashboard
