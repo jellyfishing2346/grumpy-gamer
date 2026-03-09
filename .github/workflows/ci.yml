@@ -1,11 +1,9 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -30,8 +28,6 @@ jobs:
         run: |
           cd frontend
           npm test -- --watchAll=false
-
-      # Backend (Python/FastAPI) linting and testing
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -45,6 +41,8 @@ jobs:
           cd backend
           flake8 .
       - name: Run backend tests
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           cd backend
           pytest
