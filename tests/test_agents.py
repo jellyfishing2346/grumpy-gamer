@@ -267,6 +267,63 @@ class TestWordleAgentHardMode(unittest.TestCase):
             f"Expected hard mode ({hard_total}) >= normal mode ({normal_total}) total guesses"
         )
 
+class TestSudokuAgentBenchmark(unittest.TestCase):
+    def _solve_timed(self, board):
+        import time
+        sudoku = Sudoku([row[:] for row in board])
+        agent = SudokuAgent()
+        start = time.perf_counter()
+        result = agent.solve(sudoku)
+        elapsed_ms = (time.perf_counter() - start) * 1000
+        return result, elapsed_ms
+
+    def test_easy_solves_under_50ms(self):
+        board = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9],
+        ]
+        result, ms = self._solve_timed(board)
+        self.assertTrue(result)
+        self.assertLess(ms, 50, f"Easy puzzle took {ms:.2f}ms, expected < 50ms")
+
+    def test_hard_solves_under_500ms(self):
+        board = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 3, 0, 8, 5],
+            [0, 0, 1, 0, 2, 0, 0, 0, 0],
+            [0, 0, 0, 5, 0, 7, 0, 0, 0],
+            [0, 0, 4, 0, 0, 0, 1, 0, 0],
+            [0, 9, 0, 0, 0, 0, 0, 0, 0],
+            [5, 0, 0, 0, 0, 0, 0, 7, 3],
+            [0, 0, 2, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 4, 0, 0, 0, 9],
+        ]
+        result, ms = self._solve_timed(board)
+        self.assertTrue(result)
+        self.assertLess(ms, 500, f"Hard puzzle took {ms:.2f}ms, expected < 500ms")
+
+    def test_expert_solves_under_1000ms(self):
+        board = [
+            [8, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 3, 6, 0, 0, 0, 0, 0],
+            [0, 7, 0, 0, 9, 0, 2, 0, 0],
+            [0, 5, 0, 0, 0, 7, 0, 0, 0],
+            [0, 0, 0, 0, 4, 5, 7, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0, 3, 0],
+            [0, 0, 1, 0, 0, 0, 0, 6, 8],
+            [0, 0, 8, 5, 0, 0, 0, 1, 0],
+            [0, 9, 0, 0, 0, 0, 4, 0, 0],
+        ]
+        result, ms = self._solve_timed(board)
+        self.assertTrue(result)
+        self.assertLess(ms, 1000, f"Expert puzzle took {ms:.2f}ms, expected < 1000ms")
 
 if __name__ == "__main__":
     unittest.main()
