@@ -1,27 +1,56 @@
 from fastapi import HTTPException, APIRouter, Depends, Query, Request
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-import sqlite3
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from passlib.context import CryptContext
+from dotenv import load_dotenv
 try:
     from .jwt_utils import verify_access_token, create_access_token
 except ImportError:
     from jwt_utils import verify_access_token, create_access_token
 
+load_dotenv()
 
 auth_router = APIRouter()
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def get_db():
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL environment variable is not set.")
+    conn = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+    return conn
+
+
+def init_db():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        '''CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            username TEXT,
+            hashed_password TEXT NOT NULL
+        )'''
+    )
+    conn.commit()
+    conn.close()
 
 
 @auth_router.get("/user/info")
 async def get_user_info(token_email: str = Depends(verify_access_token)):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT username FROM users WHERE email = ?", (token_email,))
+    cursor.execute("SELECT username FROM users WHERE email = %s", (token_email,))
     row = cursor.fetchone()
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"email": token_email, "username": row[0]}
+    return {"email": token_email, "username": row["username"]}
 
 
 class UserUpdate(BaseModel):
@@ -43,21 +72,24 @@ async def update_user(
     if update.new_email:
         try:
             cursor.execute(
-                "UPDATE users SET email = ? WHERE email = ?",
+                "UPDATE users SET email = %s WHERE email = %s",
                 (update.new_email, target_email)
             )
+            conn.commit()
         except Exception:
+            conn.rollback()
+            conn.close()
             raise HTTPException(status_code=400, detail="Email already in use")
     if update.new_username:
         cursor.execute(
-            "UPDATE users SET username = ? WHERE email = ?",
+            "UPDATE users SET username = %s WHERE email = %s",
             (update.new_username, update.new_email or target_email)
         )
         conn.commit()
     if update.new_password:
         hashed_pw = pwd_context.hash(update.new_password)
         cursor.execute(
-            "UPDATE users SET hashed_password = ? WHERE email = ?",
+            "UPDATE users SET hashed_password = %s WHERE email = %s",
             (hashed_pw, update.new_email or target_email)
         )
         conn.commit()
@@ -76,28 +108,10 @@ async def delete_user(
     conn = get_db()
     cursor = conn.cursor()
     target_email = email if email else token_email
-    cursor.execute(
-        "DELETE FROM users WHERE email = ?",
-        (target_email,)
-    )
+    cursor.execute("DELETE FROM users WHERE email = %s", (target_email,))
     conn.commit()
     conn.close()
     return {"msg": f"Account and all related data deleted for {target_email}"}
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def get_db():
-    conn = sqlite3.connect("users.db")
-    conn.execute(
-        '''CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            username TEXT,
-            hashed_password TEXT NOT NULL
-        )'''
-    )
-    return conn
 
 
 class UserSignup(BaseModel):
@@ -119,11 +133,12 @@ def signup(user: UserSignup):
     hashed_pw = pwd_context.hash(user.password)
     try:
         cursor.execute(
-            "INSERT INTO users (email, username, hashed_password) VALUES (?, ?, ?)",
+            "INSERT INTO users (email, username, hashed_password) VALUES (%s, %s, %s)",
             (user.email, user.username, hashed_pw)
         )
         conn.commit()
-    except sqlite3.IntegrityError:
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
         raise HTTPException(status_code=400, detail="Email already registered")
     finally:
         conn.close()
@@ -135,15 +150,12 @@ def login(user: UserLogin):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT hashed_password FROM users WHERE email = ?",
+        "SELECT hashed_password FROM users WHERE email = %s",
         (user.email,)
     )
     row = cursor.fetchone()
     conn.close()
-    if not row or not pwd_context.verify(user.password, row[0]):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid email or password"
-        )
+    if not row or not pwd_context.verify(user.password, row["hashed_password"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
