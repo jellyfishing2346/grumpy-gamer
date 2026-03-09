@@ -80,7 +80,6 @@ const Chatbot = () => {
         event_label: value,
       });
     }
-    // Optionally auto-send: handleSend() if desired
   }
 
   // Handle send message
@@ -90,7 +89,8 @@ const Chatbot = () => {
     setIsLoading(true);
     setError(null);
     const userMsg: Message = { from: 'user', text: input };
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     // Analytics: message sent
     if (window.gtag) {
       window.gtag('event', 'chatbot_message_sent', {
@@ -112,7 +112,10 @@ const Chatbot = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({
+          message: input,
+          history: updatedMessages.slice(-10).map(m => ({ from: m.from, text: m.text }))
+        })
       });
       if (res.status === 401) {
         setError('Your session has expired. Please log in again.');
