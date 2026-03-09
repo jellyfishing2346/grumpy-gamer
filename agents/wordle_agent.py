@@ -1,6 +1,7 @@
 import string
 from collections import Counter
 from agents.base_agent import BaseAgent
+import os
 
 # A small built-in word list for fallback; ideally load from a file
 COMMON_WORDS = [
@@ -16,8 +17,11 @@ COMMON_WORDS = [
 def load_word_list(path=None):
     """Load a word list from a file, or fall back to built-in list."""
     if path:
+        # Resolve relative to project root
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        abs_path = os.path.join(root, path)
         try:
-            with open(path) as f:
+            with open(abs_path) as f:
                 return [w.strip().upper() for w in f if len(w.strip()) == 5 and w.strip().isalpha()]
         except FileNotFoundError:
             pass
@@ -25,7 +29,7 @@ def load_word_list(path=None):
 
 
 class WordleAgent(BaseAgent):
-    def __init__(self, word_list_path=None):
+    def __init__(self, word_list_path="data/wordlist.txt"):
         self.word_list = load_word_list(word_list_path)
 
     def _filter_candidates(self, candidates, guess, feedback):
@@ -91,6 +95,7 @@ class WordleAgent(BaseAgent):
                 return guess
 
             candidates = self._filter_candidates(candidates, guess, feedback)
+            print(f"Remaining candidates: {candidates}")  # DEBUG
 
             if not candidates:
                 print("❌ No candidates remaining — word may not be in word list.")
