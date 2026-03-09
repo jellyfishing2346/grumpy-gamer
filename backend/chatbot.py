@@ -2,7 +2,6 @@ from fastapi import APIRouter, Request, Response, Depends
 from fastapi.responses import JSONResponse
 
 
-import json
 import logging
 import os
 import httpx
