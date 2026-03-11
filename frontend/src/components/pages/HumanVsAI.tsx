@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import gameStatsService, { getGameDisplayName, ActivitySummary, GameType, getAILeaderboardStats } from "../../services/gameStatsService";
+import AICoach from "../AICoach";
 
 
 import { useDarkModeContext } from "../DarkModeProvider";
@@ -101,33 +102,7 @@ const HumanVsAI: React.FC = () => {
     fetchLeaderboard();
     return () => { mounted = false; };
   }, [selectedGame]);
-  // Dynamic AI learning feedback
-  const [aiFeedback, setAiFeedback] = useState<string>("The AI is analyzing your play style...");
-  useEffect(() => {
-    // Use stats and leaderboard to generate feedback
-    if (!stats.length) return;
-    const userStats = stats.reduce((acc, g) => {
-      acc.wins += g.wins;
-      acc.losses += g.losses;
-      acc.draws += g.draws;
-      acc.streak = Math.max(acc.streak, g.streak);
-      return acc;
-    }, { wins: 0, losses: 0, draws: 0, streak: 0 });
-    let feedback = "The AI is analyzing your play style...";
-    if (userStats.streak >= 3) {
-      feedback = `Impressive! You're on a ${userStats.streak}-game win streak. The AI is adapting.`;
-    } else if (userStats.wins > userStats.losses) {
-      feedback = `You're ahead with ${userStats.wins} wins! The AI is learning from its mistakes.`;
-    } else if (userStats.losses > userStats.wins) {
-      feedback = `The AI has the upper hand (${userStats.losses} wins). Can you turn the tide?`;
-    } else if (userStats.draws > 0) {
-      feedback = `It's a close match! Draws: ${userStats.draws}. The AI is getting smarter.`;
-    }
-    setAiFeedback(feedback);
-  }, [stats]);
-
-
-
+  
   const navigate = useNavigate();
   const handleStartChallenge = () => {
     if (!selectedGame) return;
@@ -325,13 +300,7 @@ const HumanVsAI: React.FC = () => {
       </div>
 
       {/* AI Learning Feedback */}
-      <div style={getDarkModeStyles(
-        darkMode,
-        { background: "#181a20", borderRadius: 8, padding: "1.5em", color: "#aaa", maxWidth: 500, margin: "0 auto" },
-        { background: "#181a20", color: "#7ecbff", border: "1px solid #444" }
-      )}>
-        <b>AI Feedback:</b> {aiFeedback}
-      </div>
+      <AICoach />
     </div>
   );
 };
