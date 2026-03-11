@@ -37,6 +37,15 @@ def init_db():
             hashed_password TEXT NOT NULL
         )'''
     )
+    cursor.execute(
+        '''CREATE TABLE IF NOT EXISTS game_results (
+            id SERIAL PRIMARY KEY,
+            email TEXT NOT NULL,
+            game TEXT NOT NULL,
+            outcome TEXT NOT NULL,
+            played_at TIMESTAMP DEFAULT NOW()
+        )'''
+    )
     conn.commit()
     conn.close()
 
