@@ -8,6 +8,7 @@ try:
 except ImportError:
     from auth import auth_router, init_db
     from chatbot import chatbot_router
+from stats import stats_router
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 import os
@@ -25,11 +26,15 @@ app.add_middleware(
 )
 app.include_router(auth_router, prefix="/api")
 app.include_router(chatbot_router, prefix="/api")
+app.include_router(stats_router, prefix="/api")
 
 
 @app.on_event("startup")
 def on_startup():
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        print(f"[startup] Warning: Could not initialise database: {e}")
 
 
 # Root endpoint for health check and status
