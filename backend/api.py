@@ -5,18 +5,23 @@ from fastapi import FastAPI
 try:
     from .auth import auth_router, init_db
     from .chatbot import chatbot_router
+    from .stats import stats_router
 except ImportError:
     from auth import auth_router, init_db
     from chatbot import chatbot_router
-from stats import stats_router
+    from stats import stats_router
 from fastapi.middleware.cors import CORSMiddleware
-app = FastAPI()
 import os
+
+
+app = FastAPI()
+
 ENV = os.environ.get("ENV", "development")
 if ENV == "production":
     origins = ["https://grumpy-gamer.vercel.app"]
 else:
     origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -37,7 +42,6 @@ def on_startup():
         print(f"[startup] Warning: Could not initialise database: {e}")
 
 
-# Root endpoint for health check and status
 @app.get("/")
 def root():
     return {"status": "ok", "message": "Welcome to the Grumpy Gamer API"}
