@@ -187,21 +187,20 @@ export class GameTimer {
  */
 export async function recordGame(params: RecordGameParams): Promise<{ success: boolean; sessionId?: number }> {
   try {
-    const userId = getUserId();
-    const response = await fetch(`${API_URL}/api/stats/record?user_id=${encodeURIComponent(userId)}`, {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.warn('No access token found, skipping game recording');
+      return { success: false };
+    }
+    const response = await fetch(`${API_URL}/api/stats/record`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
-        game_type: params.gameType,
-        result: params.result,
-        moves_count: params.movesCount || 0,
-        duration_seconds: params.durationSeconds || 0,
-        score: params.score,
-        opponent_type: params.opponentType || 'ai',
-        ai_difficulty: params.aiDifficulty,
-        metadata: params.metadata,
+        game: params.gameType,
+        outcome: params.result,
       }),
     });
 
@@ -210,8 +209,7 @@ export async function recordGame(params: RecordGameParams): Promise<{ success: b
       return { success: false };
     }
 
-    const data = await response.json();
-    return { success: true, sessionId: data.session_id };
+    return { success: true };
   } catch (error) {
     console.error('Error recording game:', error);
     return { success: false };
