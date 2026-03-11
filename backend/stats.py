@@ -151,16 +151,18 @@ def get_coach_feedback(token_email: str = Depends(verify_access_token)):
         for g, v in stats_text.items()
     )
 
+    prompt = (
+        "You are a friendly game coach. Based on these stats, give encouraging feedback.\n\n"
+        f"{stats_lines}\n\n"
+        "Respond ONLY with JSON, no markdown:\n"
+        '{"glows": ["positive thing 1", "positive thing 2"], '
+        '"grows": ["tip 1", "tip 2"], "summary": "one encouraging sentence"}'
+    )
     client = anthropic.Anthropic()
     message = client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=1000,
-        messages=[{"role": "user", "content": f"""You are a friendly game coach. Based on these stats, give encouraging feedback.
-
-{stats_lines}
-
-Respond ONLY with JSON, no markdown:
-{{"glows": ["positive thing 1", "positive thing 2"], "grows": ["tip 1", "tip 2"], "summary": "one encouraging sentence"}}"""}]
+        messages=[{"role": "user", "content": prompt}]
     )
     text = message.content[0].text.strip()
     return json.loads(text)
