@@ -3,7 +3,7 @@ Analytics API endpoints for recording and summarising game results.
 """
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from typing import Optional
+
 try:
     from .auth import get_db
     from .jwt_utils import verify_access_token
