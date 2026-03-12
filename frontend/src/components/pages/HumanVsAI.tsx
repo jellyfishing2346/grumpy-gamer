@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import gameStatsService, { getGameDisplayName, ActivitySummary, GameType, getAILeaderboardStats } from "../../services/gameStatsService";
 import AICoach from "../AICoach";
-
-
 import { useDarkModeContext } from "../DarkModeProvider";
 import { getDarkModeStyles } from "../getDarkModeStyles";
+import API_URL from "../../config/api";
 
 const baseContainerStyle: React.CSSProperties = {
   padding: "2.5em 2em",
@@ -26,100 +24,80 @@ const headingStyle: React.CSSProperties = {
   color: "#7ecbff",
   fontWeight: 800,
   letterSpacing: "0.01em",
-  textShadow: "0 2px 12px #23272f55"
+  textShadow: "0 2px 12px #23272f55",
 };
 
+interface GameStat {
+  game: string;
+  wins: number;
+  losses: number;
+  draws: number;
+  total: number;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem("access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 const HumanVsAI: React.FC = () => {
-  // Placeholder state for selected game, difficulty, challenge mode, etc.
-  // Replace with real state/hooks as you implement logic
   const games = [
-    "Tic-Tac-Toe", "Connect Four", "Checkers", "Chess", "Minesweeper", "Othello", "2048", "Wordle", "Snake", "Memory", "Hangman", "Sudoku", "Rock Paper Scissors"
+    "Tic-Tac-Toe", "Connect Four", "Checkers", "Chess", "Minesweeper",
+    "Othello", "2048", "Wordle", "Snake", "Memory", "Hangman", "Sudoku",
+    "Rock Paper Scissors",
   ];
   const difficulties = ["Easy", "Medium", "Hard"];
   const [selectedGame, setSelectedGame] = React.useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = React.useState<string>(difficulties[1]);
   const [challengeMode, setChallengeMode] = React.useState<string>("Single Game");
-  // Stats state (synced with dashboard)
-  const [stats, setStats] = useState<{ game: string; wins: number; losses: number; draws: number; streak: number; bestStreak: number }[]>([]);
+  const [stats, setStats] = useState<GameStat[]>([]);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     let mounted = true;
     async function fetchStats() {
       setLoading(true);
-      const summary: ActivitySummary | null = await gameStatsService.getActivitySummary(7);
-      if (!mounted) return;
-      if (summary && summary.gameBreakdown) {
-        setStats(summary.gameBreakdown.map(b => ({
-          game: getGameDisplayName(b.gameType as GameType),
-          wins: b.wins,
-          losses: b.losses,
-          draws: b.draws,
-          streak: 0, // Optionally, fetch from lifetime stats if needed
-          bestStreak: 0
-        })));
-      } else {
-        setStats([]);
+      try {
+        const res = await fetch(`${API_URL}/api/stats/summary`, {
+          headers: getAuthHeaders(),
+        });
+        if (res.ok && mounted) {
+          const data = await res.json();
+          setStats(data.stats || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
       }
-      setLoading(false);
+      if (mounted) setLoading(false);
     }
     fetchStats();
     return () => { mounted = false; };
   }, []);
-  // Leaderboard state
-  const [leaderboard, setLeaderboard] = useState<{ player: string; streak: number; fastestWin: string }[]>([]);
-  useEffect(() => {
-    let mounted = true;
-    async function fetchLeaderboard() {
-      // Determine selected game type for API (convert display name to backend type)
-      const selectedGameType = selectedGame ? selectedGame.toLowerCase().replace(/\s+/g, "") as GameType : "tictactoe";
-      // Fetch user stats
-      const lifetimeStats = await gameStatsService.getLifetimeStats(selectedGameType);
-      let bestStreak = 0;
-      if (lifetimeStats && lifetimeStats.length > 0) {
-        bestStreak = lifetimeStats.reduce((max, stat) => Math.max(max, stat.longestWinStreak || 0), 0);
-      }
-      // Still use recent games for fastest win
-      const recentGames = await gameStatsService.getRecentGames(50, selectedGameType);
-      const aiGames = recentGames.filter(g => g.opponentType === 'ai' && g.result === 'win');
-      let fastestWin: number | null = null;
-      aiGames.forEach(g => {
-        if (!fastestWin || (g.durationSeconds && g.durationSeconds < fastestWin)) {
-          fastestWin = g.durationSeconds;
-        }
-      });
-      const youRow = { player: "You", streak: bestStreak, fastestWin: fastestWin ? gameStatsService.formatDuration(fastestWin) : "-" };
-      const showYou = bestStreak > 0 || (fastestWin && fastestWin > 0);
-      // Fetch dynamic AI stats
-      const aiStats = await getAILeaderboardStats(selectedGameType);
-      const aiRow = aiStats ? {
-        player: "Grumpy AI",
-        streak: aiStats.ai_best_win_streak,
-        fastestWin: aiStats.ai_fastest_win_seconds != null ? gameStatsService.formatDuration(aiStats.ai_fastest_win_seconds) : "-"
-      } : { player: "Grumpy AI", streak: 0, fastestWin: "-" };
-      const leaderboardRows = showYou ? [youRow, aiRow] : [aiRow];
-      if (mounted) setLeaderboard(leaderboardRows);
-    }
-    fetchLeaderboard();
-    return () => { mounted = false; };
-  }, [selectedGame]);
-  
+
+  // Derive leaderboard from summary stats
+  const totalWins = stats.reduce((s, g) => s + g.wins, 0);
+  const totalLosses = stats.reduce((s, g) => s + g.losses, 0);
+  const leaderboard = [
+    { player: "You", wins: totalWins, losses: totalLosses },
+    { player: "Grumpy AI", wins: totalLosses, losses: totalWins },
+  ];
+
   const navigate = useNavigate();
   const handleStartChallenge = () => {
     if (!selectedGame) return;
-    navigate(`/play/${selectedGame.toLowerCase().replace(/\s+/g, "")}?difficulty=${selectedDifficulty.toLowerCase()}`);
+    navigate(
+      `/play/${selectedGame.toLowerCase().replace(/\s+/g, "")}?difficulty=${selectedDifficulty.toLowerCase()}`
+    );
   };
 
   const [darkMode] = useDarkModeContext();
-  const containerStyle = getDarkModeStyles(
-    darkMode,
-    baseContainerStyle,
-    {
-      background: "#23272f",
-      color: "#f5f6fa",
-      border: "1.5px solid #444",
-      boxShadow: "0 4px 32px 0 rgba(31, 38, 135, 0.37)",
-    }
-  );
+  const containerStyle = getDarkModeStyles(darkMode, baseContainerStyle, {
+    background: "#23272f",
+    color: "#f5f6fa",
+    border: "1.5px solid #444",
+    boxShadow: "0 4px 32px 0 rgba(31, 38, 135, 0.37)",
+  });
+
   return (
     <div style={containerStyle}>
       <h1 style={headingStyle}>Human vs AI</h1>
@@ -129,22 +107,18 @@ const HumanVsAI: React.FC = () => {
 
       {/* Game Selection Grid */}
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16, margin: "2em 0 1em 0" }}>
-        {games.map(game => (
+        {games.map((game) => (
           <button
             key={game}
+            onClick={() => setSelectedGame(game)}
             style={getDarkModeStyles(
               darkMode,
               {
-                padding: "0.8em 1.2em",
-                borderRadius: 10,
+                padding: "0.8em 1.2em", borderRadius: 10, fontWeight: 600,
+                fontSize: "1em", cursor: "pointer", marginBottom: 8, minWidth: 120,
                 border: selectedGame === game ? "2px solid #7ecbff" : "1.5px solid #e9f1ff",
                 background: selectedGame === game ? "#e9f7ff" : "#f7fbff",
                 color: "#23272f",
-                fontWeight: 600,
-                fontSize: "1em",
-                cursor: "pointer",
-                marginBottom: 8,
-                minWidth: 120,
               },
               {
                 background: selectedGame === game ? "#23272f" : "#181a20",
@@ -152,7 +126,6 @@ const HumanVsAI: React.FC = () => {
                 border: selectedGame === game ? "2px solid #7ecbff" : "1.5px solid #444",
               }
             )}
-            onClick={() => setSelectedGame(game)}
           >
             {game}
           </button>
@@ -162,20 +135,17 @@ const HumanVsAI: React.FC = () => {
       {/* Difficulty Selector */}
       <div style={{ margin: "1.5em 0" }}>
         <span style={{ fontWeight: 600, marginRight: 12 }}>AI Difficulty:</span>
-        {difficulties.map(diff => (
+        {difficulties.map((diff) => (
           <button
             key={diff}
+            onClick={() => setSelectedDifficulty(diff)}
             style={getDarkModeStyles(
               darkMode,
               {
-                marginRight: 8,
-                padding: "0.5em 1em",
-                borderRadius: 8,
+                marginRight: 8, padding: "0.5em 1em", borderRadius: 8, fontWeight: 600, cursor: "pointer",
                 border: selectedDifficulty === diff ? "2px solid #7ecbff" : "1.5px solid #e9f1ff",
                 background: selectedDifficulty === diff ? "#e9f7ff" : "#f7fbff",
                 color: "#23272f",
-                fontWeight: 600,
-                cursor: "pointer"
               },
               {
                 background: selectedDifficulty === diff ? "#23272f" : "#181a20",
@@ -183,7 +153,6 @@ const HumanVsAI: React.FC = () => {
                 border: selectedDifficulty === diff ? "2px solid #7ecbff" : "1.5px solid #444",
               }
             )}
-            onClick={() => setSelectedDifficulty(diff)}
           >
             {diff}
           </button>
@@ -198,16 +167,11 @@ const HumanVsAI: React.FC = () => {
           style={getDarkModeStyles(
             darkMode,
             {
-              padding: "0.9em 2em",
-              borderRadius: 12,
+              padding: "0.9em 2em", borderRadius: 12, color: "#fff", fontWeight: 700,
+              fontSize: "1.1em", border: "none", transition: "background 0.2s",
               background: selectedGame ? "#4f8cff" : "#b0cfff",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: "1.1em",
-              border: "none",
               cursor: selectedGame ? "pointer" : "not-allowed",
               boxShadow: selectedGame ? "0 2px 8px #4f8cff33" : undefined,
-              transition: "background 0.2s"
             },
             {
               background: selectedGame ? "#23272f" : "#181a20",
@@ -220,14 +184,18 @@ const HumanVsAI: React.FC = () => {
         </button>
       </div>
 
-      {/* Challenge/Tournament Mode */}
+      {/* Challenge Mode */}
       <div style={{ margin: "1.5em 0" }}>
         <span style={{ fontWeight: 600, marginRight: 12 }}>Challenge Mode:</span>
-        <select value={challengeMode} onChange={e => setChallengeMode(e.target.value)} style={getDarkModeStyles(
-          darkMode,
-          { padding: "0.5em 1em", borderRadius: 8, fontWeight: 600 },
-          { background: "#181a20", color: "#7ecbff", border: "1.5px solid #444" }
-        )}>
+        <select
+          value={challengeMode}
+          onChange={(e) => setChallengeMode(e.target.value)}
+          style={getDarkModeStyles(
+            darkMode,
+            { padding: "0.5em 1em", borderRadius: 8, fontWeight: 600 },
+            { background: "#181a20", color: "#7ecbff", border: "1.5px solid #444" }
+          )}
+        >
           <option>Single Game</option>
           <option>Best of 3</option>
           <option>Best of 5</option>
@@ -235,11 +203,13 @@ const HumanVsAI: React.FC = () => {
         </select>
       </div>
 
-      {/* Stats & Streaks Table */}
+      {/* Your Record vs AI */}
       <div style={{ margin: "2em 0" }}>
         <h3 style={{ color: "#7ecbff", marginBottom: 8 }}>Your Record vs AI</h3>
         {loading ? (
           <div style={{ color: "#7ecbff", textAlign: "center", padding: "1em" }}>Loading stats...</div>
+        ) : stats.length === 0 ? (
+          <div style={{ color: darkMode ? "#aaa" : "#666" }}>Play some games to see your record!</div>
         ) : (
           <table style={getDarkModeStyles(
             darkMode,
@@ -252,19 +222,17 @@ const HumanVsAI: React.FC = () => {
                 <th style={{ padding: "0.5em 1em" }}>Wins</th>
                 <th style={{ padding: "0.5em 1em" }}>Losses</th>
                 <th style={{ padding: "0.5em 1em" }}>Draws</th>
-                <th style={{ padding: "0.5em 1em" }}>Streak</th>
-                <th style={{ padding: "0.5em 1em" }}>Best Streak</th>
+                <th style={{ padding: "0.5em 1em" }}>Total</th>
               </tr>
             </thead>
             <tbody>
-              {stats.map(row => (
+              {stats.map((row) => (
                 <tr key={row.game}>
                   <td style={{ padding: "0.5em 1em" }}>{row.game}</td>
-                  <td style={{ padding: "0.5em 1em" }}>{row.wins}</td>
-                  <td style={{ padding: "0.5em 1em" }}>{row.losses}</td>
-                  <td style={{ padding: "0.5em 1em" }}>{row.draws}</td>
-                  <td style={{ padding: "0.5em 1em" }}>{row.streak}</td>
-                  <td style={{ padding: "0.5em 1em" }}>{row.bestStreak}</td>
+                  <td style={{ padding: "0.5em 1em", color: "#28e07b" }}>{row.wins}</td>
+                  <td style={{ padding: "0.5em 1em", color: "#ff7e67" }}>{row.losses}</td>
+                  <td style={{ padding: "0.5em 1em", color: "#ffe066" }}>{row.draws}</td>
+                  <td style={{ padding: "0.5em 1em" }}>{row.total}</td>
                 </tr>
               ))}
             </tbody>
@@ -272,9 +240,9 @@ const HumanVsAI: React.FC = () => {
         )}
       </div>
 
-      {/* Leaderboard/Achievements */}
+      {/* Leaderboard */}
       <div style={{ margin: "2em 0" }}>
-        <h3 style={{ color: "#7ecbff", marginBottom: 8 }}>Leaderboard & Achievements</h3>
+        <h3 style={{ color: "#7ecbff", marginBottom: 8 }}>Leaderboard</h3>
         <table style={getDarkModeStyles(
           darkMode,
           { margin: "0 auto", background: "#23272f", borderRadius: 8, color: "#fff", minWidth: 320, fontSize: "1.05em" },
@@ -283,23 +251,22 @@ const HumanVsAI: React.FC = () => {
           <thead>
             <tr style={{ color: "#ffd700" }}>
               <th style={{ padding: "0.5em 1em" }}>Player</th>
-              <th style={{ padding: "0.5em 1em" }}>Best Streak</th>
-              <th style={{ padding: "0.5em 1em" }}>Fastest Win</th>
+              <th style={{ padding: "0.5em 1em" }}>Wins</th>
+              <th style={{ padding: "0.5em 1em" }}>Losses</th>
             </tr>
           </thead>
           <tbody>
-            {leaderboard.map(row => (
+            {leaderboard.map((row) => (
               <tr key={row.player}>
                 <td style={{ padding: "0.5em 1em" }}>{row.player}</td>
-                <td style={{ padding: "0.5em 1em" }}>{row.streak}</td>
-                <td style={{ padding: "0.5em 1em" }}>{row.fastestWin}</td>
+                <td style={{ padding: "0.5em 1em", color: "#28e07b" }}>{row.wins}</td>
+                <td style={{ padding: "0.5em 1em", color: "#ff7e67" }}>{row.losses}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* AI Learning Feedback */}
       <AICoach />
     </div>
   );
