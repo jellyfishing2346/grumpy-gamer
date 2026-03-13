@@ -105,7 +105,7 @@
 │  Backend:    Python + FastAPI + Uvicorn                 │
 │  ML/AI:      PyTorch + Stable Baselines3 + Gymnasium   │
 │  Auth:       JWT Authentication                        │
-│  Database:   SQLite (game stats)                       │
+│  Database:   PostgreSQL (via Render)                       │
 │  Deploy:     Vercel (frontend) + Render (backend)      │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
@@ -121,7 +121,7 @@
 - 🎮 Gymnasium — RL environment interface
 - 🦄 Uvicorn — ASGI server
 - 🔐 JWT — User authentication
-- 🗄️ SQLite — Lightweight game stats storage
+- 🗄️ PostgreSQL — Database (via Render)
 - 📊 Pydantic — Data validation and serialization
 
 **Frontend:**
@@ -167,6 +167,12 @@ graph LR
 - [x] SudokuAgent performance benchmarking
 - [x] Integration testing (66 tests passing)
 - [x] Code cleanup and documentation
+- [x] PostgreSQL database migration
+- [x] Analytics API (game_results table + stats endpoints)
+- [x] Wire up game results to backend (all 12 games)
+- [x] Dashboard: win/loss/draw stats, daily activity, performance charts
+- [x] AI vs Human comparison page with real data
+- [x] AI Coach: Claude-powered glows/grows feedback
 - [ ] Train and optimize RL agents for all games
 - [ ] Add real-time multiplayer with WebSockets
 - [ ] Design training metrics dashboard
@@ -238,6 +244,8 @@ npm run build
 | `ENV` | `production` |
 | `SECRET_KEY` | your JWT secret key |
 | `CHATBOT_USE_LLM` | `false` (set to `true` to enable OpenAI) |
+| `DATABASE_URL` | PostgreSQL connection string from Render |
+| `ANTHROPIC_API_KEY` | API key for AI Coach feature |
 
 #### ⚠️ Render Free Tier — Cold Start Issue
 Render's free tier spins down after 15 minutes of inactivity, causing the first request to take **50+ seconds**. To keep the backend alive 24/7 without upgrading:
@@ -257,10 +265,6 @@ To set up:
 
 > **Note:** If no one visits the site for an extended period overnight, Render may still spin down. For guaranteed uptime, upgrade to Render's paid tier ($7/month).
 
-#### ⚠️ SQLite Database Persistence
-The backend currently uses SQLite (`users.db`) for user authentication. **SQLite data is wiped on every Render redeploy.** This means all user accounts are deleted whenever the backend is redeployed.
-
-**Planned fix (Issue #68):** Migrate to PostgreSQL via Render or Supabase for persistent storage.
 
 ---
 
