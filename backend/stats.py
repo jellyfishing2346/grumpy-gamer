@@ -28,12 +28,13 @@ def record_result(
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO game_results (email, game, outcome) VALUES (%s, %s, %s)",
+        "INSERT INTO game_results (email, game, outcome) VALUES (%s, %s, %s) RETURNING id",
         (token_email, result.game, result.outcome)
     )
+    session_id = cursor.fetchone()["id"]
     conn.commit()
     conn.close()
-    return {"msg": "Result recorded"}
+    return {"msg": "Result recorded", "session_id": session_id}
 
 
 @stats_router.get("/stats/summary")
