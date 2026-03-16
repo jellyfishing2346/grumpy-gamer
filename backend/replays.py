@@ -128,3 +128,44 @@ def get_replay(
             for m in moves
         ]
     }
+
+
+@replays_router.get("/replays/public/{session_id}")
+def get_public_replay(session_id: int):
+    """Fetch a replay publicly — no auth required. Anyone with the link can watch."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, game, outcome, played_at FROM game_results WHERE id = %s",
+        (session_id,)
+    )
+    session = cursor.fetchone()
+    if not session:
+        conn.close()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Replay not found")
+    cursor.execute(
+        """
+        SELECT move_number, move_data, played_at
+        FROM game_moves
+        WHERE session_id = %s
+        ORDER BY move_number ASC
+        """,
+        (session_id,)
+    )
+    moves = cursor.fetchall()
+    conn.close()
+    return {
+        "session_id": session["id"],
+        "game": session["game"],
+        "outcome": session["outcome"],
+        "played_at": str(session["played_at"]),
+        "moves": [
+            {
+                "move_number": m["move_number"],
+                "move_data": m["move_data"],
+                "played_at": str(m["played_at"]),
+            }
+            for m in moves
+        ]
+    }
