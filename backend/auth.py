@@ -46,6 +46,15 @@ def init_db():
             played_at TIMESTAMP DEFAULT NOW()
         )'''
     )
+    cursor.execute(
+        '''CREATE TABLE IF NOT EXISTS game_moves (
+            id SERIAL PRIMARY KEY,
+            session_id INTEGER NOT NULL REFERENCES game_results(id) ON DELETE CASCADE,
+            move_number INTEGER NOT NULL,
+            move_data JSONB NOT NULL,
+            played_at TIMESTAMP DEFAULT NOW()
+        )'''
+    )
     conn.commit()
     conn.close()
 
