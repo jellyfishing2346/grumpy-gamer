@@ -4,7 +4,7 @@ import App from './App';
 
 test('renders Grumpy Gamer landing heading', () => {
   render(<App />);
-  const heading = screen.getByRole('heading', { name: /Grumpy Gamer/i, level: 1 });
+  const heading = screen.getByRole('heading', { name: /Can you outsmart the Grumpy AI?/i, level: 1 });
   expect(heading).toBeInTheDocument();
 });
 
