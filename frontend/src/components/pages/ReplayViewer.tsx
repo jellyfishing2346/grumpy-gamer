@@ -91,6 +91,7 @@ const ReplayViewer: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speedIndex, setSpeedIndex] = useState(1);
+  const [copied, setCopied] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [darkMode] = useDarkModeContext();
   const navigate = useNavigate();
@@ -100,6 +101,13 @@ const ReplayViewer: React.FC = () => {
   const cardBorder = darkMode ? "1px solid rgba(126,203,255,0.1)" : "1px solid rgba(126,203,255,0.2)";
   const textPrimary = darkMode ? "#f0f4ff" : "#1a1a2e";
   const textMuted = darkMode ? "rgba(255,255,255,0.5)" : "rgba(26,26,46,0.55)";
+
+  const handleShare = () => {
+    const url = `${window.location.origin}/watch/${session_id}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     async function fetchReplay() {
@@ -119,7 +127,6 @@ const ReplayViewer: React.FC = () => {
     if (session_id) fetchReplay();
   }, [session_id]);
 
-  // Auto-playback
   useEffect(() => {
     if (isPlaying && session) {
       intervalRef.current = setInterval(() => {
@@ -163,9 +170,29 @@ const ReplayViewer: React.FC = () => {
         padding: "48px 24px 56px", textAlign: "center", position: "relative", overflow: "hidden",
       }}>
         <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 400, height: 200, pointerEvents: "none", background: "radial-gradient(ellipse, rgba(126,203,255,0.07) 0%, transparent 70%)" }} />
-        <button onClick={() => { setIsPlaying(false); navigate("/replays"); }} style={{ position: "absolute", top: 24, left: 24, padding: "0.4em 1em", borderRadius: 8, border: "1px solid rgba(126,203,255,0.3)", background: "transparent", color: "#7ecbff", fontWeight: 600, fontSize: "0.88em", cursor: "pointer", fontFamily: "inherit" }}>
+
+        <button
+          onClick={() => { setIsPlaying(false); navigate("/replays"); }}
+          style={{ position: "absolute", top: 24, left: 24, padding: "0.4em 1em", borderRadius: 8, border: "1px solid rgba(126,203,255,0.3)", background: "transparent", color: "#7ecbff", fontWeight: 600, fontSize: "0.88em", cursor: "pointer", fontFamily: "inherit" }}
+        >
           ← Back
         </button>
+
+        <button
+          onClick={handleShare}
+          style={{
+            position: "absolute", top: 24, right: 24,
+            padding: "0.4em 1em", borderRadius: 8,
+            border: "1px solid rgba(126,203,255,0.3)",
+            background: copied ? "rgba(40,224,123,0.15)" : "transparent",
+            color: copied ? "#28e07b" : "#7ecbff",
+            fontWeight: 600, fontSize: "0.88em",
+            cursor: "pointer", fontFamily: "inherit",
+          }}
+        >
+          {copied ? "✓ Copied!" : "🔗 Share"}
+        </button>
+
         <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontWeight: 800, color: "#fff", marginBottom: "0.3em", letterSpacing: "-0.02em" }}>
           🎬 {session ? `${session.game} Replay` : "Loading Replay..."}
         </h1>
@@ -224,7 +251,7 @@ const ReplayViewer: React.FC = () => {
                         cursor: "pointer", fontFamily: "inherit",
                         background: speedIndex === i ? "rgba(126,203,255,0.15)" : "transparent",
                         color: speedIndex === i ? "#7ecbff" : textMuted,
-                        border: speedIndex === i ? "1px solid rgba(126,203,255,0.3)" : `1px solid rgba(126,203,255,0.1)`,
+                        border: speedIndex === i ? "1px solid rgba(126,203,255,0.3)" : "1px solid rgba(126,203,255,0.1)",
                       }}>{s.label}</button>
                     ))}
                   </div>
