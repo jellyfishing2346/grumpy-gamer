@@ -2,30 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AICoach from "../AICoach";
 import { useDarkModeContext } from "../DarkModeProvider";
-import { getDarkModeStyles } from "../getDarkModeStyles";
 import API_URL from "../../config/api";
-
-const baseContainerStyle: React.CSSProperties = {
-  padding: "2.5em 2em",
-  maxWidth: 700,
-  margin: "3.5em auto",
-  background: "#fff",
-  borderRadius: 22,
-  boxShadow: "0 4px 32px 0 rgba(80, 120, 200, 0.10)",
-  color: "#23272f",
-  textAlign: "center",
-  border: "1.5px solid #e9f1ff",
-  fontFamily: "'Inter', 'Nunito', 'Segoe UI', 'Arial', 'sans-serif'",
-};
-
-const headingStyle: React.CSSProperties = {
-  fontSize: "2.6em",
-  marginBottom: "0.4em",
-  color: "#7ecbff",
-  fontWeight: 800,
-  letterSpacing: "0.01em",
-  textShadow: "0 2px 12px #23272f55",
-};
 
 interface GameStat {
   game: string;
@@ -43,24 +20,29 @@ function getAuthHeaders(): Record<string, string> {
 const HumanVsAI: React.FC = () => {
   const games = [
     "Tic-Tac-Toe", "Connect Four", "Checkers", "Chess", "Minesweeper",
-    "Othello", "2048", "Wordle", "Snake", "Memory", "Hangman", "Sudoku",
-    "Rock Paper Scissors",
+    "Othello", "2048", "Wordle", "Snake", "Memory", "Hangman", "Sudoku", "Rock Paper Scissors",
   ];
   const difficulties = ["Easy", "Medium", "Hard"];
-  const [selectedGame, setSelectedGame] = React.useState<string | null>(null);
-  const [selectedDifficulty, setSelectedDifficulty] = React.useState<string>(difficulties[1]);
-  const [challengeMode, setChallengeMode] = React.useState<string>("Single Game");
+  const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState("Medium");
+  const [challengeMode, setChallengeMode] = useState("Single Game");
   const [stats, setStats] = useState<GameStat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [darkMode] = useDarkModeContext();
+  const navigate = useNavigate();
+
+  const bg = darkMode ? "#0f1117" : "#f0f4ff";
+  const cardBg = darkMode ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.95)";
+  const cardBorder = darkMode ? "1px solid rgba(126,203,255,0.1)" : "1px solid rgba(126,203,255,0.2)";
+  const textPrimary = darkMode ? "#f0f4ff" : "#1a1a2e";
+  const textMuted = darkMode ? "rgba(255,255,255,0.5)" : "rgba(26,26,46,0.55)";
 
   useEffect(() => {
     let mounted = true;
     async function fetchStats() {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/api/stats/summary`, {
-          headers: getAuthHeaders(),
-        });
+        const res = await fetch(`${API_URL}/api/stats/summary`, { headers: getAuthHeaders() });
         if (res.ok && mounted) {
           const data = await res.json();
           setStats(data.stats || []);
@@ -74,200 +56,178 @@ const HumanVsAI: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  // Derive leaderboard from summary stats
   const totalWins = stats.reduce((s, g) => s + g.wins, 0);
   const totalLosses = stats.reduce((s, g) => s + g.losses, 0);
-  const leaderboard = [
-    { player: "You", wins: totalWins, losses: totalLosses },
-    { player: "Grumpy AI", wins: totalLosses, losses: totalWins },
-  ];
 
-  const navigate = useNavigate();
   const handleStartChallenge = () => {
     if (!selectedGame) return;
-    navigate(
-      `/play/${selectedGame.toLowerCase().replace(/\s+/g, "")}?difficulty=${selectedDifficulty.toLowerCase()}`
-    );
+    navigate(`/play/${selectedGame.toLowerCase().replace(/\s+/g, "")}?difficulty=${selectedDifficulty.toLowerCase()}`);
   };
 
-  const [darkMode] = useDarkModeContext();
-  const containerStyle = getDarkModeStyles(darkMode, baseContainerStyle, {
-    background: "#23272f",
-    color: "#f5f6fa",
-    border: "1.5px solid #444",
-    boxShadow: "0 4px 32px 0 rgba(31, 38, 135, 0.37)",
-  });
+  const cardStyle: React.CSSProperties = {
+    background: cardBg, border: cardBorder, borderRadius: 16,
+    padding: "1.8em", marginBottom: "1.2em", backdropFilter: "blur(8px)",
+    boxShadow: darkMode ? "0 2px 8px rgba(0,0,0,0.2)" : "0 2px 8px rgba(80,120,200,0.06)",
+  };
+
+  const sectionTitle = (text: string) => (
+    <h2 style={{ fontSize: "1.05em", fontWeight: 700, color: "#7ecbff", marginBottom: "1.2em" }}>{text}</h2>
+  );
 
   return (
-    <div style={containerStyle}>
-      <h1 style={headingStyle}>Human vs AI</h1>
-      <p style={{ fontSize: "1.2em", marginBottom: "1.5em" }}>
-        Ready to face the Grumpy AI? Choose your game and prove your skills!
-      </p>
-
-      {/* Game Selection Grid */}
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16, margin: "2em 0 1em 0" }}>
-        {games.map((game) => (
-          <button
-            key={game}
-            onClick={() => setSelectedGame(game)}
-            style={getDarkModeStyles(
-              darkMode,
-              {
-                padding: "0.8em 1.2em", borderRadius: 10, fontWeight: 600,
-                fontSize: "1em", cursor: "pointer", marginBottom: 8, minWidth: 120,
-                border: selectedGame === game ? "2px solid #7ecbff" : "1.5px solid #e9f1ff",
-                background: selectedGame === game ? "#e9f7ff" : "#f7fbff",
-                color: "#23272f",
-              },
-              {
-                background: selectedGame === game ? "#23272f" : "#181a20",
-                color: selectedGame === game ? "#7ecbff" : "#f5f6fa",
-                border: selectedGame === game ? "2px solid #7ecbff" : "1.5px solid #444",
-              }
-            )}
-          >
-            {game}
-          </button>
-        ))}
+    <div style={{ minHeight: "100vh", background: bg, fontFamily: "'DM Sans', 'Inter', sans-serif", transition: "background 0.3s" }}>
+      {/* Header */}
+      <div style={{
+        background: darkMode ? "linear-gradient(135deg, #0f1117 0%, #161b27 100%)" : "linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)",
+        padding: "56px 24px 64px", textAlign: "center", position: "relative", overflow: "hidden",
+      }}>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 500, height: 200, pointerEvents: "none", background: "radial-gradient(ellipse, rgba(126,203,255,0.07) 0%, transparent 70%)" }} />
+        <h1 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, color: "#fff", marginBottom: "0.4em", letterSpacing: "-0.02em" }}>Human vs AI</h1>
+        <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "1.05em" }}>Choose your game and prove your skills against the Grumpy AI</p>
       </div>
 
-      {/* Difficulty Selector */}
-      <div style={{ margin: "1.5em 0" }}>
-        <span style={{ fontWeight: 600, marginRight: 12 }}>AI Difficulty:</span>
-        {difficulties.map((diff) => (
-          <button
-            key={diff}
-            onClick={() => setSelectedDifficulty(diff)}
-            style={getDarkModeStyles(
-              darkMode,
-              {
-                marginRight: 8, padding: "0.5em 1em", borderRadius: 8, fontWeight: 600, cursor: "pointer",
-                border: selectedDifficulty === diff ? "2px solid #7ecbff" : "1.5px solid #e9f1ff",
-                background: selectedDifficulty === diff ? "#e9f7ff" : "#f7fbff",
-                color: "#23272f",
-              },
-              {
-                background: selectedDifficulty === diff ? "#23272f" : "#181a20",
-                color: selectedDifficulty === diff ? "#7ecbff" : "#f5f6fa",
-                border: selectedDifficulty === diff ? "2px solid #7ecbff" : "1.5px solid #444",
-              }
-            )}
-          >
-            {diff}
-          </button>
-        ))}
-      </div>
+      <div style={{ maxWidth: 780, margin: "0 auto", padding: "48px 24px 64px" }}>
 
-      {/* Start Challenge Button */}
-      <div style={{ margin: "1.5em 0" }}>
+        {/* Game Selection */}
+        <div style={cardStyle}>
+          {sectionTitle("🎮 Choose Your Game")}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6em" }}>
+            {games.map(game => (
+              <button
+                key={game}
+                onClick={() => setSelectedGame(game)}
+                style={{
+                  padding: "0.55em 1em", borderRadius: 10, fontWeight: 600, fontSize: "0.92em",
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s",
+                  background: selectedGame === game ? "linear-gradient(90deg, #7ecbff, #4fa3d1)" : darkMode ? "rgba(255,255,255,0.06)" : "rgba(126,203,255,0.08)",
+                  color: selectedGame === game ? "#1a1a2e" : textPrimary,
+                  border: selectedGame === game ? "none" : cardBorder,
+                }}
+              >
+                {game}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Difficulty + Mode */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2em", marginBottom: "1.2em" }}>
+          <div style={cardStyle}>
+            {sectionTitle("⚡ AI Difficulty")}
+            <div style={{ display: "flex", gap: "0.6em" }}>
+              {difficulties.map(diff => (
+                <button
+                  key={diff}
+                  onClick={() => setSelectedDifficulty(diff)}
+                  style={{
+                    flex: 1, padding: "0.6em", borderRadius: 10, fontWeight: 600, fontSize: "0.92em",
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s",
+                    background: selectedDifficulty === diff ? "linear-gradient(90deg, #7ecbff, #4fa3d1)" : darkMode ? "rgba(255,255,255,0.06)" : "rgba(126,203,255,0.08)",
+                    color: selectedDifficulty === diff ? "#1a1a2e" : textPrimary,
+                    border: selectedDifficulty === diff ? "none" : cardBorder,
+                  }}
+                >
+                  {diff}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={cardStyle}>
+            {sectionTitle("🏆 Challenge Mode")}
+            <select
+              value={challengeMode}
+              onChange={e => setChallengeMode(e.target.value)}
+              style={{
+                width: "100%", padding: "0.65em 1em", borderRadius: 10,
+                border: cardBorder, background: darkMode ? "rgba(255,255,255,0.06)" : "#fff",
+                color: textPrimary, fontSize: "0.95em", fontFamily: "inherit", outline: "none",
+              }}
+            >
+              <option>Single Game</option>
+              <option>Best of 3</option>
+              <option>Best of 5</option>
+              <option>Streak Mode</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Start Button */}
         <button
           onClick={handleStartChallenge}
           disabled={!selectedGame}
-          style={getDarkModeStyles(
-            darkMode,
-            {
-              padding: "0.9em 2em", borderRadius: 12, color: "#fff", fontWeight: 700,
-              fontSize: "1.1em", border: "none", transition: "background 0.2s",
-              background: selectedGame ? "#4f8cff" : "#b0cfff",
-              cursor: selectedGame ? "pointer" : "not-allowed",
-              boxShadow: selectedGame ? "0 2px 8px #4f8cff33" : undefined,
-            },
-            {
-              background: selectedGame ? "#23272f" : "#181a20",
-              color: selectedGame ? "#7ecbff" : "#b3e0ff",
-              border: selectedGame ? "2px solid #7ecbff" : "1.5px solid #444",
-            }
-          )}
+          style={{
+            width: "100%", padding: "1em", borderRadius: 14, border: "none",
+            background: selectedGame ? "linear-gradient(90deg, #7ecbff, #4fa3d1)" : darkMode ? "rgba(255,255,255,0.08)" : "rgba(126,203,255,0.15)",
+            color: selectedGame ? "#1a1a2e" : textMuted,
+            fontWeight: 800, fontSize: "1.1em", cursor: selectedGame ? "pointer" : "not-allowed",
+            fontFamily: "inherit", marginBottom: "1.2em", transition: "all 0.2s",
+            boxShadow: selectedGame ? "0 4px 16px rgba(126,203,255,0.3)" : "none",
+          }}
         >
-          Start Challenge
+          {selectedGame ? `▶ Start ${selectedGame}` : "Select a game to start"}
         </button>
-      </div>
 
-      {/* Challenge Mode */}
-      <div style={{ margin: "1.5em 0" }}>
-        <span style={{ fontWeight: 600, marginRight: 12 }}>Challenge Mode:</span>
-        <select
-          value={challengeMode}
-          onChange={(e) => setChallengeMode(e.target.value)}
-          style={getDarkModeStyles(
-            darkMode,
-            { padding: "0.5em 1em", borderRadius: 8, fontWeight: 600 },
-            { background: "#181a20", color: "#7ecbff", border: "1.5px solid #444" }
+        {/* Your Record */}
+        <div style={cardStyle}>
+          {sectionTitle("📊 Your Record vs AI")}
+          {loading ? (
+            <p style={{ color: textMuted }}>Loading stats...</p>
+          ) : stats.length === 0 ? (
+            <p style={{ color: textMuted }}>Play some games to see your record!</p>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.95em" }}>
+              <thead>
+                <tr>
+                  {["Game", "Wins", "Losses", "Draws", "Total"].map(h => (
+                    <th key={h} style={{ textAlign: "left", padding: "0.75em", borderBottom: `2px solid ${darkMode ? "rgba(126,203,255,0.1)" : "rgba(126,203,255,0.2)"}`, color: textMuted, fontWeight: 600, fontSize: "0.82em", textTransform: "uppercase" as const }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {stats.map(row => (
+                  <tr key={row.game} style={{ borderBottom: `1px solid ${darkMode ? "rgba(255,255,255,0.04)" : "rgba(126,203,255,0.08)"}` }}>
+                    <td style={{ padding: "0.85em 0.75em", color: textPrimary, fontWeight: 600 }}>{row.game}</td>
+                    <td style={{ padding: "0.85em 0.75em", color: "#28e07b", fontWeight: 600 }}>{row.wins}</td>
+                    <td style={{ padding: "0.85em 0.75em", color: "#ff7e67", fontWeight: 600 }}>{row.losses}</td>
+                    <td style={{ padding: "0.85em 0.75em", color: "#ffe066", fontWeight: 600 }}>{row.draws}</td>
+                    <td style={{ padding: "0.85em 0.75em", color: textMuted }}>{row.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
-        >
-          <option>Single Game</option>
-          <option>Best of 3</option>
-          <option>Best of 5</option>
-          <option>Streak Mode</option>
-        </select>
-      </div>
+        </div>
 
-      {/* Your Record vs AI */}
-      <div style={{ margin: "2em 0" }}>
-        <h3 style={{ color: "#7ecbff", marginBottom: 8 }}>Your Record vs AI</h3>
-        {loading ? (
-          <div style={{ color: "#7ecbff", textAlign: "center", padding: "1em" }}>Loading stats...</div>
-        ) : stats.length === 0 ? (
-          <div style={{ color: darkMode ? "#aaa" : "#666" }}>Play some games to see your record!</div>
-        ) : (
-          <table style={getDarkModeStyles(
-            darkMode,
-            { margin: "0 auto", background: "#181a20", borderRadius: 8, color: "#fff", minWidth: 320, fontSize: "1.05em" },
-            { background: "#181a20", color: "#7ecbff", border: "1px solid #444" }
-          )}>
+        {/* Leaderboard */}
+        <div style={cardStyle}>
+          {sectionTitle("🏅 Leaderboard")}
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.95em" }}>
             <thead>
-              <tr style={{ color: "#4f8cff" }}>
-                <th style={{ padding: "0.5em 1em" }}>Game</th>
-                <th style={{ padding: "0.5em 1em" }}>Wins</th>
-                <th style={{ padding: "0.5em 1em" }}>Losses</th>
-                <th style={{ padding: "0.5em 1em" }}>Draws</th>
-                <th style={{ padding: "0.5em 1em" }}>Total</th>
+              <tr>
+                {["Player", "Wins", "Losses"].map(h => (
+                  <th key={h} style={{ textAlign: "left", padding: "0.75em", borderBottom: `2px solid ${darkMode ? "rgba(126,203,255,0.1)" : "rgba(126,203,255,0.2)"}`, color: textMuted, fontWeight: 600, fontSize: "0.82em", textTransform: "uppercase" as const }}>{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {stats.map((row) => (
-                <tr key={row.game}>
-                  <td style={{ padding: "0.5em 1em" }}>{row.game}</td>
-                  <td style={{ padding: "0.5em 1em", color: "#28e07b" }}>{row.wins}</td>
-                  <td style={{ padding: "0.5em 1em", color: "#ff7e67" }}>{row.losses}</td>
-                  <td style={{ padding: "0.5em 1em", color: "#ffe066" }}>{row.draws}</td>
-                  <td style={{ padding: "0.5em 1em" }}>{row.total}</td>
+              {[
+                { player: "🧑 You", wins: totalWins, losses: totalLosses },
+                { player: "🤖 Grumpy AI", wins: totalLosses, losses: totalWins },
+              ].map(row => (
+                <tr key={row.player} style={{ borderBottom: `1px solid ${darkMode ? "rgba(255,255,255,0.04)" : "rgba(126,203,255,0.08)"}` }}>
+                  <td style={{ padding: "0.85em 0.75em", color: textPrimary, fontWeight: 600 }}>{row.player}</td>
+                  <td style={{ padding: "0.85em 0.75em", color: "#28e07b", fontWeight: 600 }}>{row.wins}</td>
+                  <td style={{ padding: "0.85em 0.75em", color: "#ff7e67", fontWeight: 600 }}>{row.losses}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
 
-      {/* Leaderboard */}
-      <div style={{ margin: "2em 0" }}>
-        <h3 style={{ color: "#7ecbff", marginBottom: 8 }}>Leaderboard</h3>
-        <table style={getDarkModeStyles(
-          darkMode,
-          { margin: "0 auto", background: "#23272f", borderRadius: 8, color: "#fff", minWidth: 320, fontSize: "1.05em" },
-          { background: "#23272f", color: "#7ecbff", border: "1px solid #444" }
-        )}>
-          <thead>
-            <tr style={{ color: "#ffd700" }}>
-              <th style={{ padding: "0.5em 1em" }}>Player</th>
-              <th style={{ padding: "0.5em 1em" }}>Wins</th>
-              <th style={{ padding: "0.5em 1em" }}>Losses</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaderboard.map((row) => (
-              <tr key={row.player}>
-                <td style={{ padding: "0.5em 1em" }}>{row.player}</td>
-                <td style={{ padding: "0.5em 1em", color: "#28e07b" }}>{row.wins}</td>
-                <td style={{ padding: "0.5em 1em", color: "#ff7e67" }}>{row.losses}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* AI Coach */}
+        <AICoach />
       </div>
-
-      <AICoach />
     </div>
   );
 };

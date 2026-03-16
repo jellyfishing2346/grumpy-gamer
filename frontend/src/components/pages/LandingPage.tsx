@@ -1,74 +1,77 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
+
+  const features = [
+    { icon: "🎯", title: "12 Classic Games", desc: "Wordle, Chess, Sudoku, and more. Something for every kind of gamer." },
+    { icon: "🤖", title: "Challenge AI", desc: "Intelligent AI opponents that push your skills to the limit." },
+    { icon: "📊", title: "Track Progress", desc: "Real-time stats, daily activity charts, and win rate trends." },
+    { icon: "🏆", title: "Compete & Compare", desc: "See exactly how you stack up against the Grumpy AI." },
+    { icon: "✨", title: "AI Coach", desc: "Get personalized glows and grows powered by Claude." },
+    { icon: "🔓", title: "100% Free", desc: "No hidden fees, no paywalls. Just pure gaming fun." },
+  ];
 
   return (
-    <div style={{ fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
-      {/* Hero Section */}
+    <div style={{ fontFamily: "'DM Sans', 'Inter', sans-serif", background: "#0f1117" }}>
+
+      {/* Hero */}
       <section style={{
-        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-        color: "#fff",
-        padding: "80px 20px",
-        textAlign: "center",
-        minHeight: "70vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center"
+        background: "linear-gradient(135deg, #0f1117 0%, #161b27 50%, #0f1117 100%)",
+        color: "#fff", padding: "100px 24px 120px",
+        textAlign: "center", minHeight: "80vh",
+        display: "flex", flexDirection: "column",
+        justifyContent: "center", alignItems: "center",
+        position: "relative", overflow: "hidden",
       }}>
-        <h1 style={{
-          fontSize: "clamp(2.5rem, 6vw, 4rem)",
-          fontWeight: 800,
-          marginBottom: 16,
-          background: "linear-gradient(90deg, #7ecbff, #b3e0ff, #7ecbff)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text"
-        }}>
-          🎮 Grumpy Gamer
+        {/* Background glow */}
+        <div style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%,-50%)", width: 800, height: 400, pointerEvents: "none", background: "radial-gradient(ellipse, rgba(126,203,255,0.07) 0%, transparent 70%)" }} />
+        <div style={{ position: "absolute", top: "10%", right: "10%", width: 200, height: 200, borderRadius: "50%", background: "rgba(126,203,255,0.03)", border: "1px solid rgba(126,203,255,0.08)" }} />
+        <div style={{ position: "absolute", bottom: "15%", left: "8%", width: 120, height: 120, borderRadius: "50%", background: "rgba(79,163,209,0.04)", border: "1px solid rgba(79,163,209,0.08)" }} />
+
+        <div style={{ display: "inline-block", background: "rgba(126,203,255,0.08)", border: "1px solid rgba(126,203,255,0.2)", borderRadius: 50, padding: "0.4em 1.2em", fontSize: "0.85em", color: "#7ecbff", fontWeight: 600, marginBottom: "1.5em", letterSpacing: "0.05em" }}>
+          🎮 FREE TO PLAY · NO SIGN-UP REQUIRED TO BROWSE
+        </div>
+
+        <h1 style={{ fontSize: "clamp(2.8rem, 7vw, 5rem)", fontWeight: 800, marginBottom: "0.5em", letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+          Can you outsmart<br />
+          <span style={{ background: "linear-gradient(90deg, #7ecbff, #b3e0ff, #7ecbff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+            the Grumpy AI?
+          </span>
         </h1>
-        <p style={{
-          fontSize: "clamp(1.1rem, 2.5vw, 1.4rem)",
-          maxWidth: 600,
-          margin: "0 auto 32px",
-          opacity: 0.9,
-          lineHeight: 1.6
-        }}>
-          Challenge yourself against AI, compete with friends, and master classic games. 
-          Are you ready to prove you're smarter than the machine?
+
+        <p style={{ fontSize: "clamp(1rem, 2.5vw, 1.25rem)", maxWidth: 560, margin: "0 auto 2.5em", opacity: 0.65, lineHeight: 1.7 }}>
+          Challenge AI opponents across 12 classic games. Track your progress, get personalized coaching, and climb the leaderboard.
         </p>
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center" }}>
+
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center", marginBottom: "4em" }}>
           <button
             onClick={() => navigate("/signup")}
+            onMouseEnter={() => setHoveredBtn("signup")}
+            onMouseLeave={() => setHoveredBtn(null)}
             style={{
-              padding: "16px 40px",
-              fontSize: "1.1rem",
-              fontWeight: 700,
+              padding: "1em 2.5em", fontSize: "1.05em", fontWeight: 700,
               background: "linear-gradient(90deg, #7ecbff, #4fa3d1)",
-              color: "#1a1a2e",
-              border: "none",
-              borderRadius: 50,
-              cursor: "pointer",
-              boxShadow: "0 4px 20px rgba(126, 203, 255, 0.4)",
-              transition: "transform 0.2s, box-shadow 0.2s"
+              color: "#1a1a2e", border: "none", borderRadius: 50, cursor: "pointer",
+              fontFamily: "inherit", transition: "all 0.2s",
+              boxShadow: hoveredBtn === "signup" ? "0 8px 32px rgba(126,203,255,0.45)" : "0 4px 20px rgba(126,203,255,0.25)",
+              transform: hoveredBtn === "signup" ? "translateY(-2px)" : "none",
             }}
           >
             Get Started Free
           </button>
           <button
             onClick={() => navigate("/login")}
+            onMouseEnter={() => setHoveredBtn("login")}
+            onMouseLeave={() => setHoveredBtn(null)}
             style={{
-              padding: "16px 40px",
-              fontSize: "1.1rem",
-              fontWeight: 600,
-              background: "transparent",
-              color: "#fff",
-              border: "2px solid #7ecbff",
-              borderRadius: 50,
-              cursor: "pointer",
-              transition: "background 0.2s"
+              padding: "1em 2.5em", fontSize: "1.05em", fontWeight: 600,
+              background: hoveredBtn === "login" ? "rgba(126,203,255,0.08)" : "transparent",
+              color: "#fff", border: "1.5px solid rgba(126,203,255,0.4)",
+              borderRadius: 50, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s",
             }}
           >
             Log In
@@ -76,221 +79,114 @@ const LandingPage: React.FC = () => {
         </div>
 
         {/* Stats */}
-        <div style={{
-          display: "flex",
-          gap: 48,
-          marginTop: 60,
-          flexWrap: "wrap",
-          justifyContent: "center"
-        }}>
+        <div style={{ display: "flex", gap: 56, flexWrap: "wrap", justifyContent: "center" }}>
           {[
-            { num: "10+", label: "Games" },
+            { num: "12", label: "Games" },
             { num: "AI", label: "Opponents" },
-            { num: "Free", label: "Forever" }
+            { num: "Free", label: "Forever" },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#7ecbff" }}>{stat.num}</div>
-              <div style={{ opacity: 0.7, fontSize: "0.95rem" }}>{stat.label}</div>
+              <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#7ecbff", letterSpacing: "-0.02em" }}>{stat.num}</div>
+              <div style={{ opacity: 0.5, fontSize: "0.88rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>{stat.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Features Section */}
-      <section style={{
-        padding: "80px 20px",
-        background: "#f8fafc",
-        textAlign: "center"
-      }}>
-        <h2 style={{
-          fontSize: "2.2rem",
-          fontWeight: 700,
-          color: "#1a1a2e",
-          marginBottom: 16
-        }}>
-          Why Grumpy Gamer?
+      {/* Features */}
+      <section style={{ padding: "100px 24px", background: "#0d1018", textAlign: "center" }}>
+        <div style={{ display: "inline-block", background: "rgba(126,203,255,0.08)", border: "1px solid rgba(126,203,255,0.15)", borderRadius: 50, padding: "0.35em 1.1em", fontSize: "0.82em", color: "#7ecbff", fontWeight: 600, marginBottom: "1em", letterSpacing: "0.05em" }}>
+          WHY GRUMPY GAMER?
+        </div>
+        <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, color: "#fff", marginBottom: "0.5em", letterSpacing: "-0.02em" }}>
+          Everything you need to level up
         </h2>
-        <p style={{
-          color: "#666",
-          maxWidth: 600,
-          margin: "0 auto 48px",
-          fontSize: "1.1rem"
-        }}>
-          We've built the ultimate playground for gamers who love a challenge.
+        <p style={{ color: "rgba(255,255,255,0.45)", maxWidth: 500, margin: "0 auto 4em", fontSize: "1.05em", lineHeight: 1.6 }}>
+          One platform, endless games, real intelligence.
         </p>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: 32,
-          maxWidth: 1000,
-          margin: "0 auto"
-        }}>
-          {[
-            {
-              icon: "🎯",
-              title: "Play Classic Games",
-              desc: "Wordle, Sudoku, and more. Master the classics or discover new favorites."
-            },
-            {
-              icon: "🤖",
-              title: "Challenge AI",
-              desc: "Test your skills against intelligent AI opponents that adapt and learn."
-            },
-            {
-              icon: "📊",
-              title: "Track Progress",
-              desc: "Detailed stats and dashboards to monitor your improvement over time."
-            },
-            {
-              icon: "🏆",
-              title: "Compete & Compare",
-              desc: "See how you stack up against AI and other players on leaderboards."
-            },
-            {
-              icon: "🎨",
-              title: "Beautiful UI",
-              desc: "Modern, clean design that makes gaming a pleasure."
-            },
-            {
-              icon: "🔓",
-              title: "100% Free",
-              desc: "No hidden fees, no paywalls. Just pure gaming fun."
-            }
-          ].map((feature, i) => (
-            <div key={i} style={{
-              background: "#fff",
-              padding: 32,
-              borderRadius: 16,
-              boxShadow: "0 2px 20px rgba(0,0,0,0.06)",
-              textAlign: "left",
-              transition: "transform 0.2s, box-shadow 0.2s"
-            }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: 16 }}>{feature.icon}</div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#1a1a2e", marginBottom: 8 }}>
-                {feature.title}
-              </h3>
-              <p style={{ color: "#666", lineHeight: 1.6, margin: 0 }}>
-                {feature.desc}
-              </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.2em", maxWidth: 1000, margin: "0 auto" }}>
+          {features.map((f, i) => (
+            <div
+              key={i}
+              onMouseEnter={() => setHoveredFeature(i)}
+              onMouseLeave={() => setHoveredFeature(null)}
+              style={{
+                background: hoveredFeature === i ? "rgba(126,203,255,0.06)" : "rgba(255,255,255,0.03)",
+                border: hoveredFeature === i ? "1px solid rgba(126,203,255,0.2)" : "1px solid rgba(126,203,255,0.07)",
+                borderRadius: 16, padding: "2em", textAlign: "left",
+                transition: "all 0.2s", cursor: "default",
+                transform: hoveredFeature === i ? "translateY(-4px)" : "none",
+              }}
+            >
+              <div style={{ fontSize: "2em", marginBottom: "0.8em" }}>{f.icon}</div>
+              <h3 style={{ fontSize: "1.1em", fontWeight: 700, color: "#fff", marginBottom: "0.5em" }}>{f.title}</h3>
+              <p style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.6, margin: 0, fontSize: "0.95em" }}>{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* How It Works */}
-      <section style={{
-        padding: "80px 20px",
-        background: "#fff",
-        textAlign: "center"
-      }}>
-        <h2 style={{
-          fontSize: "2.2rem",
-          fontWeight: 700,
-          color: "#1a1a2e",
-          marginBottom: 48
-        }}>
-          Getting Started is Easy
+      {/* How it works */}
+      <section style={{ padding: "100px 24px", background: "#0f1117", textAlign: "center" }}>
+        <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, color: "#fff", marginBottom: "0.5em", letterSpacing: "-0.02em" }}>
+          Up and running in seconds
         </h2>
+        <p style={{ color: "rgba(255,255,255,0.45)", marginBottom: "4em", fontSize: "1.05em" }}>No credit card. No setup. Just play.</p>
 
-        <div style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 40,
-          flexWrap: "wrap",
-          maxWidth: 900,
-          margin: "0 auto"
-        }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 48, flexWrap: "wrap", maxWidth: 900, margin: "0 auto" }}>
           {[
             { step: "1", title: "Sign Up", desc: "Create your free account in seconds" },
-            { step: "2", title: "Pick a Game", desc: "Choose from our collection of games" },
-            { step: "3", title: "Play & Compete", desc: "Challenge AI or friends and have fun!" }
+            { step: "2", title: "Pick a Game", desc: "Choose from 12 classic games" },
+            { step: "3", title: "Play & Improve", desc: "Challenge AI and get coaching" },
           ].map((item, i) => (
-            <div key={i} style={{ flex: "1 1 200px", maxWidth: 250 }}>
-              <div style={{
-                width: 60,
-                height: 60,
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #7ecbff, #4fa3d1)",
-                color: "#1a1a2e",
-                fontSize: "1.5rem",
-                fontWeight: 800,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 16px"
-              }}>
+            <div key={i} style={{ flex: "1 1 200px", maxWidth: 240, textAlign: "center" }}>
+              <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #7ecbff, #4fa3d1)", color: "#1a1a2e", fontSize: "1.3rem", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.2em" }}>
                 {item.step}
               </div>
-              <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "#1a1a2e", marginBottom: 8 }}>
-                {item.title}
-              </h3>
-              <p style={{ color: "#666", margin: 0 }}>{item.desc}</p>
+              <h3 style={{ fontSize: "1.1em", fontWeight: 700, color: "#fff", marginBottom: "0.4em" }}>{item.title}</h3>
+              <p style={{ color: "rgba(255,255,255,0.5)", margin: 0, fontSize: "0.92em", lineHeight: 1.6 }}>{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section style={{
-        padding: "80px 20px",
-        background: "linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)",
-        textAlign: "center",
-        color: "#fff"
-      }}>
-        <h2 style={{
-          fontSize: "2.2rem",
-          fontWeight: 700,
-          marginBottom: 16
-        }}>
-          Ready to Get Grumpy? 😤
+      {/* CTA */}
+      <section style={{ padding: "100px 24px", background: "linear-gradient(135deg, #0f1117 0%, #161b27 100%)", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 300, pointerEvents: "none", background: "radial-gradient(ellipse, rgba(126,203,255,0.06) 0%, transparent 70%)" }} />
+        <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, color: "#fff", marginBottom: "0.5em", letterSpacing: "-0.02em" }}>
+          Ready to get grumpy? 😤
         </h2>
-        <p style={{
-          fontSize: "1.1rem",
-          opacity: 0.9,
-          maxWidth: 500,
-          margin: "0 auto 32px"
-        }}>
-          Join thousands of gamers who are challenging AI and having a blast.
+        <p style={{ fontSize: "1.05em", opacity: 0.55, maxWidth: 480, margin: "0 auto 2.5em", lineHeight: 1.6 }}>
+          Join gamers who are challenging AI and having a blast doing it.
         </p>
         <button
           onClick={() => navigate("/signup")}
+          onMouseEnter={() => setHoveredBtn("cta")}
+          onMouseLeave={() => setHoveredBtn(null)}
           style={{
-            padding: "18px 48px",
-            fontSize: "1.2rem",
-            fontWeight: 700,
+            padding: "1.1em 3em", fontSize: "1.1em", fontWeight: 700,
             background: "linear-gradient(90deg, #7ecbff, #4fa3d1)",
-            color: "#1a1a2e",
-            border: "none",
-            borderRadius: 50,
-            cursor: "pointer",
-            boxShadow: "0 4px 20px rgba(126, 203, 255, 0.4)"
+            color: "#1a1a2e", border: "none", borderRadius: 50, cursor: "pointer",
+            fontFamily: "inherit", transition: "all 0.2s",
+            boxShadow: hoveredBtn === "cta" ? "0 8px 32px rgba(126,203,255,0.4)" : "0 4px 20px rgba(126,203,255,0.2)",
+            transform: hoveredBtn === "cta" ? "translateY(-2px)" : "none",
           }}
         >
-          Start Playing Now
+          Start Playing Now — It's Free
         </button>
       </section>
 
       {/* Footer */}
-      <footer style={{
-        padding: "40px 20px",
-        background: "#1a1a2e",
-        color: "#fff",
-        textAlign: "center"
-      }}>
-        <div style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 32,
-          marginBottom: 24,
-          flexWrap: "wrap"
-        }}>
-          <a href="/faq" style={{ color: "#7ecbff", textDecoration: "none" }}>FAQ</a>
-          <a href="/contact" style={{ color: "#7ecbff", textDecoration: "none" }}>Contact</a>
-          <a href="/login" style={{ color: "#7ecbff", textDecoration: "none" }}>Log In</a>
-          <a href="/signup" style={{ color: "#7ecbff", textDecoration: "none" }}>Sign Up</a>
+      <footer style={{ padding: "40px 24px", background: "#090b0f", borderTop: "1px solid rgba(126,203,255,0.06)", textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 32, marginBottom: "1.5em", flexWrap: "wrap" }}>
+          {["/faq", "/contact", "/login", "/signup"].map((href, i) => (
+            <a key={href} href={href} style={{ color: "#7ecbff", textDecoration: "none", fontSize: "0.92em", opacity: 0.8 }}>
+              {["FAQ", "Contact", "Log In", "Sign Up"][i]}
+            </a>
+          ))}
         </div>
-        <p style={{ opacity: 0.6, margin: 0, fontSize: "0.9rem" }}>
+        <p style={{ opacity: 0.3, margin: 0, fontSize: "0.85rem", color: "#fff" }}>
           © 2026 Grumpy Gamer. All rights reserved. 🎮
         </p>
       </footer>
