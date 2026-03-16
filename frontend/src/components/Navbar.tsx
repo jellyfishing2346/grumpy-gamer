@@ -98,6 +98,7 @@ const Navbar = () => {
     { to: "/about", label: "About" },
     { to: "/settings", label: "Settings" },
     { to: "/replays", label: "Replays" },
+    { to: "/profile", label: "Profile" },
   ];
 
   const publicLinks = [
