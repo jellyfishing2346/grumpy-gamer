@@ -32,7 +32,7 @@ const ProfilePage: React.FC = () => {
   const [savingInfo, setSavingInfo] = useState(false);
 
   // Password form
-  const [currentPassword, setCurrentPassword] = useState("");
+  
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwMsg, setPwMsg] = useState("");
@@ -124,7 +124,7 @@ const ProfilePage: React.FC = () => {
       if (res.ok) {
         setPwMsg("Password changed successfully.");
         setPwMsgType("success");
-        setCurrentPassword("");
+        
         setNewPassword("");
         setConfirmPassword("");
       } else {
