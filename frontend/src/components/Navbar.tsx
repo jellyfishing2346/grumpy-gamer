@@ -97,6 +97,7 @@ const Navbar = () => {
     { to: "/human-vs-ai", label: "Human vs AI" },
     { to: "/about", label: "About" },
     { to: "/settings", label: "Settings" },
+    { to: "/replays", label: "Replays" },
   ];
 
   const publicLinks = [
