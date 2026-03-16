@@ -34,6 +34,7 @@ import ContactPage from "./components/pages/ContactPage";
 import FAQPage from "./components/pages/FAQPage";
 import LandingPage from "./components/pages/LandingPage";
 import ReplayHistory from "./components/pages/ReplayHistory";
+import ReplayViewer from "./components/pages/ReplayViewer";
 
 
 // Protect all routes except public pages
@@ -96,6 +97,7 @@ function App() {
                   <Route path="play/memory" element={<MemoryGame />} />
                   <Route path="play/coming-soon" element={<ComingSoonGame name="Coming Soon" />} />
                   <Route path="replays" element={<ReplayHistory />} />
+                  <Route path="replay/:session_id" element={<ReplayViewer />} />
                 </Routes>
               </ProtectedRoute>
             }
