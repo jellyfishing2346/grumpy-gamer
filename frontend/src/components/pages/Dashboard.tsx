@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDarkModeContext } from "../DarkModeProvider";
+import Skeleton from "../Skeleton";
 import API_URL from "../../config/api";
 
 interface GameStat { game: string; wins: number; losses: number; draws: number; total: number; }
@@ -70,6 +71,59 @@ const Dashboard: React.FC = () => {
     <h2 style={{ fontSize: "1.05em", fontWeight: 700, color: "#7ecbff", marginBottom: "1.2em" }}>{text}</h2>
   );
 
+  // Skeleton loading UI
+  const LoadingSkeleton = () => (
+    <>
+      {/* Overview skeleton */}
+      <div style={cardStyle}>
+        <Skeleton width="140px" height="1em" borderRadius={6} style={{ marginBottom: "1.2em" }} />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "1em" }}>
+          {[...Array(5)].map((_, i) => (
+            <div key={i} style={{
+              background: darkMode ? "rgba(255,255,255,0.04)" : "rgba(126,203,255,0.06)",
+              border: darkMode ? "1px solid rgba(126,203,255,0.08)" : "1px solid rgba(126,203,255,0.15)",
+              borderRadius: 12, padding: "1em", textAlign: "center" as const,
+            }}>
+              <Skeleton width="50%" height="2em" borderRadius={6} style={{ margin: "0 auto 0.5em" }} />
+              <Skeleton width="70%" height="0.8em" borderRadius={4} style={{ margin: "0 auto" }} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Game breakdown skeleton */}
+      <div style={cardStyle}>
+        <Skeleton width="160px" height="1em" borderRadius={6} style={{ marginBottom: "1.5em" }} />
+        {[...Array(3)].map((_, i) => (
+          <div key={i} style={{ display: "flex", gap: "1em", marginBottom: "1em", alignItems: "center" }}>
+            <Skeleton width="30%" height="1em" borderRadius={4} />
+            <Skeleton width="10%" height="1em" borderRadius={4} />
+            <Skeleton width="10%" height="1em" borderRadius={4} />
+            <Skeleton width="10%" height="1em" borderRadius={4} />
+            <Skeleton width="10%" height="1em" borderRadius={4} />
+            <Skeleton width="15%" height="1em" borderRadius={4} />
+          </div>
+        ))}
+      </div>
+
+      {/* Chart skeleton */}
+      <div style={cardStyle}>
+        <Skeleton width="200px" height="1em" borderRadius={6} style={{ marginBottom: "1.5em" }} />
+        <div style={{ display: "flex", gap: "0.3em", alignItems: "flex-end", height: 120 }}>
+          {[...Array(15)].map((_, i) => (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <Skeleton
+                width="100%"
+                height={`${20 + Math.random() * 60}%`}
+                borderRadius="4px 4px 0 0"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div style={{ minHeight: "100vh", background: bg, fontFamily: "'DM Sans', 'Inter', sans-serif", transition: "background 0.3s" }}>
       <div style={{
@@ -83,7 +137,7 @@ const Dashboard: React.FC = () => {
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "48px 24px 64px" }}>
         {loading ? (
-          <div style={cardStyle}><p style={{ textAlign: "center", color: textMuted, fontSize: "1.1em" }}>Loading your stats...</p></div>
+          <LoadingSkeleton />
         ) : totalGames === 0 ? (
           <div style={cardStyle}>
             <div style={{ textAlign: "center", padding: "2em 0" }}>
@@ -125,7 +179,7 @@ const Dashboard: React.FC = () => {
                   <thead>
                     <tr>
                       {["Game", "Played", "Wins", "Losses", "Draws", "Win Rate"].map(h => (
-                        <th key={h} style={{ textAlign: "left", padding: "0.75em", borderBottom: `2px solid ${darkMode ? "rgba(126,203,255,0.1)" : "rgba(126,203,255,0.2)"}`, color: textMuted, fontWeight: 600, fontSize: "0.82em", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>{h}</th>
+                        <th key={h} style={{ textAlign: "left", padding: "0.75em", borderBottom: `2px solid ${darkMode ? "rgba(126,203,255,0.1)" : "rgba(126,203,255,0.2)"}`, color: textMuted, fontWeight: 600, fontSize: "0.82em", textTransform: "uppercase" as const }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
