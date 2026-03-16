@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AICoach from "../AICoach";
+import Skeleton from "../Skeleton";
 import { useDarkModeContext } from "../DarkModeProvider";
 import API_URL from "../../config/api";
 
@@ -74,9 +75,24 @@ const HumanVsAI: React.FC = () => {
     <h2 style={{ fontSize: "1.05em", fontWeight: 700, color: "#7ecbff", marginBottom: "1.2em" }}>{text}</h2>
   );
 
+  // Skeleton for the record table
+  const RecordSkeleton = () => (
+    <div style={cardStyle}>
+      <Skeleton width="160px" height="1em" borderRadius={6} style={{ marginBottom: "1.5em" }} />
+      {[...Array(3)].map((_, i) => (
+        <div key={i} style={{ display: "flex", gap: "1em", marginBottom: "1em", alignItems: "center" }}>
+          <Skeleton width="35%" height="1em" borderRadius={4} />
+          <Skeleton width="10%" height="1em" borderRadius={4} />
+          <Skeleton width="10%" height="1em" borderRadius={4} />
+          <Skeleton width="10%" height="1em" borderRadius={4} />
+          <Skeleton width="10%" height="1em" borderRadius={4} />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div style={{ minHeight: "100vh", background: bg, fontFamily: "'DM Sans', 'Inter', sans-serif", transition: "background 0.3s" }}>
-      {/* Header */}
       <div style={{
         background: darkMode ? "linear-gradient(135deg, #0f1117 0%, #161b27 100%)" : "linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)",
         padding: "56px 24px 64px", textAlign: "center", position: "relative", overflow: "hidden",
@@ -168,64 +184,78 @@ const HumanVsAI: React.FC = () => {
           {selectedGame ? `▶ Start ${selectedGame}` : "Select a game to start"}
         </button>
 
-        {/* Your Record */}
-        <div style={cardStyle}>
-          {sectionTitle("📊 Your Record vs AI")}
-          {loading ? (
-            <p style={{ color: textMuted }}>Loading stats...</p>
-          ) : stats.length === 0 ? (
-            <p style={{ color: textMuted }}>Play some games to see your record!</p>
-          ) : (
+        {/* Your Record — skeleton while loading */}
+        {loading ? (
+          <RecordSkeleton />
+        ) : (
+          <div style={cardStyle}>
+            {sectionTitle("📊 Your Record vs AI")}
+            {stats.length === 0 ? (
+              <p style={{ color: textMuted }}>Play some games to see your record!</p>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.95em" }}>
+                <thead>
+                  <tr>
+                    {["Game", "Wins", "Losses", "Draws", "Total"].map(h => (
+                      <th key={h} style={{ textAlign: "left", padding: "0.75em", borderBottom: `2px solid ${darkMode ? "rgba(126,203,255,0.1)" : "rgba(126,203,255,0.2)"}`, color: textMuted, fontWeight: 600, fontSize: "0.82em", textTransform: "uppercase" as const }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.map(row => (
+                    <tr key={row.game} style={{ borderBottom: `1px solid ${darkMode ? "rgba(255,255,255,0.04)" : "rgba(126,203,255,0.08)"}` }}>
+                      <td style={{ padding: "0.85em 0.75em", color: textPrimary, fontWeight: 600 }}>{row.game}</td>
+                      <td style={{ padding: "0.85em 0.75em", color: "#28e07b", fontWeight: 600 }}>{row.wins}</td>
+                      <td style={{ padding: "0.85em 0.75em", color: "#ff7e67", fontWeight: 600 }}>{row.losses}</td>
+                      <td style={{ padding: "0.85em 0.75em", color: "#ffe066", fontWeight: 600 }}>{row.draws}</td>
+                      <td style={{ padding: "0.85em 0.75em", color: textMuted }}>{row.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {/* Leaderboard — skeleton while loading */}
+        {loading ? (
+          <div style={cardStyle}>
+            <Skeleton width="120px" height="1em" borderRadius={6} style={{ marginBottom: "1.5em" }} />
+            {[...Array(2)].map((_, i) => (
+              <div key={i} style={{ display: "flex", gap: "1em", marginBottom: "1em" }}>
+                <Skeleton width="40%" height="1em" borderRadius={4} />
+                <Skeleton width="15%" height="1em" borderRadius={4} />
+                <Skeleton width="15%" height="1em" borderRadius={4} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={cardStyle}>
+            {sectionTitle("🏅 Leaderboard")}
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.95em" }}>
               <thead>
                 <tr>
-                  {["Game", "Wins", "Losses", "Draws", "Total"].map(h => (
+                  {["Player", "Wins", "Losses"].map(h => (
                     <th key={h} style={{ textAlign: "left", padding: "0.75em", borderBottom: `2px solid ${darkMode ? "rgba(126,203,255,0.1)" : "rgba(126,203,255,0.2)"}`, color: textMuted, fontWeight: 600, fontSize: "0.82em", textTransform: "uppercase" as const }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {stats.map(row => (
-                  <tr key={row.game} style={{ borderBottom: `1px solid ${darkMode ? "rgba(255,255,255,0.04)" : "rgba(126,203,255,0.08)"}` }}>
-                    <td style={{ padding: "0.85em 0.75em", color: textPrimary, fontWeight: 600 }}>{row.game}</td>
+                {[
+                  { player: "🧑 You", wins: totalWins, losses: totalLosses },
+                  { player: "🤖 Grumpy AI", wins: totalLosses, losses: totalWins },
+                ].map(row => (
+                  <tr key={row.player} style={{ borderBottom: `1px solid ${darkMode ? "rgba(255,255,255,0.04)" : "rgba(126,203,255,0.08)"}` }}>
+                    <td style={{ padding: "0.85em 0.75em", color: textPrimary, fontWeight: 600 }}>{row.player}</td>
                     <td style={{ padding: "0.85em 0.75em", color: "#28e07b", fontWeight: 600 }}>{row.wins}</td>
                     <td style={{ padding: "0.85em 0.75em", color: "#ff7e67", fontWeight: 600 }}>{row.losses}</td>
-                    <td style={{ padding: "0.85em 0.75em", color: "#ffe066", fontWeight: 600 }}>{row.draws}</td>
-                    <td style={{ padding: "0.85em 0.75em", color: textMuted }}>{row.total}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Leaderboard */}
-        <div style={cardStyle}>
-          {sectionTitle("🏅 Leaderboard")}
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.95em" }}>
-            <thead>
-              <tr>
-                {["Player", "Wins", "Losses"].map(h => (
-                  <th key={h} style={{ textAlign: "left", padding: "0.75em", borderBottom: `2px solid ${darkMode ? "rgba(126,203,255,0.1)" : "rgba(126,203,255,0.2)"}`, color: textMuted, fontWeight: 600, fontSize: "0.82em", textTransform: "uppercase" as const }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { player: "🧑 You", wins: totalWins, losses: totalLosses },
-                { player: "🤖 Grumpy AI", wins: totalLosses, losses: totalWins },
-              ].map(row => (
-                <tr key={row.player} style={{ borderBottom: `1px solid ${darkMode ? "rgba(255,255,255,0.04)" : "rgba(126,203,255,0.08)"}` }}>
-                  <td style={{ padding: "0.85em 0.75em", color: textPrimary, fontWeight: 600 }}>{row.player}</td>
-                  <td style={{ padding: "0.85em 0.75em", color: "#28e07b", fontWeight: 600 }}>{row.wins}</td>
-                  <td style={{ padding: "0.85em 0.75em", color: "#ff7e67", fontWeight: 600 }}>{row.losses}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* AI Coach */}
         <AICoach />
       </div>
     </div>
