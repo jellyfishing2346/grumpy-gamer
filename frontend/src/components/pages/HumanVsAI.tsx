@@ -4,6 +4,7 @@ import AICoach from "../AICoach";
 import Skeleton from "../Skeleton";
 import { useDarkModeContext } from "../DarkModeProvider";
 import API_URL from "../../config/api";
+import EmptyState from "../EmptyState";
 
 interface GameStat {
   game: string;
@@ -191,7 +192,13 @@ const HumanVsAI: React.FC = () => {
           <div style={cardStyle}>
             {sectionTitle("📊 Your Record vs AI")}
             {stats.length === 0 ? (
-              <p style={{ color: textMuted }}>Play some games to see your record!</p>
+              <EmptyState
+                icon="🏆"
+                title="No record yet!"
+                description="Play some games against the AI and your wins, losses, and draws will appear here."
+                actionLabel="Pick a Game Above"
+                actionRoute="/human-vs-ai"
+              />
             ) : (
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.95em" }}>
                 <thead>

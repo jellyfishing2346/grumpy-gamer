@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDarkModeContext } from "../DarkModeProvider";
 import Skeleton from "../Skeleton";
 import API_URL from "../../config/api";
+import EmptyState from "../EmptyState";
 
 interface GameStat { game: string; wins: number; losses: number; draws: number; total: number; }
 interface ActivityDay { date: string; count: number; }
@@ -139,13 +140,15 @@ const Dashboard: React.FC = () => {
         {loading ? (
           <LoadingSkeleton />
         ) : totalGames === 0 ? (
-          <div style={cardStyle}>
-            <div style={{ textAlign: "center", padding: "2em 0" }}>
-              <div style={{ fontSize: "3em", marginBottom: "0.5em" }}>🎮</div>
-              <h2 style={{ color: "#7ecbff", marginBottom: "0.5em" }}>No games recorded yet!</h2>
-              <p style={{ color: textMuted }}>Start playing some games and your stats will appear here.</p>
-            </div>
-          </div>
+          <EmptyState
+              icon="🎮"
+              title="No games recorded yet!"
+              description="Start playing some games and your stats will appear here. Every game you play gets tracked automatically."
+              actionLabel="Browse Games"
+              actionRoute="/games"
+              secondaryLabel="Challenge AI"
+              secondaryRoute="/human-vs-ai"
+          />
         ) : (
           <>
             {/* Overview */}
