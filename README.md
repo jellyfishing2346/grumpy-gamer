@@ -173,6 +173,11 @@ graph LR
 - [x] Dashboard: win/loss/draw stats, daily activity, performance charts
 - [x] AI vs Human comparison page with real data
 - [x] AI Coach: Claude-powered glows/grows feedback
+- [x] Spectator & Replay Mode (record moves, replay viewer, auto-playback, spectator sharing)
+- [x] Profile page (view stats, edit username/email, change password)
+- [x] Loading skeletons on Dashboard and Human vs AI
+- [x] Empty state illustrations
+- [x] Full UX/Visual redesign (dark aesthetic across all pages)
 - [ ] Train and optimize RL agents for all games
 - [ ] Add real-time multiplayer with WebSockets
 - [ ] Design training metrics dashboard
