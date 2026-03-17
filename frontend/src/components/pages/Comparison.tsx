@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AIProgressChart from "./AIProgressChart";
 import { useDarkModeContext } from "../DarkModeProvider";
 import API_URL from "../../config/api";
+import EmptyState from "../EmptyState";
 
 interface GameStat {
   game: string;
@@ -155,10 +156,15 @@ const Comparison: React.FC = () => {
             )}
 
             {stats.length === 0 && (
-              <div style={{ ...cardStyle, textAlign: "center", padding: "3em" }}>
-                <div style={{ fontSize: "2.5em", marginBottom: "0.5em" }}>🎮</div>
-                <p style={{ color: textMuted }}>Play some games to see your comparison!</p>
-              </div>
+              <EmptyState
+                icon="🆚"
+                title="Nothing to compare yet!"
+                description="Play some games against the AI and see how your record stacks up head to head."
+                actionLabel="Start Playing"
+                actionRoute="/games"
+                secondaryLabel="Human vs AI"
+                 secondaryRoute="/human-vs-ai"
+                />
             )}
           </>
         )}
