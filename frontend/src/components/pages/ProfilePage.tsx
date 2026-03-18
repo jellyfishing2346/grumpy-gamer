@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDarkModeContext } from "../DarkModeProvider";
-import API_URL from "../../config/api";
+import { apiFetch } from "../../config/apiFetch";
 
 interface GameStat {
   game: string;
@@ -10,12 +10,6 @@ interface GameStat {
   total: number;
 }
 
-function getAuthHeaders(contentType = false): Record<string, string> {
-  const token = localStorage.getItem("access_token");
-  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-  if (contentType) headers["Content-Type"] = "application/json";
-  return headers;
-}
 
 const ProfilePage: React.FC = () => {
   const [darkMode] = useDarkModeContext();
@@ -52,8 +46,8 @@ const ProfilePage: React.FC = () => {
       setLoadingInfo(true);
       try {
         const [infoRes, statsRes] = await Promise.all([
-          fetch(`${API_URL}/api/user/info`, { headers: getAuthHeaders() }),
-          fetch(`${API_URL}/api/stats/summary`, { headers: getAuthHeaders() }),
+          apiFetch("/api/user/info"),
+          apiFetch("/api/stats/summary"),
         ]);
         if (infoRes.ok) {
           const user = await infoRes.json();
@@ -79,9 +73,8 @@ const ProfilePage: React.FC = () => {
     setSavingInfo(true);
     setInfoMsg("");
     try {
-      const res = await fetch(`${API_URL}/api/user/update`, {
+      const res = await fetch("/api/user/update", {
         method: "PUT",
-        headers: getAuthHeaders(true),
         body: JSON.stringify({ new_username: newUsername, new_email: newEmail }),
       });
       if (res.ok) {
@@ -116,9 +109,8 @@ const ProfilePage: React.FC = () => {
     }
     setSavingPw(true);
     try {
-      const res = await fetch(`${API_URL}/api/user/update`, {
+      const res = await apiFetch("/api/user/update", {
         method: "PUT",
-        headers: getAuthHeaders(true),
         body: JSON.stringify({ new_password: newPassword }),
       });
       if (res.ok) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDarkModeContext } from "../DarkModeProvider";
 import Skeleton from "../Skeleton";
-import API_URL from "../../config/api";
+import { apiFetch } from "../../config/apiFetch";
 import EmptyState from "../EmptyState";
 
 interface GameStat { game: string; wins: number; losses: number; draws: number; total: number; }
@@ -14,10 +14,6 @@ const gameIconMap: Record<string, string> = {
   snake: "🐍", memory: "🧠", hangman: "👔", sudoku: "🔲", rockpaperscissors: "✊",
 };
 
-function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem("access_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<GameStat[]>([]);
@@ -35,12 +31,11 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const headers = getAuthHeaders();
       try {
         const [summaryRes, activityRes, historyRes] = await Promise.all([
-          fetch(`${API_URL}/api/stats/summary`, { headers }),
-          fetch(`${API_URL}/api/stats/activity`, { headers }),
-          fetch(`${API_URL}/api/stats/history`, { headers }),
+          apiFetch("/api/stats/summary"),
+          apiFetch("/api/stats/activity"),
+          apiFetch("/api/stats/history"),
         ]);
         const summaryData = summaryRes.ok ? await summaryRes.json() : { stats: [] };
         const activityData = activityRes.ok ? await activityRes.json() : { activity: [] };
