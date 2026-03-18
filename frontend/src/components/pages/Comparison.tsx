@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import AIProgressChart from "./AIProgressChart";
 import { useDarkModeContext } from "../DarkModeProvider";
-import API_URL from "../../config/api";
+import { apiFetch } from "../../config/apiFetch";
 import EmptyState from "../EmptyState";
 
 interface GameStat {
@@ -27,10 +27,7 @@ const Comparison: React.FC = () => {
     async function fetchStats() {
       setLoading(true);
       try {
-        const token = localStorage.getItem("access_token");
-        const res = await fetch(`${API_URL}/api/stats/summary`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await apiFetch("/api/stats/summary");
         if (res.ok) {
           const data = await res.json();
           setStats(data.stats || []);
