@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AICoach from "../AICoach";
 import Skeleton from "../Skeleton";
 import { useDarkModeContext } from "../DarkModeProvider";
-import API_URL from "../../config/api";
+import { apiFetch } from "../../config/apiFetch";
 import EmptyState from "../EmptyState";
 
 interface GameStat {
@@ -14,10 +14,6 @@ interface GameStat {
   total: number;
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem("access_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 const HumanVsAI: React.FC = () => {
   const games = [
@@ -44,7 +40,7 @@ const HumanVsAI: React.FC = () => {
     async function fetchStats() {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/api/stats/summary`, { headers: getAuthHeaders() });
+        const res = await apiFetch("/api/stats/summary");
         if (res.ok && mounted) {
           const data = await res.json();
           setStats(data.stats || []);
