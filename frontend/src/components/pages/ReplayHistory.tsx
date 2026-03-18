@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDarkModeContext } from "../DarkModeProvider";
-import API_URL from "../../config/api";
+import { apiFetch } from "../../config/apiFetch";
 
 interface Replay {
   session_id: number;
@@ -11,10 +11,6 @@ interface Replay {
   move_count: number;
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem("access_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 const outcomeColor = (outcome: string, darkMode: boolean) => {
   if (outcome === "win") return darkMode ? "#28e07b" : "#16a34a";
@@ -44,9 +40,7 @@ const ReplayHistory: React.FC = () => {
     async function fetchReplays() {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/api/replays`, {
-          headers: getAuthHeaders(),
-        });
+        const res = await apiFetch(`/api/replays`);
         if (res.ok) {
           const data = await res.json();
           setReplays(data.replays || []);
