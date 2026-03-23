@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useDarkModeContext } from "../DarkModeProvider";
 import { getDarkModeStyles } from "../getDarkModeStyles";
 import { recordGame } from '../../services/gameStatsService';
+import PlayAgainButton from "../PlayAgainButton";
 
 const WORD_LENGTH = 5;
 const MAX_ATTEMPTS = 6;
@@ -254,6 +255,13 @@ const WordleGame: React.FC = () => {
           {aiStatus && <div style={{ marginTop: "1.5em", fontWeight: 700, color: aiStatus.includes("guessed") ? "#a7ffb0" : "#b3d0ff" }}>{aiStatus}</div>}
         </div>
       </div>
+
+      {/* Play Again button when game ends */}
+      {(status || aiStatus) && (
+        <div style={{ textAlign: "center", marginTop: "1.5em" }}>
+          <PlayAgainButton />
+        </div>
+      )}
     </div>
   );
 };
