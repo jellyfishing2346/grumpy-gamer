@@ -209,6 +209,10 @@ export async function recordGame(params: RecordGameParams): Promise<{ success: b
       return { success: false };
     }
 
+    // Dispatch toast event for the UI to pick up
+    const outcome = params.result;
+    const label = outcome === 'win' ? 'Win recorded! 🏆' : outcome === 'loss' ? 'Loss recorded' : 'Draw recorded';
+    window.dispatchEvent(new CustomEvent('game-recorded', { detail: { outcome, label } }));
     return { success: true };
   } catch (error) {
     console.error('Error recording game:', error);
