@@ -38,6 +38,7 @@ import ReplayViewer from "./components/pages/ReplayViewer";
 import SpectatorViewer from "./components/pages/SpectatorViewer";
 import ProfilePage from "./components/pages/ProfilePage";
 import { ToastProvider } from "./components/ToastProvider";
+import PageWrapper from "./components/PageWrapper";
 
 
 // Protect all routes except public pages
@@ -64,51 +65,53 @@ function App() {
       <ToastProvider>
       <Router>
         <Navbar />
-        <Routes>
-          {/* Public routes - accessible to everyone */}
-          <Route path="/" element={<PublicLandingRoute />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/faq" element={<FAQPage />} />
-          
-          {/* Protected routes - require authentication */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <Routes>
-                  <Route path="home" element={<Home />} />
-                  <Route path="games" element={<GameSelection />} />
-                  <Route path="play/:game" element={<GamePlay />} />
-                  <Route path="play" element={<Navigate to="games" replace />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="comparison" element={<Comparison />} />
-                  <Route path="human-vs-ai" element={<HumanVsAI />} />
-                  <Route path="about" element={<About />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="play/wordle" element={<WordleGame />} />
-                  <Route path="play/sudoku" element={<SudokuGame />} />
-                  <Route path="play/tictactoe" element={<TicTacToeGame />} />
-                  <Route path="play/connectfour" element={<ConnectFourGame />} />
-                  <Route path="play/checkers" element={<CheckersGame />} />
-                  <Route path="play/chess" element={<ChessGame />} />
-                  <Route path="play/rps" element={<RockPaperScissorsGame />} />
-                  <Route path="play/minesweeper" element={<MinesweeperGame />} />
-                  <Route path="play/2048" element={<Game2048 />} />
-                  <Route path="play/hangman" element={<HangmanGame />} />
-                  <Route path="play/othello" element={<OthelloGame />} />
-                  <Route path="play/memory" element={<MemoryGame />} />
-                  <Route path="play/coming-soon" element={<ComingSoonGame name="Coming Soon" />} />
-                  <Route path="replays" element={<ReplayHistory />} />
-                  <Route path="replay/:session_id" element={<ReplayViewer />} />
-                  <Route path="/watch/:session_id" element={<SpectatorViewer />} />
-                  <Route path="profile" element={<ProfilePage />} />
-                </Routes>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <PageWrapper>
+          <Routes>
+            {/* Public routes - accessible to everyone */}
+            <Route path="/" element={<PublicLandingRoute />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/faq" element={<FAQPage />} />
+
+            {/* Protected routes - require authentication */}
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <Routes>
+                    <Route path="home" element={<Home />} />
+                    <Route path="games" element={<GameSelection />} />
+                    <Route path="play/:game" element={<GamePlay />} />
+                    <Route path="play" element={<Navigate to="games" replace />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="comparison" element={<Comparison />} />
+                    <Route path="human-vs-ai" element={<HumanVsAI />} />
+                    <Route path="about" element={<About />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="play/wordle" element={<WordleGame />} />
+                    <Route path="play/sudoku" element={<SudokuGame />} />
+                    <Route path="play/tictactoe" element={<TicTacToeGame />} />
+                    <Route path="play/connectfour" element={<ConnectFourGame />} />
+                    <Route path="play/checkers" element={<CheckersGame />} />
+                    <Route path="play/chess" element={<ChessGame />} />
+                    <Route path="play/rps" element={<RockPaperScissorsGame />} />
+                    <Route path="play/minesweeper" element={<MinesweeperGame />} />
+                    <Route path="play/2048" element={<Game2048 />} />
+                    <Route path="play/hangman" element={<HangmanGame />} />
+                    <Route path="play/othello" element={<OthelloGame />} />
+                    <Route path="play/memory" element={<MemoryGame />} />
+                    <Route path="play/coming-soon" element={<ComingSoonGame name="Coming Soon" />} />
+                    <Route path="replays" element={<ReplayHistory />} />
+                    <Route path="replay/:session_id" element={<ReplayViewer />} />
+                    <Route path="/watch/:session_id" element={<SpectatorViewer />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                  </Routes>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </PageWrapper>
         <Chatbot />
       </Router>
       </ToastProvider>
