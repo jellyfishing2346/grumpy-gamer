@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useDarkModeContext } from "./DarkModeProvider";
 
 interface PlayAgainButtonProps {
   onPlayAgain?: () => void; // optional custom reset handler
@@ -10,7 +9,7 @@ const PlayAgainButton: React.FC<PlayAgainButtonProps> = ({
   onPlayAgain,
   label = "🔄 Play Again",
 }) => {
-  const [darkMode] = useDarkModeContext();
+
   const [hovered, setHovered] = useState(false);
 
   const handleClick = () => {
