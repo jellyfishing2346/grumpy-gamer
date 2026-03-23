@@ -3,6 +3,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDarkModeContext } from '../DarkModeProvider';
 import { getDarkModeStyles } from '../getDarkModeStyles';
 import { recordGame } from '../../services/gameStatsService';
+import PlayAgainButton from '../PlayAgainButton';
 
 // Types
 type Player = 'black' | 'white';
@@ -942,6 +943,9 @@ const OthelloGame: React.FC = () => {
           fontSize: '1.1em',
         }}>
           {getWinnerMessage()}
+          <div style={{ marginTop: '0.8em' }}>
+            <PlayAgainButton />
+          </div>
           <div style={{ fontSize: '0.9em', marginTop: '0.3em' }}>
             Final Score: ⚫ {gameState.blackCount} - {gameState.whiteCount} ⚪
           </div>

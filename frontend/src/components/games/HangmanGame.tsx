@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDarkModeContext } from '../DarkModeProvider';
 import { getDarkModeStyles } from '../getDarkModeStyles';
 import { recordGame } from '../../services/gameStatsService';
+import PlayAgainButton from '../PlayAgainButton';
 
 // Types
 type GameStatus = 'playing' | 'won' | 'lost';
@@ -365,7 +366,7 @@ const HangmanGame: React.FC = () => {
   const [showWordInput, setShowWordInput] = useState(false);
   const [aiThinking, setAiThinking] = useState(false);
   const [showHint, setShowHint] = useState(false);
-  const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const aiTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Stats tracking refs
   const gameStartTimeRef = useRef<number | null>(null);
@@ -895,6 +896,12 @@ const HangmanGame: React.FC = () => {
                 fontWeight: 700,
               }}>
                 😵 Game Over! The word was: <strong>{classicState.word}</strong>
+              </div>
+            )}
+
+            {(classicState.status === 'won' || classicState.status === 'lost') && (
+              <div style={{ textAlign: 'center' }}>
+                <PlayAgainButton />
               </div>
             )}
             
