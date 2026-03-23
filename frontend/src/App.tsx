@@ -37,6 +37,7 @@ import ReplayHistory from "./components/pages/ReplayHistory";
 import ReplayViewer from "./components/pages/ReplayViewer";
 import SpectatorViewer from "./components/pages/SpectatorViewer";
 import ProfilePage from "./components/pages/ProfilePage";
+import { ToastProvider } from "./components/ToastProvider";
 
 
 // Protect all routes except public pages
@@ -60,6 +61,7 @@ const PublicLandingRoute = () => {
 function App() {
   return (
     <AuthProvider>
+      <ToastProvider>
       <Router>
         <Navbar />
         <Routes>
@@ -109,6 +111,7 @@ function App() {
         </Routes>
         <Chatbot />
       </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }
