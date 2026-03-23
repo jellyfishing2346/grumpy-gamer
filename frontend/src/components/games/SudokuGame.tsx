@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useDarkModeContext } from "../DarkModeProvider";
 import { getDarkModeStyles } from "../getDarkModeStyles";
 import { recordGame } from '../../services/gameStatsService';
+import PlayAgainButton from "../PlayAgainButton";
 
 // Types
 type Board = (number | null)[][];
@@ -746,6 +747,9 @@ const SudokuGame: React.FC = () => {
               <p style={{ color: "#666", marginBottom: "1rem" }}>
                 Final Score: You {gameState.userScore} - {gameState.aiScore} AI
               </p>
+              <div style={{ marginTop: "1em" }}>
+                <PlayAgainButton />
+              </div>
             </div>
           )}
 
