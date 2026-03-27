@@ -87,3 +87,30 @@ body::before {
     transform: rotate(360deg);
   }
 }
+
+/* Mobile responsive fixes */
+@media (max-width: 768px) {
+  /* Dashboard stat grid */
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Game selection grid */
+  .game-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* General page padding */
+  div[style*="maxWidth: 1000"],
+  div[style*="max-width: 1000"] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Single column on very small screens */
+  .game-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
