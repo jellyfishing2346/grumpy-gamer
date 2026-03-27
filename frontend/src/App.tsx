@@ -39,6 +39,13 @@ import SpectatorViewer from "./components/pages/SpectatorViewer";
 import ProfilePage from "./components/pages/ProfilePage";
 import { ToastProvider } from "./components/ToastProvider";
 import PageWrapper from "./components/PageWrapper";
+import { usePageTitle } from "./hooks/usePageTitle";
+
+// Component to update the page title on route change
+const PageTitleUpdater = () => {
+  usePageTitle();
+  return null;
+};
 
 
 // Protect all routes except public pages
@@ -64,6 +71,7 @@ function App() {
     <AuthProvider>
       <ToastProvider>
       <Router>
+        <PageTitleUpdater />
         <Navbar />
         <PageWrapper>
           <Routes>
