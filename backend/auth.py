@@ -55,6 +55,11 @@ def init_db():
             played_at TIMESTAMP DEFAULT NOW()
         )'''
     )
+    # Performance indexes
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_game_results_email ON game_results(email)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_game_results_played_at ON game_results(played_at)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_game_results_email_game ON game_results(email, game)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_game_moves_session_id ON game_moves(session_id)")
     conn.commit()
     conn.close()
 
