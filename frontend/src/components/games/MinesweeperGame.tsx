@@ -374,6 +374,7 @@ const MinesweeperGame: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number | null>(null);
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{moveNumber: number; moveData: Record<string, unknown>}[]>([]);
   const moveCountRef = useRef<number>(0);
 
   // Timer effect
@@ -491,7 +492,7 @@ const MinesweeperGame: React.FC = () => {
           playerScore: score.player,
           aiScore: score.ai,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [gameStatus, firstClick, timer, difficulty, gameMode, aiMode, score]);
 
@@ -522,6 +523,7 @@ const MinesweeperGame: React.FC = () => {
     if (gameStatus !== 'playing') return;
     if (!isAI && currentTurn !== 'player' && gameMode === 'vs-ai') return;
     if (board[row][col].state !== 'hidden') return;
+    if (isAI === false) addMove({ row, col, action: 'reveal', move: moveCountRef.current + 1 });
     
     let currentBoard = board;
     const turn: Turn = isAI ? 'ai' : 'player';
@@ -768,6 +770,25 @@ const MinesweeperGame: React.FC = () => {
     background: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 10,
     minWidth: 80,
+  };
+
+  // Replay recording
+  const addMove = (moveData: Record<string, unknown>) => {
+    pendingMovesRef.current.push({ moveNumber: pendingMovesRef.current.length + 1, moveData });
+  };
+  const flushMoves = async (sessionId: number) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    for (const move of pendingMovesRef.current) {
+      try {
+        await fetch('/api/replays/moves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ session_id: sessionId, move_number: move.moveNumber, move_data: move.moveData }),
+        });
+      } catch (err) { console.error('Failed to flush move:', err); }
+    }
+    pendingMovesRef.current = [];
   };
 
   return (
