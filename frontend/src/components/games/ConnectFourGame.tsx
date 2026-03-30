@@ -426,6 +426,7 @@ const ConnectFourGame: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number>(Date.now());
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{moveNumber: number; moveData: Record<string, unknown>}[]>([]);
 
   // Fetch RL status on mount and when switching to RL mode
   useEffect(() => {
@@ -487,6 +488,7 @@ const ConnectFourGame: React.FC = () => {
     setDropAnimation({ col, row: result.row, player: 'player' });
     setLastMove({ row: result.row, col });
     setMoveCount(prev => prev + 1);
+    addMove({ column: col, row: result.row, move: moveCount + 1 });
 
     setTimeout(() => {
       setBoard(result.newBoard);
@@ -508,7 +510,7 @@ const ConnectFourGame: React.FC = () => {
 
       setCurrentPlayer('ai');
     }, 300);
-  }, [board, winner, isTie, currentPlayer, isThinking]);
+  }, [board, winner, isTie, currentPlayer, isThinking, moveCount]);
 
   // AI move
   useEffect(() => {
@@ -610,7 +612,7 @@ const ConnectFourGame: React.FC = () => {
   const getStatusMessage = (): string => {
     if (winner === 'player') return '🎉 You Win!';
     if (winner === 'ai') return '🤖 AI Wins!';
-    if (isTie) return '🤝 It\'s a Tie!';
+    if (isTie) return "🤝 It's a Tie!";
     if (isThinking) return '🤔 AI is thinking...';
     return '🟡 Your turn - Drop a disc!';
   };
@@ -634,6 +636,11 @@ const ConnectFourGame: React.FC = () => {
       color: "#f5f6fa"
     }
   );
+  // Replay recording
+  const addMove = (moveData: Record<string, unknown>) => {
+    pendingMovesRef.current.push({ moveNumber: pendingMovesRef.current.length + 1, moveData });
+  };
+
   return (
     <div style={{ ...containerStyle, ...darkStyles }}>
       <style>

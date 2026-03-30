@@ -515,6 +515,7 @@ const Game2048: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number | null>(null);
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{moveNumber: number; moveData: Record<string, unknown>}[]>([]);
   const moveCountRef = useRef<number>(0);
 
   // Check RL model status on mount
@@ -555,7 +556,7 @@ const Game2048: React.FC = () => {
           maxTile: Math.max(...classicState.board.flat().map(t => t?.value || 0)),
           hasWon: classicState.hasWon,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [gameMode, classicState.status, classicState.hasWon, classicState.score, classicState.board]);
 
@@ -591,7 +592,7 @@ const Game2048: React.FC = () => {
           aiScore: vsAIState.aiScore,
           usedRLModel,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [gameMode, vsAIState.winner, vsAIState.playerScore, vsAIState.aiScore, aiMode, usedRLModel]);
 
@@ -847,6 +848,7 @@ const Game2048: React.FC = () => {
       
       e.preventDefault();
       
+      addMove({ direction, move: moveCountRef.current + 1 });
       if (gameMode === 'classic') {
         makeClassicMove(direction);
       } else if (vsAIState.currentTurn === 'player') {
@@ -1048,6 +1050,25 @@ const Game2048: React.FC = () => {
   }
 
   // VS AI mode game
+  // Replay recording
+  const addMove = (moveData: Record<string, unknown>) => {
+    pendingMovesRef.current.push({ moveNumber: pendingMovesRef.current.length + 1, moveData });
+  };
+  const flushMoves = async (sessionId: number) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    for (const move of pendingMovesRef.current) {
+      try {
+        await fetch('/api/replays/moves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ session_id: sessionId, move_number: move.moveNumber, move_data: move.moveData }),
+        });
+      } catch (err) { console.error('Failed to flush move:', err); }
+    }
+    pendingMovesRef.current = [];
+  };
+
   return (
     <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
       <h1 style={headingStyle}>2048 VS AI</h1>
