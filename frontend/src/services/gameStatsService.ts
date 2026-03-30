@@ -209,11 +209,12 @@ export async function recordGame(params: RecordGameParams): Promise<{ success: b
       return { success: false };
     }
 
+    const data = await response.json();
     // Dispatch toast event for the UI to pick up
     const outcome = params.result;
     const label = outcome === 'win' ? 'Win recorded! 🏆' : outcome === 'loss' ? 'Loss recorded' : 'Draw recorded';
     window.dispatchEvent(new CustomEvent('game-recorded', { detail: { outcome, label } }));
-    return { success: true };
+    return { success: true, sessionId: data.session_id };
   } catch (error) {
     console.error('Error recording game:', error);
     return { success: false };

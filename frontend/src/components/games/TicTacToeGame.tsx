@@ -224,6 +224,7 @@ const TicTacToeGame: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number | null>(null);
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{moveNumber: number; moveData: Record<string, unknown>}[]>([]);
 
   const startGame = useCallback((
     userSymbol: Player,
@@ -310,6 +311,7 @@ const TicTacToeGame: React.FC = () => {
     ) {
       return;
     }
+    addMove({ index, symbol: gameState.userSymbol, move: gameState.moveHistory.length + 1 });
     
     makeMove(index, gameState.userSymbol);
   };
@@ -506,6 +508,13 @@ const TicTacToeGame: React.FC = () => {
       color: "#f5f6fa"
     }
   );
+  // Replay recording
+  const addMove = (moveData: Record<string, unknown>) => {
+    pendingMovesRef.current.push({ moveNumber: pendingMovesRef.current.length + 1, moveData });
+  };
+  // const flushMoves = async (sessionId: number) => {
+
+
   return (
     <div
       style={{

@@ -31,6 +31,7 @@ const WordleGame: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number>(Date.now());
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{guess: string; feedback: string[]; moveNumber: number}[]>([]);
 
   // Record game stats when game ends
   useEffect(() => {
@@ -68,9 +69,30 @@ const WordleGame: React.FC = () => {
           userAttempts: attempt + 1,
           aiAttempts: aiAttempt + 1,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [status, aiStatus, attempt, aiAttempt, answer]);
+
+  const recordMove = (guess: string, feedback: string[], moveNumber: number) => {
+    pendingMovesRef.current.push({ guess, feedback, moveNumber });
+  };
+
+  const flushMoves = async (sessionId: number) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    for (const move of pendingMovesRef.current) {
+      try {
+        await fetch('/api/replays/moves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ session_id: sessionId, move_number: move.moveNumber, move_data: { guess: move.guess, feedback: move.feedback } }),
+        });
+      } catch (err) {
+        console.error('Failed to record move:', err);
+      }
+    }
+    pendingMovesRef.current = [];
+  };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value.length <= WORD_LENGTH) {
@@ -99,6 +121,9 @@ const WordleGame: React.FC = () => {
     const newGuesses = [...guesses];
     newGuesses[attempt] = currentGuess;
     setGuesses(newGuesses);
+    // Record move for replay
+    const feedback = getFeedback(currentGuess, answer).map(f => f as string);
+    recordMove(currentGuess, feedback, attempt + 1);
     let userWin = false;
     let userLose = false;
     if (currentGuess === answer) {
