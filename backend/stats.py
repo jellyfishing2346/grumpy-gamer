@@ -1,9 +1,9 @@
 """
 Analytics API endpoints for recording and summarising game results.
 """
+import time
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-
 try:
     from .auth import get_db
     from .jwt_utils import verify_access_token
@@ -12,6 +12,28 @@ except ImportError:
     from jwt_utils import verify_access_token
 
 stats_router = APIRouter()
+
+# Simple in-memory cache: { cache_key: { "data": ..., "expires_at": float } }
+_cache: dict = {}
+CACHE_TTL = 60  # seconds
+
+
+def cache_get(key: str):
+    entry = _cache.get(key)
+    if entry and entry["expires_at"] > time.time():
+        return entry["data"]
+    return None
+
+
+def cache_set(key: str, data):
+    _cache[key] = {"data": data, "expires_at": time.time() + CACHE_TTL}
+
+
+def cache_invalidate(email: str):
+    """Invalidate all cached entries for a user."""
+    keys_to_delete = [k for k in _cache if k.startswith(f"{email}:")]
+    for k in keys_to_delete:
+        del _cache[k]
 
 
 class GameResult(BaseModel):
@@ -34,12 +56,19 @@ def record_result(
     session_id = cursor.fetchone()["id"]
     conn.commit()
     conn.close()
+    # Invalidate cache for this user
+    cache_invalidate(token_email)
     return {"msg": "Result recorded", "session_id": session_id}
 
 
 @stats_router.get("/stats/summary")
 def get_summary(token_email: str = Depends(verify_access_token)):
     """Return aggregated win/loss/draw stats per game for the authenticated user."""
+    cache_key = f"{token_email}:summary"
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -59,12 +88,19 @@ def get_summary(token_email: str = Depends(verify_access_token)):
     )
     rows = cursor.fetchall()
     conn.close()
-    return {"stats": [dict(r) for r in rows]}
+    result = {"stats": [dict(r) for r in rows]}
+    cache_set(cache_key, result)
+    return result
 
 
 @stats_router.get("/stats/activity")
 def get_activity(token_email: str = Depends(verify_access_token)):
     """Return daily game counts for the past 30 days (for activity heatmap)."""
+    cache_key = f"{token_email}:activity"
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -82,12 +118,19 @@ def get_activity(token_email: str = Depends(verify_access_token)):
     )
     rows = cursor.fetchall()
     conn.close()
-    return {"activity": [{"date": str(r["date"]), "count": r["games_played"]} for r in rows]}
+    result = {"activity": [{"date": str(r["date"]), "count": r["games_played"]} for r in rows]}
+    cache_set(cache_key, result)
+    return result
 
 
 @stats_router.get("/stats/history")
 def get_history(token_email: str = Depends(verify_access_token)):
     """Return win rate per day for the past 30 days (for performance over time chart)."""
+    cache_key = f"{token_email}:history"
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -106,7 +149,7 @@ def get_history(token_email: str = Depends(verify_access_token)):
     )
     rows = cursor.fetchall()
     conn.close()
-    return {
+    result = {
         "history": [
             {
                 "date": str(r["date"]),
@@ -115,6 +158,8 @@ def get_history(token_email: str = Depends(verify_access_token)):
             for r in rows
         ]
     }
+    cache_set(cache_key, result)
+    return result
 
 
 @stats_router.post("/stats/coach")
@@ -122,7 +167,6 @@ def get_coach_feedback(token_email: str = Depends(verify_access_token)):
     """Return AI-generated glows and grows feedback based on the user's game history."""
     import anthropic
     import json
-
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
@@ -132,26 +176,22 @@ def get_coach_feedback(token_email: str = Depends(verify_access_token)):
     rows = cur.fetchall()
     cur.close()
     conn.close()
-
     if not rows:
         return {
             "glows": ["You're just getting started!"],
             "grows": ["Play some games to get personalized tips."],
             "summary": "Every game is a chance to learn."
         }
-
     stats_text = {}
     for row in rows:
         game, outcome = row["game"], row["outcome"]
         if game not in stats_text:
             stats_text[game] = {"win": 0, "loss": 0, "draw": 0}
         stats_text[game][outcome] = stats_text[game].get(outcome, 0) + 1
-
     stats_lines = "\n".join(
         f"{g}: {v.get('win', 0)}W / {v.get('loss', 0)}L / {v.get('draw', 0)}D"
         for g, v in stats_text.items()
     )
-
     prompt = (
         "You are a friendly game coach. Based on these stats, give encouraging feedback.\n\n"
         f"{stats_lines}\n\n"
