@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useDarkModeContext } from "../DarkModeProvider";
 import Skeleton from "../Skeleton";
 import { apiFetch } from "../../config/apiFetch";
@@ -51,11 +51,14 @@ const Dashboard: React.FC = () => {
     fetchData();
   }, []);
 
-  const totalGames = stats.reduce((s, g) => s + g.total, 0);
-  const totalWins = stats.reduce((s, g) => s + g.wins, 0);
-  const totalLosses = stats.reduce((s, g) => s + g.losses, 0);
-  const totalDraws = stats.reduce((s, g) => s + g.draws, 0);
-  const winRate = totalGames > 0 ? ((totalWins / totalGames) * 100).toFixed(1) : "0.0";
+  const { totalGames, totalWins, totalLosses, totalDraws, winRate } = useMemo(() => {
+    const totalGames = stats.reduce((s, g) => s + g.total, 0);
+    const totalWins = stats.reduce((s, g) => s + g.wins, 0);
+    const totalLosses = stats.reduce((s, g) => s + g.losses, 0);
+    const totalDraws = stats.reduce((s, g) => s + g.draws, 0);
+    const winRate = totalGames > 0 ? ((totalWins / totalGames) * 100).toFixed(1) : "0.0";
+    return { totalGames, totalWins, totalLosses, totalDraws, winRate };
+  }, [stats]);
 
   const cardStyle: React.CSSProperties = {
     background: cardBg, border: cardBorder, borderRadius: 16,
