@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import type { ReactElement } from 'react';
 import Navbar from "./components/Navbar";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
@@ -15,18 +15,6 @@ import Comparison from "./components/pages/Comparison";
 import HumanVsAI from "./components/pages/HumanVsAI";
 import About from "./components/pages/About";
 import Settings from "./components/pages/Settings";
-import WordleGame from "./components/games/WordleGame";
-import SudokuGame from "./components/games/SudokuGame";
-import TicTacToeGame from "./components/games/TicTacToeGame";
-import ConnectFourGame from "./components/games/ConnectFourGame";
-import CheckersGame from "./components/games/CheckersGame";
-import ChessGame from "./components/games/ChessGame";
-import RockPaperScissorsGame from "./components/games/RockPaperScissorsGame";
-import MinesweeperGame from "./components/games/MinesweeperGame";
-import Game2048 from "./components/games/Game2048";
-import HangmanGame from "./components/games/HangmanGame";
-import OthelloGame from "./components/games/OthelloGame";
-import MemoryGame from "./components/games/MemoryGame";
 import ComingSoonGame from "./components/pages/ComingSoonGame";
 import LoginPage from "./components/pages/LoginPage";
 import SignupPage from "./components/pages/SignupPage";
@@ -40,6 +28,19 @@ import ProfilePage from "./components/pages/ProfilePage";
 import { ToastProvider } from "./components/ToastProvider";
 import PageWrapper from "./components/PageWrapper";
 import { usePageTitle } from "./hooks/usePageTitle";
+const WordleGame = lazy(() => import("./components/games/WordleGame"));
+const SudokuGame = lazy(() => import("./components/games/SudokuGame"));
+const TicTacToeGame = lazy(() => import("./components/games/TicTacToeGame"));
+const ConnectFourGame = lazy(() => import("./components/games/ConnectFourGame"));
+const CheckersGame = lazy(() => import("./components/games/CheckersGame"));
+const ChessGame = lazy(() => import("./components/games/ChessGame"));
+const RockPaperScissorsGame = lazy(() => import("./components/games/RockPaperScissorsGame"));
+const MinesweeperGame = lazy(() => import("./components/games/MinesweeperGame"));
+const Game2048 = lazy(() => import("./components/games/Game2048"));
+const HangmanGame = lazy(() => import("./components/games/HangmanGame"));
+const OthelloGame = lazy(() => import("./components/games/OthelloGame"));
+const MemoryGame = lazy(() => import("./components/games/MemoryGame"));
+
 
 // Component to update the page title on route change
 const PageTitleUpdater = () => {
@@ -73,7 +74,8 @@ function App() {
       <Router>
         <PageTitleUpdater />
         <Navbar />
-        <PageWrapper>
+        <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0f1117' }} />}>
+          <PageWrapper>
           <Routes>
             {/* Public routes - accessible to everyone */}
             <Route path="/" element={<PublicLandingRoute />} />
@@ -120,6 +122,7 @@ function App() {
             />
           </Routes>
         </PageWrapper>
+          </Suspense>
         <Chatbot />
       </Router>
       </ToastProvider>
