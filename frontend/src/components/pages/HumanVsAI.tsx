@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import AICoach from "../AICoach";
 import Skeleton from "../Skeleton";
@@ -54,8 +54,10 @@ const HumanVsAI: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  const totalWins = stats.reduce((s, g) => s + g.wins, 0);
-  const totalLosses = stats.reduce((s, g) => s + g.losses, 0);
+  const { totalWins, totalLosses } = useMemo(() => ({
+    totalWins: stats.reduce((s, g) => s + g.wins, 0),
+    totalLosses: stats.reduce((s, g) => s + g.losses, 0),
+  }), [stats]);
 
   const handleStartChallenge = () => {
     if (!selectedGame) return;
