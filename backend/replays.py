@@ -1,7 +1,7 @@
 """
 Replay API endpoints for recording and retrieving game moves.
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from typing import Any
 
@@ -43,7 +43,11 @@ def record_move(
 
 
 @replays_router.get("/replays")
-def list_replays(token_email: str = Depends(verify_access_token)):
+def list_replays(
+    token_email: str = Depends(verify_access_token),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
     """List the authenticated user's past game sessions that have recorded moves."""
     conn = get_db()
     cursor = conn.cursor()
@@ -61,13 +65,15 @@ def list_replays(token_email: str = Depends(verify_access_token)):
         GROUP BY gr.id, gr.game, gr.outcome, gr.played_at
         HAVING COUNT(gm.id) > 0
         ORDER BY gr.played_at DESC
-        LIMIT 50
+        LIMIT %s OFFSET %s
         """,
-        (token_email,)
+        (token_email, limit, (page - 1) * limit)
     )
     rows = cursor.fetchall()
     conn.close()
     return {
+        "page": page,
+        "limit": limit,
         "replays": [
             {
                 "session_id": r["session_id"],

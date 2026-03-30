@@ -2,7 +2,7 @@
 Analytics API endpoints for recording and summarising game results.
 """
 import time
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 try:
     from .auth import get_db
@@ -124,7 +124,10 @@ def get_activity(token_email: str = Depends(verify_access_token)):
 
 
 @stats_router.get("/stats/history")
-def get_history(token_email: str = Depends(verify_access_token)):
+def get_history(
+    token_email: str = Depends(verify_access_token),
+    days: int = Query(30, ge=1, le=365)
+):
     """Return win rate per day for the past 30 days (for performance over time chart)."""
     cache_key = f"{token_email}:history"
     cached = cache_get(cache_key)
@@ -141,15 +144,16 @@ def get_history(token_email: str = Depends(verify_access_token)):
             COUNT(*) AS total
         FROM game_results
         WHERE email = %s
-          AND played_at >= NOW() - INTERVAL '30 days'
+          AND played_at >= NOW() - INTERVAL '1 day' * %s
         GROUP BY DATE(played_at)
         ORDER BY date
         """,
-        (token_email,)
+        (token_email, days)
     )
     rows = cursor.fetchall()
     conn.close()
     result = {
+        "days": days,
         "history": [
             {
                 "date": str(r["date"]),
