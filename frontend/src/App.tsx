@@ -74,7 +74,7 @@ function App() {
       <Router>
         <PageTitleUpdater />
         <Navbar />
-        <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0f1117' }} />}>
+        <main><Suspense fallback={<div style={{ minHeight: '100vh', background: '#0f1117' }} />}>
           <PageWrapper>
           <Routes>
             {/* Public routes - accessible to everyone */}
@@ -122,7 +122,7 @@ function App() {
             />
           </Routes>
         </PageWrapper>
-          </Suspense>
+          </Suspense></main>
         <Chatbot />
       </Router>
       </ToastProvider>
