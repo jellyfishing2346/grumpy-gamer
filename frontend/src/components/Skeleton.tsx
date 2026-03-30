@@ -7,7 +7,7 @@ interface SkeletonProps {
   style?: React.CSSProperties;
 }
 
-const Skeleton: React.FC<SkeletonProps> = ({
+const Skeleton: React.FC<SkeletonProps> = React.memo(({
   width = "100%",
   height = "1em",
   borderRadius = 8,
@@ -26,7 +26,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
       }}
     />
   );
-};
+});
 
 // Inject keyframe animation once
 if (typeof document !== "undefined") {
