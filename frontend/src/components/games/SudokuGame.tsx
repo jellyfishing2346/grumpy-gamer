@@ -221,6 +221,7 @@ const SudokuGame: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number | null>(null);
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{moveNumber: number; moveData: Record<string, unknown>}[]>([]);
   const moveCountRef = useRef<number>(0);
 
   // Record game stats when game ends
@@ -253,7 +254,7 @@ const SudokuGame: React.FC = () => {
           userScore: gameState.userScore,
           aiScore: gameState.aiScore,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [gameState.isGameOver, gameState.winner, gameState.userScore, gameState.aiScore, gameState.difficulty]);
 
@@ -352,6 +353,7 @@ const SudokuGame: React.FC = () => {
     ) {
       return;
     }
+    addMove({ row, col, action: "select", move: moveCountRef.current + 1 });
     setGameState(prev => ({ ...prev, selectedCell: { row, col } }));
   };
 
@@ -513,6 +515,25 @@ const SudokuGame: React.FC = () => {
       color: "#f5f6fa"
     }
   );
+  // Replay recording
+  const addMove = (moveData: Record<string, unknown>) => {
+    pendingMovesRef.current.push({ moveNumber: pendingMovesRef.current.length + 1, moveData });
+  };
+  const flushMoves = async (sessionId: number) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    for (const move of pendingMovesRef.current) {
+      try {
+        await fetch('/api/replays/moves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ session_id: sessionId, move_number: move.moveNumber, move_data: move.moveData }),
+        });
+      } catch (err) { console.error('Failed to flush move:', err); }
+    }
+    pendingMovesRef.current = [];
+  };
+
   return (
     <div
       style={{

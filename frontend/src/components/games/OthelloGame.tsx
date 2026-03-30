@@ -497,6 +497,7 @@ const OthelloGame: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number | null>(null);
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{moveNumber: number; moveData: Record<string, unknown>}[]>([]);
   const moveCountRef = useRef<number>(0);
 
   const aiPlayer = getOpponent(playerColor);
@@ -549,7 +550,7 @@ const OthelloGame: React.FC = () => {
           whiteCount: gameState.whiteCount,
           usedRLModel,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [gameState.status, gameState.winner, playerColor, difficulty, aiMode, gameState.blackCount, gameState.whiteCount, usedRLModel]);
 
@@ -584,6 +585,7 @@ const OthelloGame: React.FC = () => {
     const isValid = gameState.validMoves.some(m => m.row === row && m.col === col);
     if (!isValid) return;
     
+    addMove({ row, col, color: playerColor, move: moveCountRef.current + 1 });
     const newBoard = makeMove(gameState.board, row, col, playerColor);
     if (!newBoard) return;
     
@@ -907,6 +909,25 @@ const OthelloGame: React.FC = () => {
   };
 
   // Main game view
+  // Replay recording
+  const addMove = (moveData: Record<string, unknown>) => {
+    pendingMovesRef.current.push({ moveNumber: pendingMovesRef.current.length + 1, moveData });
+  };
+  const flushMoves = async (sessionId: number) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    for (const move of pendingMovesRef.current) {
+      try {
+        await fetch('/api/replays/moves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ session_id: sessionId, move_number: move.moveNumber, move_data: move.moveData }),
+        });
+      } catch (err) { console.error('Failed to flush move:', err); }
+    }
+    pendingMovesRef.current = [];
+  };
+
   return (
     <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
       <h1 style={headingStyle}>⚫⚪ Othello</h1>

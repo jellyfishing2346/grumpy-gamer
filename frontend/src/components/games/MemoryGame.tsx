@@ -320,6 +320,7 @@ const MemoryGame: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number | null>(null);
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{moveNumber: number; moveData: Record<string, unknown>}[]>([]);
   const moveCountRef = useRef<number>(0);
 
   // Record game stats when game ends
@@ -352,7 +353,7 @@ const MemoryGame: React.FC = () => {
           playerScore: gameState.playerScore,
           aiScore: gameState.aiScore,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [gameState.status, gameState.winner, gameState.playerScore, gameState.aiScore, difficulty, gridSize]);
 
@@ -388,6 +389,7 @@ const MemoryGame: React.FC = () => {
     if (card.state !== 'hidden') return;
     if (gameState.flippedCards.includes(cardId)) return;
     if (gameState.flippedCards.length >= 2) return;
+    addMove({ cardId, move: moveCountRef.current + 1 });
     
     // Flip the card
     const newCards = [...gameState.cards];
@@ -764,6 +766,25 @@ const MemoryGame: React.FC = () => {
   };
 
   // Main game view
+  // Replay recording
+  const addMove = (moveData: Record<string, unknown>) => {
+    pendingMovesRef.current.push({ moveNumber: pendingMovesRef.current.length + 1, moveData });
+  };
+  const flushMoves = async (sessionId: number) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    for (const move of pendingMovesRef.current) {
+      try {
+        await fetch('/api/replays/moves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ session_id: sessionId, move_number: move.moveNumber, move_data: move.moveData }),
+        });
+      } catch (err) { console.error('Failed to flush move:', err); }
+    }
+    pendingMovesRef.current = [];
+  };
+
   return (
     <div style={getDarkModeStyles(darkMode, baseContainerStyle, darkContainer)}>
       <h1 style={headingStyle}>🃏 Memory Game</h1>

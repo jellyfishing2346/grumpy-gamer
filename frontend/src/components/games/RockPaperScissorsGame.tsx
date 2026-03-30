@@ -138,6 +138,7 @@ const RockPaperScissorsGame: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number>(Date.now());
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{moveNumber: number; moveData: Record<string, unknown>}[]>([]);
 
   // Record game stats when match ends
   useEffect(() => {
@@ -162,7 +163,7 @@ const RockPaperScissorsGame: React.FC = () => {
           ties: gameState.scores.ties,
           bestStreak: gameState.bestStreak,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [gameState.matchWinner, gameState.roundHistory.length, gameState.difficulty, gameState.gameMode, gameState.scores, gameState.bestStreak]);
 
@@ -216,6 +217,7 @@ const RockPaperScissorsGame: React.FC = () => {
     // Store player choice for reveal
     const playerChoice = choice;
     setPlayerMoveHistory(prev => [...prev, choice]);
+    addMove({ choice });
     
     setGameState(prev => ({
       ...prev,
@@ -440,6 +442,25 @@ const RockPaperScissorsGame: React.FC = () => {
   };
 
   const resultInfo = getResultMessage();
+
+  // Replay recording
+  const addMove = (moveData: Record<string, unknown>) => {
+    pendingMovesRef.current.push({ moveNumber: pendingMovesRef.current.length + 1, moveData });
+  };
+  const flushMoves = async (sessionId: number) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    for (const move of pendingMovesRef.current) {
+      try {
+        await fetch('/api/replays/moves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ session_id: sessionId, move_number: move.moveNumber, move_data: move.moveData }),
+        });
+      } catch (err) { console.error('Failed to flush move:', err); }
+    }
+    pendingMovesRef.current = [];
+  };
 
   return (
     <div style={containerStyle}>

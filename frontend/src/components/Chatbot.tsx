@@ -102,7 +102,6 @@ const Chatbot = () => {
     try {
       const token = localStorage.getItem('access_token');
       if (!token) {
-        setError('You must be logged in to use the chatbot.');
         setIsLoading(false);
         return;
       }
@@ -152,13 +151,7 @@ const Chatbot = () => {
     localStorage.removeItem(CHATBOT_HISTORY_KEY);
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div style={{ padding: 24, textAlign: 'center', color: '#a00', fontWeight: 'bold' }}>
-        You must be logged in to use the chatbot.
-      </div>
-    );
-  }
+  if (!isAuthenticated) return null;
 
   return (
     <>
