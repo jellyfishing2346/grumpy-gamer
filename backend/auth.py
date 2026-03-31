@@ -7,6 +7,11 @@ from psycopg2.extras import RealDictCursor
 from passlib.context import CryptContext
 from dotenv import load_dotenv
 try:
+    from limiter import limiter
+except ImportError:
+    from .limiter import limiter
+
+try:
     from .jwt_utils import verify_access_token, create_access_token
 except ImportError:
     from jwt_utils import verify_access_token, create_access_token
@@ -150,7 +155,8 @@ class UserLogin(BaseModel):
 
 
 @auth_router.post("/signup")
-def signup(user: UserSignup):
+@limiter.limit("5/minute")
+def signup(request: Request, user: UserSignup):
     conn = get_db()
     cursor = conn.cursor()
     hashed_pw = pwd_context.hash(user.password)
@@ -169,7 +175,8 @@ def signup(user: UserSignup):
 
 
 @auth_router.post("/login")
-def login(user: UserLogin):
+@limiter.limit("10/minute")
+def login(request: Request, user: UserLogin):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
