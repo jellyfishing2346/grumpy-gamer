@@ -33,6 +33,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/api/health")
+def health_check():
+    """Health check endpoint for uptime monitoring."""
+    return {"status": "ok", "service": "grumpy-gamer-api"}
+
+
 app.include_router(auth_router, prefix="/api")
 app.include_router(chatbot_router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
