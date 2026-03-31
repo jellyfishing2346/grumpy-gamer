@@ -18,3 +18,4 @@ numpy>=1.24.0
 psycopg2-binary
 anthropic
 sentry-sdk[fastapi]
+slowapi
