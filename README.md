@@ -246,13 +246,25 @@ npm run build
 - Live at: https://grumpy-gamer.onrender.com
 
 #### Required Environment Variables on Render
-| Variable | Value |
-|----------|-------|
-| `ENV` | `production` |
-| `SECRET_KEY` | your JWT secret key |
-| `CHATBOT_USE_LLM` | `false` (set to `true` to enable OpenAI) |
-| `DATABASE_URL` | PostgreSQL connection string from Render |
-| `ANTHROPIC_API_KEY` | API key for AI Coach feature |
+| Variable | Required | Value |
+|----------|----------|-------|
+| `ENV` | ✅ | `production` |
+| `SECRET_KEY` | ✅ | Your JWT secret key |
+| `DATABASE_URL` | ✅ | PostgreSQL connection string from Render |
+| `ANTHROPIC_API_KEY` | ✅ | API key for AI Coach feature |
+| `RENDER_EXTERNAL_URL` | ✅ | `https://grumpy-gamer.onrender.com` |
+| `CHATBOT_USE_LLM` | ⬜ | `false` (set to `true` to enable OpenAI) |
+| `OPENAI_API_KEY` | ⬜ | OpenAI API key (if CHATBOT_USE_LLM=true) |
+| `SENTRY_DSN` | ⬜ | Sentry DSN for error monitoring |
+| `ALLOWED_ORIGINS` | ⬜ | Custom CORS origins (comma separated) |
+
+#### Required Environment Variables on Vercel
+| Variable | Required | Value |
+|----------|----------|-------|
+| `REACT_APP_SENTRY_DSN` | ⬜ | Sentry DSN for frontend error monitoring |
+
+#### Database Migrations
+The database schema is created automatically on startup via `init_db()` in `auth.py`. Tables and indexes are created with `IF NOT EXISTS` so it is safe to run multiple times. No manual migrations are needed.
 
 #### ⚠️ Render Free Tier — Cold Start Issue
 Render's free tier spins down after 15 minutes of inactivity, causing the first request to take **50+ seconds**. To keep the backend alive 24/7 without upgrading:
