@@ -2,7 +2,11 @@
 Analytics API endpoints for recording and summarising game results.
 """
 import time
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
+try:
+    from .limiter import limiter
+except ImportError:
+    from limiter import limiter
 from pydantic import BaseModel
 try:
     from .auth import get_db
@@ -167,7 +171,8 @@ def get_history(
 
 
 @stats_router.post("/stats/coach")
-def get_coach_feedback(token_email: str = Depends(verify_access_token)):
+@limiter.limit("5/minute")
+def get_coach_feedback(request: Request, token_email: str = Depends(verify_access_token)):
     """Return AI-generated glows and grows feedback based on the user's game history."""
     import anthropic
     import json
