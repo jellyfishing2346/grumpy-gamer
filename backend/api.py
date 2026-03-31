@@ -1,5 +1,11 @@
 import os
 import asyncio
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+try:
+    from .limiter import limiter
+except ImportError:
+    from limiter import limiter
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
@@ -34,6 +40,8 @@ import os
 
 
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 ENV = os.environ.get("ENV", "development")
 if ENV == "production":
