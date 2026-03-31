@@ -2,7 +2,6 @@
 Basic tests for the Grumpy Gamer backend API.
 These tests use TestClient and do not require a real database connection.
 """
-import pytest
 from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 import sys
