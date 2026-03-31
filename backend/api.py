@@ -1,4 +1,5 @@
 import os
+import asyncio
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
@@ -61,12 +62,29 @@ app.include_router(stats_router, prefix="/api")
 app.include_router(replays_router, prefix="/api")
 
 
+async def keep_alive_ping():
+    """Ping the health endpoint every 10 minutes to prevent Render spin-down."""
+    import httpx
+    await asyncio.sleep(60)  # Wait 1 minute after startup before first ping
+    while True:
+        try:
+            base_url = os.getenv("RENDER_EXTERNAL_URL", "")
+            if base_url:
+                async with httpx.AsyncClient() as client:
+                    await client.get(f"{base_url}/api/health", timeout=10)
+                    print("[keep-alive] Ping sent successfully")
+        except Exception as e:
+            print(f"[keep-alive] Ping failed: {e}")
+        await asyncio.sleep(600)  # Wait 10 minutes
+
+
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     try:
         init_db()
     except Exception as e:
         print(f"[startup] Warning: Could not initialise database: {e}")
+    asyncio.create_task(keep_alive_ping())
 
 
 @app.get("/")
