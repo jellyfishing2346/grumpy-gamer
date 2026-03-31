@@ -44,7 +44,10 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 ENV = os.environ.get("ENV", "development")
-if ENV == "production":
+custom_origins = os.environ.get("ALLOWED_ORIGINS", "")
+if custom_origins:
+    origins = [o.strip() for o in custom_origins.split(",")]
+elif ENV == "production":
     origins = ["https://grumpy-gamer.vercel.app"]
 else:
     origins = ["*"]
