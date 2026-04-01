@@ -21,6 +21,27 @@
 
 ![Grumpy Gamer Landing Page](docs/images/landing-page.png)
 
+## 📸 Screenshots
+
+<div align="center">
+
+### 🏠 Landing Page
+![Landing Page](docs/images/landing-page.png)
+
+### 📊 Dashboard
+![Dashboard](docs/images/dashboard-page.png)
+
+### 🎮 Game Selection
+![Game Selection](docs/images/game-selection-page.png)
+
+### 🎬 Replay Viewer
+![Replay Viewer](docs/images/replay-viewer-page.png)
+
+### ▶️ Replay Demo
+![Replay Demo](docs/images/replay-demo.gif)
+
+</div>
+
 *Challenge yourself against AI, compete with friends, and master classic games!*
 
 </div>
