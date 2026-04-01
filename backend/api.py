@@ -39,7 +39,29 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Grumpy Gamer API",
+    description="""
+## 🎮 Grumpy Gamer API
+
+A full-stack gaming platform where humans challenge AI opponents across 12 classic games.
+
+### Features
+- **Authentication** — JWT-based signup/login
+- **Game Stats** — Track wins, losses, draws per game
+- **Replays** — Record and replay game moves
+- **AI Coach** — Claude-powered personalized feedback
+- **Chatbot** — Interactive game assistant
+""",
+    version="1.0.0",
+    contact={
+        "name": "Grumpy Gamer",
+        "url": "https://grumpy-gamer.vercel.app",
+    },
+    license_info={
+        "name": "MIT",
+    },
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
