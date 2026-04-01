@@ -1,3 +1,17 @@
+/**
+ * usePageTitle hook
+ *
+ * Dynamically updates the browser tab title based on the current route.
+ * Handles static routes, dynamic game routes (/play/:game),
+ * replay routes (/replay/:id), and spectator routes (/watch/:id).
+ *
+ * @example
+ * // Inside a component wrapped in Router:
+ * const PageTitleUpdater = () => {
+ *   usePageTitle();
+ *   return null;
+ * };
+ */
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 

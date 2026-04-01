@@ -1,3 +1,13 @@
+/**
+ * Skeleton component
+ *
+ * Animated loading placeholder that mimics the shape of content
+ * while data is being fetched. Uses a shimmer pulse animation.
+ *
+ * @example
+ * <Skeleton width="100%" height="1em" borderRadius={8} />
+ * <Skeleton width="50%" height="2em" borderRadius={6} />
+ */
 import React from "react";
 
 interface SkeletonProps {

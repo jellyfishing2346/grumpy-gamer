@@ -1,3 +1,18 @@
+/**
+ * EmptyState component
+ *
+ * Displays a friendly empty state with an icon, title, description,
+ * and optional action buttons when there is no data to show.
+ *
+ * @example
+ * <EmptyState
+ *   icon="🎮"
+ *   title="No games yet"
+ *   description="Play some games to see your stats here."
+ *   actionLabel="Browse Games"
+ *   actionRoute="/games"
+ * />
+ */
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDarkModeContext } from "./DarkModeProvider";
