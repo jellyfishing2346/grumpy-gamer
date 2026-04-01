@@ -18,7 +18,7 @@ except ImportError:
 
 load_dotenv()
 
-auth_router = APIRouter()
+auth_router = APIRouter(tags=["Authentication"])
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

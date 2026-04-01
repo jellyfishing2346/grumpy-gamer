@@ -15,7 +15,7 @@ except ImportError:
     from auth import get_db
     from jwt_utils import verify_access_token
 
-stats_router = APIRouter()
+stats_router = APIRouter(tags=["Stats"])
 
 # Simple in-memory cache: { cache_key: { "data": ..., "expires_at": float } }
 _cache: dict = {}

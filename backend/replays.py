@@ -12,7 +12,7 @@ except ImportError:
     from auth import get_db
     from jwt_utils import verify_access_token
 
-replays_router = APIRouter()
+replays_router = APIRouter(tags=["Replays"])
 
 
 class MoveRecord(BaseModel):
