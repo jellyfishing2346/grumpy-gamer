@@ -13,6 +13,7 @@ from api import app
 
 client = TestClient(app)
 
+
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 def make_mock_db(fetchone_val=None, fetchall_val=None):
@@ -224,7 +225,7 @@ class TestReplaysWithAuth:
             "played_at": "2026-03-30 12:00:00"
         }
         mock_cursor.fetchall.return_value = [
-            {"move_number": 1, "move_data": {"guess": "CRANE", "feedback": ["green"]}, "played_at": "2026-03-30 12:01:00"}
+            {"move_number": 1, "move_data": {"guess": "CRANE"}, "played_at": "2026-03-30 12:01:00"}
         ]
         with patch("replays.get_db", return_value=mock_conn):
             response = client.get(
