@@ -46,6 +46,7 @@
     ]
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "babel-loader": "^10.0.0",
