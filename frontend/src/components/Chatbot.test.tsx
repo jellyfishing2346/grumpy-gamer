@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { AuthProvider } from './AuthProvider';
 import Chatbot from './Chatbot';
 

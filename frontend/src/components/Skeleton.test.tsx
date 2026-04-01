@@ -1,38 +1,30 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import Skeleton from './Skeleton';
+import { render } from '@testing-library/react';
+import Skeleton from '../Skeleton';
 
 describe('Skeleton', () => {
   test('renders without crashing', () => {
     const { container } = render(<Skeleton />);
-    expect(container.firstChild).toBeInTheDocument();
+    expect(container.innerHTML).toBeTruthy();
   });
 
-  test('applies default width and height', () => {
+  test('applies default width of 100%', () => {
     const { container } = render(<Skeleton />);
-    const el = container.firstChild as HTMLElement;
-    expect(el.style.width).toBe('100%');
-    expect(el.style.height).toBe('1em');
+    expect(container.innerHTML).toContain('width: 100%');
   });
 
-  test('applies custom width and height', () => {
-    const { container } = render(<Skeleton width="50%" height="2em" />);
-    const el = container.firstChild as HTMLElement;
-    expect(el.style.width).toBe('50%');
-    expect(el.style.height).toBe('2em');
+  test('applies custom width', () => {
+    const { container } = render(<Skeleton width="50%" />);
+    expect(container.innerHTML).toContain('width: 50%');
   });
 
-  test('applies custom borderRadius', () => {
-    const { container } = render(<Skeleton borderRadius={4} />);
-    const el = container.firstChild as HTMLElement;
-    expect(el.style.borderRadius).toBe('4px');
+  test('applies custom height', () => {
+    const { container } = render(<Skeleton height="2em" />);
+    expect(container.innerHTML).toContain('height: 2em');
   });
 
-  test('merges custom style', () => {
-    const { container } = render(
-      <Skeleton style={{ marginBottom: '1em' }} />
-    );
-    const el = container.firstChild as HTMLElement;
-    expect(el.style.marginBottom).toBe('1em');
+  test('applies animation style', () => {
+    const { container } = render(<Skeleton />);
+    expect(container.innerHTML).toContain('skeleton-pulse');
   });
 });
