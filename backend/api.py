@@ -84,8 +84,9 @@ app.add_middleware(
 
 
 @app.get("/api/health")
+@app.get("/api/ping")  # alias for uptime monitors
 def health_check():
-    """Health check endpoint for uptime monitoring."""
+    """Health check endpoint for uptime monitoring. Not rate limited."""
     return {"status": "ok", "service": "grumpy-gamer-api"}
 
 
