@@ -10,6 +10,7 @@ import './App.css';
 import Home from "./components/pages/Home";
 import GameSelection from "./components/pages/GameSelection";
 import GamePlay from "./components/pages/GamePlay";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Dashboard from "./components/pages/Dashboard";
 import Comparison from "./components/pages/Comparison";
 import HumanVsAI from "./components/pages/HumanVsAI";
@@ -92,7 +93,11 @@ function App() {
                   <Routes>
                     <Route path="home" element={<Home />} />
                     <Route path="games" element={<GameSelection />} />
-                    <Route path="play/:game" element={<GamePlay />} />
+                    <Route path="play/:game" element={
+                      <ErrorBoundary>
+                        <GamePlay />
+                      </ErrorBoundary>
+                    } />
                     <Route path="play" element={<Navigate to="games" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="comparison" element={<Comparison />} />
