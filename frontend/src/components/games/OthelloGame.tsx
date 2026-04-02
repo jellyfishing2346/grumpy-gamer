@@ -918,7 +918,7 @@ const OthelloGame: React.FC = () => {
     if (!token) return;
     for (const move of pendingMovesRef.current) {
       try {
-        await fetch('/api/replays/moves', {
+        await fetch(`${API_URL}/api/replays/moves`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ session_id: sessionId, move_number: move.moveNumber, move_data: move.moveData }),
