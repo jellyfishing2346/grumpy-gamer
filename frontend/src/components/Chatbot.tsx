@@ -7,7 +7,7 @@ import './Chatbot.css'; // Create this CSS file for styling
 // TypeScript declaration for Google Analytics gtag
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -132,7 +132,7 @@ const Chatbot = () => {
         botMsg = { from: 'bot', ...data.response };
       }
       setMessages(prev => [...prev, botMsg]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('Sorry, there was a problem connecting to the chatbot. Please try again.');
       setMessages(prev => [...prev, { from: 'bot', text: 'Sorry, I could not process your request.' }]);
     } finally {
