@@ -45,4 +45,4 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           cd backend
-          pytest
+          pytest tests/ -v
