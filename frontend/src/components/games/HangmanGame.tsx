@@ -526,6 +526,7 @@ const HangmanGame: React.FC = () => {
     if (wordRevealed) newStatus = 'won';
     else if (maxWrongReached) newStatus = 'lost';
     
+    addMove({ letter, mode: 'classic', move: pendingMovesRef.current.length + 1 });
     setClassicState(prev => ({
       ...prev,
       guessedLetters: newGuessedLetters,
