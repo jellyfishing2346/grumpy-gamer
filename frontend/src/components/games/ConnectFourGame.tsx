@@ -604,7 +604,7 @@ const ConnectFourGame: React.FC = () => {
           aiMode,
           usedRLModel: rlModelInfo?.loaded || false,
         },
-      }).catch((err) => console.error("Failed to record game stats:", err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error("Failed to record game stats:", err));
     }
   }, [winner, isTie, moveCount, difficulty, aiMode, rlModelInfo]);
 
