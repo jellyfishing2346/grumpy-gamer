@@ -1,3 +1,4 @@
+import API_URL from '../../config/api';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDarkModeContext } from '../DarkModeProvider';
 import { getDarkModeStyles } from '../getDarkModeStyles';
@@ -371,6 +372,25 @@ const HangmanGame: React.FC = () => {
   // Stats tracking refs
   const gameStartTimeRef = useRef<number | null>(null);
   const statsRecordedRef = useRef<boolean>(false);
+  const pendingMovesRef = useRef<{moveNumber: number; moveData: Record<string, unknown>}[]>([]);
+
+  const addMove = (moveData: Record<string, unknown>) => {
+    pendingMovesRef.current.push({ moveNumber: pendingMovesRef.current.length + 1, moveData });
+  };
+  const flushMoves = async (sessionId: number) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    for (const move of pendingMovesRef.current) {
+      try {
+        await fetch(`${API_URL}/api/replays/moves`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ session_id: sessionId, move_number: move.moveNumber, move_data: move.moveData }),
+        });
+      } catch (err) { console.error('Failed to flush move:', err); }
+    }
+    pendingMovesRef.current = [];
+  };
 
   const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
@@ -395,7 +415,7 @@ const HangmanGame: React.FC = () => {
           wordLength: classicState.word.length,
           wrongGuesses: classicState.wrongGuesses,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [gameMode, classicState.status, classicState.guessedLetters.size, classicState.word.length, classicState.wrongGuesses, difficulty, gameStarted]);
 
@@ -428,7 +448,7 @@ const HangmanGame: React.FC = () => {
           playerWrongGuesses: vsAIState.playerWrongGuesses,
           aiWrongGuesses: vsAIState.aiWrongGuesses,
         },
-      }).catch((err) => console.error('Failed to record game stats:', err));
+      }).then((res: { success: boolean; sessionId?: number }) => { if (res.sessionId) flushMoves(res.sessionId); }).catch((err) => console.error('Failed to record game stats:', err));
     }
   }, [gameMode, vsAIState.winner, vsAIState.playerGuessedLetters.size, vsAIState.aiGuessedLetters.size, vsAIState.playerWrongGuesses, vsAIState.aiWrongGuesses, difficulty, gameStarted]);
 
@@ -506,6 +526,7 @@ const HangmanGame: React.FC = () => {
     if (wordRevealed) newStatus = 'won';
     else if (maxWrongReached) newStatus = 'lost';
     
+    addMove({ letter, mode: 'classic', move: pendingMovesRef.current.length + 1 });
     setClassicState(prev => ({
       ...prev,
       guessedLetters: newGuessedLetters,
