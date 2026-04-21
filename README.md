@@ -3,23 +3,21 @@
 
 <div align="center">
 
-![Status](https://img.shields.io/badge/status-in_development-yellow?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-active-brightgreen?style=for-the-badge)
 ![Python](https://img.shields.io/badge/python-3.9+-blue?style=for-the-badge&logo=python)
 ![PyTorch](https://img.shields.io/badge/PyTorch-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232a?style=for-the-badge&logo=react&logoColor=61dafb)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 
-**[Live Demo](https://grumpy-gamer.vercel.app) · [Documentation]() · [Report Bug](https://github.com/jellyfishing2346/grumpy-gamer/issues)**
+**[Live Demo](https://grumpy-gamer.vercel.app) · [API Docs](https://grumpy-gamer.onrender.com/docs) · [Report Bug](https://github.com/jellyfishing2346/grumpy-gamer/issues)**
 
 </div>
 
 ---
 
 <div align="center">
-
-![Grumpy Gamer Landing Page](docs/images/landing-page.png)
 
 ## 📸 Screenshots
 
