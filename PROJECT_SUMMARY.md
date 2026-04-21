@@ -158,6 +158,6 @@ Demo video, slide deck, final metrics, and project handover.
 
 *Built with too much caffeine, too many late nights, and a genuine love for making AI look bad at board games.*
 
-**[Play Now →](https://grumpy-gamer.vercel.app)**
+**[Play Now →](https://grumpy-gamer.vercel.app) · [Slide Deck →](https://docs.google.com/presentation/d/1nBV9nYjTpSZuZ35boGEnFM7Tr09Mkt9f74vHxj8Gt3A/edit?usp=sharing)**
 
 </div>
