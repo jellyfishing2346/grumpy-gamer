@@ -11,7 +11,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 
-**[Live Demo](https://grumpy-gamer.vercel.app) · [API Docs](https://grumpy-gamer.onrender.com/docs) · [Report Bug](https://github.com/jellyfishing2346/grumpy-gamer/issues)**
+**[Live Demo](https://grumpy-gamer.vercel.app) · [API Docs](https://grumpy-gamer.onrender.com/docs) · [Slide Deck](https://docs.google.com/presentation/d/1nBV9nYjTpSZuZ35boGEnFM7Tr09Mkt9f74vHxj8Gt3A/edit?usp=sharing) · [Report Bug](https://github.com/jellyfishing2346/grumpy-gamer/issues)**
 
 </div>
 
