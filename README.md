@@ -19,6 +19,10 @@
 
 <div align="center">
 
+## 🎬 Demo
+
+![Grumpy Gamer Demo](docs/images/demo.gif)
+
 ## 📸 Screenshots
 
 <div align="center">
