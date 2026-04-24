@@ -178,3 +178,60 @@ def get_all_checkpoints():
             for g in games
         ]
     }
+
+
+DIFFICULTY_CHECKPOINTS = {
+    "tictactoe": {
+        "easy": "checkpoint_40000_steps.zip",
+        "medium": "checkpoint_80000_steps.zip",
+        "hard": "best_model.zip",
+    },
+    "connectfour": {
+        "easy": "best_model.zip",
+        "medium": "best_model.zip",
+        "hard": "final_model.zip",
+    },
+    "checkers": {
+        "easy": "best_model.zip",
+        "medium": "best_model.zip",
+        "hard": "final_model.zip",
+    },
+    "othello": {
+        "easy": "best_model.zip",
+        "medium": "best_model.zip",
+        "hard": "best_model.zip",
+    },
+}
+
+GAME_DIRS = {
+    "tictactoe": "tictactoe_ppo_random",
+    "connectfour": "connectfour_ppo_random",
+    "checkers": "checkers_ppo_random",
+    "othello": "othello_ppo",
+}
+
+
+@rl_router.get("/rl/difficulty/{game_id}/{level}")
+def get_difficulty_model(game_id: str, level: str):
+    """Return the model checkpoint path for a given game and difficulty level."""
+    from fastapi import HTTPException
+    if game_id not in DIFFICULTY_CHECKPOINTS:
+        raise HTTPException(status_code=404, detail=f"No RL model for {game_id}")
+    if level not in ["easy", "medium", "hard"]:
+        raise HTTPException(status_code=400, detail="Level must be easy, medium, or hard")
+    checkpoint = DIFFICULTY_CHECKPOINTS[game_id][level]
+    game_dir = GAME_DIRS.get(game_id, "")
+    model_path = os.path.join(MODELS_DIR, game_dir, checkpoint)
+    return {
+        "game_id": game_id,
+        "level": level,
+        "checkpoint": checkpoint,
+        "model_exists": os.path.exists(model_path),
+        "model_path": model_path,
+    }
+
+
+@rl_router.get("/rl/difficulty")
+def get_all_difficulty_mappings():
+    """Return all difficulty level to checkpoint mappings."""
+    return {"difficulty_map": DIFFICULTY_CHECKPOINTS}
