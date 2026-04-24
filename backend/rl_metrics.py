@@ -117,3 +117,64 @@ def get_game_metrics(game_id: str):
         "model_size_mb": round(os.path.getsize(model_path) / (1024 * 1024), 1) if os.path.exists(model_path) else None,
         "model_exists": os.path.exists(model_path),
     }
+
+
+def get_checkpoints(game_id: str) -> list:
+    """Find all checkpoint files for a game."""
+    game_dirs = {
+        "tictactoe": "tictactoe_ppo_random",
+        "connectfour": "connectfour_ppo_random",
+        "checkers": "checkers_ppo_random",
+        "othello": "othello_ppo",
+        "chess": "chess_ppo",
+        "minesweeper": "minesweeper_ppo",
+    }
+    folder = game_dirs.get(game_id)
+    if not folder:
+        return []
+    folder_path = os.path.join(MODELS_DIR, folder)
+    if not os.path.exists(folder_path):
+        return []
+    checkpoints = []
+    for f in sorted(os.listdir(folder_path)):
+        if f.endswith(".zip"):
+            fpath = os.path.join(folder_path, f)
+            size_mb = round(os.path.getsize(fpath) / (1024 * 1024), 1)
+            steps = None
+            if "checkpoint_" in f:
+                try:
+                    steps = int(f.split("checkpoint_")[1].split("_steps")[0])
+                except Exception:
+                    pass
+            elif f == "best_model.zip":
+                steps = "best"
+            elif f == "final_model.zip":
+                steps = "final"
+            checkpoints.append({
+                "filename": f,
+                "steps": steps,
+                "size_mb": size_mb,
+            })
+    return checkpoints
+
+
+@rl_router.get("/rl/checkpoints/{game_id}")
+def get_game_checkpoints(game_id: str):
+    """Return all saved checkpoints for a game."""
+    checkpoints = get_checkpoints(game_id)
+    if not checkpoints:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail=f"No checkpoints found for {game_id}")
+    return {"game_id": game_id, "checkpoints": checkpoints}
+
+
+@rl_router.get("/rl/checkpoints")
+def get_all_checkpoints():
+    """Return checkpoint counts for all games."""
+    games = ["tictactoe", "connectfour", "checkers", "othello", "chess", "minesweeper"]
+    return {
+        "games": [
+            {"game_id": g, "checkpoint_count": len(get_checkpoints(g))}
+            for g in games
+        ]
+    }
