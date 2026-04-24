@@ -4,7 +4,6 @@ Provides endpoints for viewing trained model performance stats.
 """
 from fastapi import APIRouter
 import os
-import zipfile
 
 rl_router = APIRouter()
 
