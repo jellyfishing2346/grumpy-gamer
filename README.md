@@ -207,7 +207,7 @@ graph LR
 - [x] Documentation & Testing (screenshots, Swagger docs, JSDoc, backend tests, frontend tests, Playwright E2E, TypeScript strict, error boundaries)
 - [x] Documentation & Testing (screenshots, Swagger docs, JSDoc, backend tests 27 passing, frontend tests 23 passing, Playwright E2E 12 passing, TypeScript strict, error boundaries)
 - [x] Final Presentation & Handover (demo GIF, slide deck, README polish, project summary, bug sweep, metrics)
-- [ ] Train and optimize RL agents for all games
+- [x] AI & RL Training (DQN/PPO agents for TicTacToe 83%/ConnectFour 96%/Checkers 50%/Othello 20%, training metrics dashboard, model versioning, difficulty levels, RL indicators)
 - [x] Demo video walkthrough
 - [ ] Add real-time multiplayer with WebSockets
 - [ ] Design training metrics dashboard
