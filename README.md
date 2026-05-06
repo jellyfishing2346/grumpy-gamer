@@ -204,15 +204,14 @@ graph LR
 - [x] Refined UI & Game Feel (token expiry, toast notifications, play again, page transitions, mobile responsive, hover/focus states, page titles, replay recording)
 - [x] Performance Optimization (lazy loading, DB indexes, API caching, memoization, pagination, Lighthouse fixes)
 - [x] Deployment Refinement (CI testing, Sentry, health check, keep-alive, rate limiting, env vars, CORS, CONTRIBUTING.md, deployment docs)
-- [x] Documentation & Testing (screenshots, Swagger docs, JSDoc, backend tests, frontend tests, Playwright E2E, TypeScript strict, error boundaries)
 - [x] Documentation & Testing (screenshots, Swagger docs, JSDoc, backend tests 27 passing, frontend tests 23 passing, Playwright E2E 12 passing, TypeScript strict, error boundaries)
 - [x] Final Presentation & Handover (demo GIF, slide deck, README polish, project summary, bug sweep, metrics)
 - [x] AI & RL Training (DQN/PPO agents for TicTacToe 83%/ConnectFour 96%/Checkers 50%/Othello 20%, training metrics dashboard, model versioning, difficulty levels, RL indicators)
 - [x] Demo video walkthrough
 - [ ] Add real-time multiplayer with WebSockets
-- [ ] Design training metrics dashboard
-- [ ] Write comprehensive documentation
-- [ ] Create demo video
+- [x] Design training metrics dashboard
+- [x] Write comprehensive documentation (Swagger, JSDoc, CONTRIBUTING.md, RL_AGENTS.md, METRICS.md, PROJECT_SUMMARY.md)
+- [x] Create demo video
 
 ## 🚀 Quick Start
 ```bash
