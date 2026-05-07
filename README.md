@@ -208,7 +208,7 @@ graph LR
 - [x] Final Presentation & Handover (demo GIF, slide deck, README polish, project summary, bug sweep, metrics)
 - [x] AI & RL Training (DQN/PPO agents for TicTacToe 83%/ConnectFour 96%/Checkers 50%/Othello 20%, training metrics dashboard, model versioning, difficulty levels, RL indicators)
 - [x] Demo video walkthrough
-- [ ] Add real-time multiplayer with WebSockets
+- [x] Add real-time multiplayer with WebSockets (TicTacToe, room codes, rematch support)
 - [x] Design training metrics dashboard
 - [x] Write comprehensive documentation (Swagger, JSDoc, CONTRIBUTING.md, RL_AGENTS.md, METRICS.md, PROJECT_SUMMARY.md)
 - [x] Create demo video
