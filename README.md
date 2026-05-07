@@ -79,7 +79,7 @@
 - `tests/` — Unit and integration tests
 - `docs/` — Documentation and research notes
 
-## ✨ Key Features
+## Key Features
 
 <table>
 <tr>
@@ -120,7 +120,7 @@
 </tr>
 </table>
 
-## 🛠️ Tech Stack
+## Tech Stack
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
@@ -163,7 +163,7 @@
 
 </details>
 
-## 🎯 Project Roadmap
+## Project Roadmap
 ```mermaid
 graph LR
     A[🎮 Choose Game] --> B[🏗️ Setup Environment]
@@ -213,7 +213,7 @@ graph LR
 - [x] Write comprehensive documentation (Swagger, JSDoc, CONTRIBUTING.md, RL_AGENTS.md, METRICS.md, PROJECT_SUMMARY.md)
 - [x] Create demo video
 
-## 🚀 Quick Start
+## Quick Start
 ### 🐳 Docker Setup (Recommended)
 
 The easiest way to run Grumpy Gamer locally is with Docker:
@@ -336,7 +336,7 @@ To set up:
 
 ---
 
-## 🎮 How It Works
+## How It Works
 
 <div align="center">
 
@@ -379,7 +379,7 @@ Each game AI uses **Proximal Policy Optimization (PPO)** or **Deep Q-Networks (D
 > Coming soon! The AI is still learning not to run into walls...
 
 
-## 📈 Performance
+## Performance
 
 | Game | AI Strategy | Fallback | Status |
 |------|------------|----------|--------|
@@ -391,7 +391,7 @@ Each game AI uses **Proximal Policy Optimization (PPO)** or **Deep Q-Networks (D
 | Othello | PPO / DQN | Minimax | ✅ Playable |
 | 2048 | PPO / DQN | Heuristic | ✅ Playable |
 
-## 📝 License
+## License
 
 MIT © [Faizan Khan]
 
