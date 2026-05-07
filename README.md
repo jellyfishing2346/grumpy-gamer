@@ -51,17 +51,17 @@
 
 ## 📚 Table of Contents
 
-- [What's This About?](#-whats-this-about)
+- [What's This About?](#whats-this-about)
 - [Project Structure](#project-structure)
-- [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
-- [Project Roadmap](#-project-roadmap)
-- [Quick Start](#-quick-start)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [Project Roadmap](#project-roadmap)
+- [Quick Start](#quick-start)
 - [Usage](#usage)
 - [Testing](#testing)
 - [Deployment](#deployment)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Contributing](#contributing)
+- [License](#license)
 - [Contact](#contact)
 
 
@@ -214,6 +214,28 @@ graph LR
 - [x] Create demo video
 
 ## 🚀 Quick Start
+### 🐳 Docker Setup (Recommended)
+
+The easiest way to run Grumpy Gamer locally is with Docker:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/jellyfishing2346/grumpy-gamer.git
+cd grumpy-gamer
+
+# 2. Set up environment variables
+cp backend/.env.example backend/.env
+# Edit backend/.env with your DATABASE_URL and SECRET_KEY
+
+# 3. Start the app
+docker-compose up
+
+# Frontend: http://localhost:3000
+# Backend:  http://localhost:8000
+# API Docs: http://localhost:8000/docs
+```
+
+
 ```bash
 # Clone the repository
 git clone https://github.com/jellyfishing2346/grumpy-gamer.git
