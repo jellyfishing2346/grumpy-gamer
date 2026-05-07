@@ -391,6 +391,16 @@ Each game AI uses **Proximal Policy Optimization (PPO)** or **Deep Q-Networks (D
 | Othello | PPO / DQN | Minimax | ✅ Playable |
 | 2048 | PPO / DQN | Heuristic | ✅ Playable |
 
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+- Setting up the development environment
+- Running tests
+- Branch naming conventions
+- Pull request process
+- Code style guidelines
+
+
 ## License
 
 MIT © [Faizan Khan]
