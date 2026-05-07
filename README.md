@@ -67,11 +67,11 @@
 
 ## 🧠 What's This About?
 
-**Grumpy Gamer** is a full-stack gaming platform where players challenge AI opponents powered by reinforcement learning across 7 classic games — Tic-Tac-Toe, Connect Four, Checkers, Chess, Minesweeper, Othello, and 2048. Each AI agent is trained using deep RL and falls back to classical algorithms (Minimax, heuristics) when needed, so there's always a worthy opponent waiting.
+**Grumpy Gamer** is a full-stack gaming platform where players challenge AI opponents powered by reinforcement learning across 12 classic games — Tic-Tac-Toe, Connect Four, Checkers, Chess, Minesweeper, Othello, 2048, Wordle, Sudoku, Hangman, Rock Paper Scissors, and Memory. Each AI agent is trained using deep RL and falls back to classical algorithms (Minimax, heuristics) when needed, so there's always a worthy opponent waiting.
 
 
 ## Project Structure
-- `frontend/` — React + TypeScript UI (Vite, React Router, Tailwind CSS)
+- `frontend/` — React + TypeScript UI (Create React App, React Router, inline styles)
 - `backend/` — FastAPI server with game AI endpoints and auth
 - `backend/rl/` — Reinforcement learning agents and training scripts
 - `backend/rl/models/` — Trained model weights (.zip)
@@ -124,7 +124,7 @@
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│  Frontend:   React + TypeScript + Vite + Tailwind CSS  │
+│  Frontend:   React + TypeScript + Create React App      │
 │  Backend:    Python + FastAPI + Uvicorn                 │
 │  ML/AI:      PyTorch + Stable Baselines3 + Gymnasium   │
 │  Auth:       JWT Authentication                        │
@@ -150,9 +150,9 @@
 **Frontend:**
 - ⚛️ React 18 — UI framework
 - 📘 TypeScript — Type safety
-- ⚡ Vite — Fast build tool and dev server
+- ⚡ Create React App — Build tool and dev server
 - 🧭 React Router — Client-side routing
-- 🎨 Tailwind CSS — Utility-first styling
+- 🎨 Inline Styles — Dark theme styling
 - 📈 Chart.js — Data visualization
 
 **AI Agents (per game):**
@@ -177,10 +177,10 @@ graph LR
 - [x] Choose tech stack
 - [x] Initialize repository
 - [x] Set up development environment
-- [x] Build React frontend with TypeScript + Vite
+- [x] Build React frontend with TypeScript + Create React App
 - [x] Create FastAPI backend with game AI endpoints
 - [x] Implement user authentication (signup/login)
-- [x] Implement 7 game environments (Tic-Tac-Toe, Connect Four, Checkers, Chess, Minesweeper, Othello, 2048)
+- [x] Implement 12 game environments (Tic-Tac-Toe, Connect Four, Checkers, Chess, Minesweeper, Othello, 2048, Wordle, Sudoku, Hangman, RPS, Memory)
 - [x] Build game statistics tracking system
 - [x] Implement human vs AI gameplay
 - [x] Deploy frontend to Vercel
@@ -208,7 +208,7 @@ graph LR
 - [x] Final Presentation & Handover (demo GIF, slide deck, README polish, project summary, bug sweep, metrics)
 - [x] AI & RL Training (DQN/PPO agents for TicTacToe 83%/ConnectFour 96%/Checkers 50%/Othello 20%, training metrics dashboard, model versioning, difficulty levels, RL indicators)
 - [x] Demo video walkthrough
-- [x] Add real-time multiplayer with WebSockets (TicTacToe, room codes, rematch support)
+- [x] Add real-time multiplayer with WebSockets (TicTacToe, room codes, rematch support) ⚔️
 - [x] Design training metrics dashboard
 - [x] Write comprehensive documentation (Swagger, JSDoc, CONTRIBUTING.md, RL_AGENTS.md, METRICS.md, PROJECT_SUMMARY.md)
 - [x] Create demo video
@@ -235,7 +235,7 @@ uvicorn main:app --reload   # Runs on http://localhost:8000
 
 Once the app is running, open your browser to [http://localhost:3000](http://localhost:3000) to:
 - Create an account or log in
-- Browse and play 7 classic games against AI opponents
+- Browse and play 12 classic games against AI opponents
 - Track your wins, losses, and streaks on the stats dashboard
 - Challenge yourself at different difficulty levels
 
