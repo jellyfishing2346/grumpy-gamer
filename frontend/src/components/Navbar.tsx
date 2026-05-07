@@ -83,6 +83,7 @@ const Navbar = () => {
     { to: "/profile", label: "Profile" },
     { to: "/about", label: "About" },
     { to: "/ai-metrics", label: "🤖 AI Metrics" },
+    { to: "/multiplayer", label: "⚔️ Multiplayer" },
     { to: "/settings", label: "Settings" },
   ];
 
