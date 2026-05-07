@@ -1,6 +1,6 @@
 # 📊 Grumpy Gamer — Final Metrics
 
-*Measured April 2026 — Production deployment on Vercel + Render + Neon*
+*Measured May 2026 — Production deployment on Vercel + Render + Neon*
 
 ---
 
@@ -93,9 +93,11 @@
 | React components | 50+ |
 | Lines of frontend code | ~15,000 |
 | Lines of backend code | ~2,000 |
-| GitHub issues closed | 180+ |
-| Pull requests merged | 50+ |
-| Weeks of development | 13 (of 15) |
+| GitHub issues closed | 216+ |
+| Pull requests merged | 70+ |
+| Weeks of development | 15 |
+| Multiplayer rooms | WebSocket real-time (TicTacToe) |
+| RL models trained | 5 games (TicTacToe 83%, ConnectFour 96%, Checkers 50%, Othello 20%, Minesweeper) |
 
 ---
 
