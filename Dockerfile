@@ -1,16 +1,12 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy backend requirements and install dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend code
-COPY backend/ ./backend/
+COPY backend/ .
 
-# Expose port
-EXPOSE 8080
+EXPOSE 8000
 
-# Run the application
-CMD ["uvicorn", "backend.auth:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
