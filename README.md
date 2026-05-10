@@ -21,7 +21,7 @@
 
 ## 🎬 Demo
 
-![Grumpy Gamer Demo](docs/images/demo.gif)
+<video src="docs/images/Grumpy%20Gamer%20-%20CISC%204900%20Final%20Project.mp4" controls width="100%"></video>
 
 ## 📸 Screenshots
 
