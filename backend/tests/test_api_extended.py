@@ -135,14 +135,16 @@ class TestStatsWithAuth:
         mock_conn, mock_cursor = make_mock_db(fetchone_val={"id": 42})
         with patch("stats.get_db", return_value=mock_conn):
             with patch("stats.cache_invalidate"):
-                response = client.post(
-                    "/api/stats/record",
-                    json={"game": "Wordle", "outcome": "win"},
-                    headers={"Authorization": f"Bearer {token}"}
-                )
-                assert response.status_code == 200
-                data = response.json()
-                assert data["session_id"] == 42
+                with patch("stats.award_coins", return_value=10):
+                    response = client.post(
+                        "/api/stats/record",
+                        json={"game": "Wordle", "outcome": "win"},
+                        headers={"Authorization": f"Bearer {token}"}
+                    )
+                    assert response.status_code == 200
+                    data = response.json()
+                    assert data["session_id"] == 42
+                    assert "coins_earned" in data
 
     def test_stats_history_days_param(self):
         token = get_token()
