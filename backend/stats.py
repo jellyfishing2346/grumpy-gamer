@@ -15,6 +15,11 @@ except ImportError:
     from auth import get_db
     from jwt_utils import verify_access_token
 
+try:
+    from coins import award_coins
+except ImportError:
+    def award_coins(email, outcome, game): return 0
+
 stats_router = APIRouter(tags=["Stats"])
 
 # Simple in-memory cache: { cache_key: { "data": ..., "expires_at": float } }
@@ -62,7 +67,9 @@ def record_result(
     conn.close()
     # Invalidate cache for this user
     cache_invalidate(token_email)
-    return {"msg": "Result recorded", "session_id": session_id}
+    # Award coins based on outcome
+    coins_earned = award_coins(token_email, result.outcome, result.game)
+    return {"msg": "Result recorded", "session_id": session_id, "coins_earned": coins_earned}
 
 
 @stats_router.get("/stats/summary")
