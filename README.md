@@ -126,10 +126,10 @@
 │                                                         │
 │  Frontend:   React + TypeScript + Create React App      │
 │  Backend:    Python + FastAPI + Uvicorn                 │
-│  ML/AI:      PyTorch + Stable Baselines3 + Gymnasium   │
-│  Auth:       JWT Authentication                        │
-│  Database:   PostgreSQL (via Render)                       │
-│  Deploy:     Vercel (frontend) + Render (backend)      │
+│  ML/AI:      PyTorch + Stable Baselines3 + Gymnasium    │
+│  Auth:       JWT Authentication                         │
+│  Database:   PostgreSQL (via Render)                    │
+│  Deploy:     Vercel (frontend) + Render (backend)       │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
