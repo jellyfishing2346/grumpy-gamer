@@ -39,6 +39,7 @@ except ImportError:
     from replays import replays_router
     from rl_metrics import rl_router
     from multiplayer import multiplayer_router
+    from coins import coins_router
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
@@ -100,6 +101,7 @@ app.include_router(stats_router, prefix="/api")
 app.include_router(replays_router, prefix="/api")
 app.include_router(rl_router, prefix="/api")
 app.include_router(multiplayer_router, prefix="/api")
+app.include_router(coins_router, prefix="/api")
 
 
 async def keep_alive_ping():

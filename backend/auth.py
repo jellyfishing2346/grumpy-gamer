@@ -39,7 +39,8 @@ def init_db():
             id SERIAL PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
             username TEXT,
-            hashed_password TEXT NOT NULL
+            hashed_password TEXT NOT NULL,
+            coins_balance INTEGER DEFAULT 100
         )'''
     )
     cursor.execute(
@@ -50,6 +51,18 @@ def init_db():
             outcome TEXT NOT NULL,
             played_at TIMESTAMP DEFAULT NOW()
         )'''
+    )
+    cursor.execute(
+        '''CREATE TABLE IF NOT EXISTS coin_transactions (
+            id SERIAL PRIMARY KEY,
+            email TEXT NOT NULL,
+            amount INTEGER NOT NULL,
+            reason TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        )'''
+    )
+    cursor.execute(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS coins_balance INTEGER DEFAULT 100"
     )
     cursor.execute(
         '''CREATE TABLE IF NOT EXISTS game_moves (
