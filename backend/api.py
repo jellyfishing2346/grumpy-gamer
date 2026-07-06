@@ -42,7 +42,6 @@ except ImportError:
     from coins import coins_router
     from payments import payments_router
     from tournaments import tournaments_router
-    from tournaments import tournaments_router
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
