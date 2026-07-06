@@ -43,6 +43,7 @@ const OthelloGame = lazy(() => import("./components/games/OthelloGame"));
 const MemoryGame = lazy(() => import("./components/games/MemoryGame"));
 const AIMetrics = lazy(() => import("./components/pages/AIMetrics"));
 const MultiplayerLobby = lazy(() => import("./components/pages/MultiplayerLobby"));
+const Store = lazy(() => import("./components/pages/Store"));
 
 
 // Component to update the page title on route change
@@ -107,6 +108,7 @@ function App() {
                     <Route path="about" element={<About />} />
               <Route path="ai-metrics" element={<AIMetrics />} />
               <Route path="multiplayer" element={<MultiplayerLobby />} />
+              <Route path="store" element={<Store />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="play/wordle" element={<WordleGame />} />
                     <Route path="play/sudoku" element={<SudokuGame />} />
