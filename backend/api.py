@@ -41,7 +41,6 @@ except ImportError:
     from multiplayer import multiplayer_router
     from coins import coins_router
     from payments import payments_router
-    from payments import payments_router
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
