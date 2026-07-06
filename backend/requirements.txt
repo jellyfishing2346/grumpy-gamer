@@ -20,3 +20,4 @@ anthropic
 sentry-sdk[fastapi]
 slowapi
 websockets
+stripe
