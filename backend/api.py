@@ -41,6 +41,7 @@ except ImportError:
     from multiplayer import multiplayer_router
     from coins import coins_router
     from payments import payments_router
+    from tournaments import tournaments_router
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
@@ -104,6 +105,7 @@ app.include_router(rl_router, prefix="/api")
 app.include_router(multiplayer_router, prefix="/api")
 app.include_router(coins_router, prefix="/api")
 app.include_router(payments_router, prefix="/api")
+app.include_router(tournaments_router, prefix="/api")
 
 
 async def keep_alive_ping():
