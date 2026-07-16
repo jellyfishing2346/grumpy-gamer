@@ -86,6 +86,8 @@ const Navbar = () => {
     { to: "/multiplayer", label: "⚔️ Multiplayer" },
     { to: "/store", label: "🛒 Store" },
     { to: "/tournaments", label: "🏆 Tournaments" },
+    { to: "/finances", label: "💰 Finances" },
+    { to: "/finances", label: "💰 Finances" },
     { to: "/settings", label: "Settings" },
   ];
 
