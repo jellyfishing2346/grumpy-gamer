@@ -1,2 +1,6 @@
 [run]
 command = "uvicorn api:app --host 0.0.0.0 --port $PORT"
+
+[deployment]
+run = "uvicorn api:app --host 0.0.0.0 --port $PORT"
+deploymentTarget = "cloudrun"
