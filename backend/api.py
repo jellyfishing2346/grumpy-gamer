@@ -80,9 +80,9 @@ custom_origins = os.environ.get("ALLOWED_ORIGINS", "")
 if custom_origins:
     origins = [o.strip() for o in custom_origins.split(",")]
 elif ENV == "production":
-    # For Replit deployment, we need to allow the frontend URL
+    # For Render deployment, allow the frontend URL
     # You can set ALLOWED_ORIGINS env var to be more specific
-    origins = ["https://grumpy-gamer.vercel.app", "*"]  # Temporarily allow all for Replit setup
+    origins = ["https://grumpy-gamer.vercel.app", "https://grumpy-gamer.onrender.com"]
 else:
     origins = ["*"]
 
