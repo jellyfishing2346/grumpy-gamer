@@ -135,7 +135,7 @@ class TestStatsWithAuth:
         mock_conn, mock_cursor = make_mock_db(fetchone_val={"id": 42})
         with patch("stats.get_db", return_value=mock_conn):
             with patch("stats.cache_invalidate"):
-                with patch("stats.award_coins", return_value=10):
+                with patch("stats.award_coins", return_value={"coins_earned": 10, "limited": None}):
                     response = client.post(
                         "/api/stats/record",
                         json={"game": "Wordle", "outcome": "win"},
