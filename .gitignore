@@ -35,3 +35,6 @@ coverage.xml
 # Ignore data outputs (optional)
 data/output/users.db
 backend/users.db
+
+# Local SQLite databases (created at runtime)
+*.db
