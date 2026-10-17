@@ -1,4 +1,4 @@
-from fastapi import HTTPException, APIRouter, Depends, Query, Request
+from fastapi import HTTPException, APIRouter, Depends, Request
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 import os
@@ -104,12 +104,11 @@ class UserUpdate(BaseModel):
 async def update_user(
     update: UserUpdate,
     token_email: str = Depends(verify_access_token),
-    email: str = Query(None),
-    request: Request = None
 ):
+    # The account to modify is always the one the token belongs to.
     conn = get_db()
     cursor = conn.cursor()
-    target_email = email if email else token_email
+    target_email = token_email
     if update.new_email:
         try:
             cursor.execute(
@@ -141,14 +140,11 @@ async def update_user(
 @auth_router.delete("/user/delete")
 async def delete_user(
     token_email: str = Depends(verify_access_token),
-    email: str = Query(None),
-    request: Request = None
 ):
-    print("[delete_user] Headers:", dict(request.headers))
-    print(f"[delete_user] token_email from JWT: {token_email}")
+    # The account to delete is always the one the token belongs to.
     conn = get_db()
     cursor = conn.cursor()
-    target_email = email if email else token_email
+    target_email = token_email
     cursor.execute("DELETE FROM users WHERE email = %s", (target_email,))
     conn.commit()
     conn.close()

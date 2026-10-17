@@ -73,8 +73,9 @@ const ProfilePage: React.FC = () => {
     setSavingInfo(true);
     setInfoMsg("");
     try {
-      const res = await fetch("/api/user/update", {
+      const res = await apiFetch("/api/user/update", {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ new_username: newUsername, new_email: newEmail }),
       });
       if (res.ok) {
@@ -111,6 +112,7 @@ const ProfilePage: React.FC = () => {
     try {
       const res = await apiFetch("/api/user/update", {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ new_password: newPassword }),
       });
       if (res.ok) {

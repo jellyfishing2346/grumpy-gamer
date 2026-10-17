@@ -1,14 +1,21 @@
 import jwt
+import logging
 import os
+import secrets
 from datetime import datetime, timedelta
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, status
 
-SECRET_KEY = os.getenv(
-    "SECRET_KEY",
-    "your-secret-key-change-in-production"
-)
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    # Never fall back to a value that's published in the repo: anyone could
+    # forge tokens with it. A random per-process key is safe; it just means
+    # logins reset on restart. Set SECRET_KEY in the environment to persist them.
+    SECRET_KEY = secrets.token_urlsafe(48)
+    logging.getLogger(__name__).warning(
+        "SECRET_KEY is not set; using a random key. Sessions will not survive restarts."
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -26,10 +33,8 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 
 def verify_access_token(token: str = Depends(oauth2_scheme)):
-    print(f"[verify_access_token] Raw token: {token}")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(f"[verify_access_token] Decoded payload: {payload}")
         email: str = payload.get("sub")
         if email is None:
             print("[verify_access_token] No 'sub' in payload!")
