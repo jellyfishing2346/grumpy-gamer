@@ -2,12 +2,15 @@
 Analytics API endpoints for recording and summarising game results.
 """
 import time
+from typing import Literal
 from fastapi import APIRouter, Depends, Query, Request
 try:
     from .limiter import limiter
+    from .ledger import client_ip, user_or_ip_key
 except ImportError:
     from limiter import limiter
-from pydantic import BaseModel
+    from ledger import client_ip, user_or_ip_key
+from pydantic import BaseModel, field_validator
 try:
     from .auth import get_db
     from .jwt_utils import verify_access_token
@@ -16,9 +19,9 @@ except ImportError:
     from jwt_utils import verify_access_token
 
 try:
-    from coins import award_coins
+    from .coins import award_coins
 except ImportError:
-    def award_coins(email, outcome, game): return 0
+    from coins import award_coins
 
 stats_router = APIRouter(tags=["Stats"])
 
@@ -45,17 +48,34 @@ def cache_invalidate(email: str):
         del _cache[k]
 
 
+KNOWN_GAMES = {
+    "tictactoe", "connectfour", "checkers", "chess", "minesweeper", "othello", "2048",
+    "wordle", "snake", "memory", "hangman", "sudoku", "rockpaperscissors",
+}
+
+
 class GameResult(BaseModel):
     game: str
-    outcome: str  # "win", "loss", or "draw"
+    outcome: Literal["win", "loss", "draw", "abandoned"]
+
+    @field_validator("game")
+    @classmethod
+    def known_game(cls, value: str) -> str:
+        value = value.strip().lower()
+        if value not in KNOWN_GAMES:
+            raise ValueError("unknown game")
+        return value
 
 
 @stats_router.post("/stats/record")
+@limiter.limit("30/minute", key_func=user_or_ip_key)
+@limiter.limit("120/minute")
 def record_result(
+    request: Request,
     result: GameResult,
     token_email: str = Depends(verify_access_token)
 ):
-    """Record a single game result for the authenticated user."""
+    """Record a single game result for the authenticated user and award coins."""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -67,9 +87,14 @@ def record_result(
     conn.close()
     # Invalidate cache for this user
     cache_invalidate(token_email)
-    # Award coins based on outcome
-    coins_earned = award_coins(token_email, result.outcome, result.game)
-    return {"msg": "Result recorded", "session_id": session_id, "coins_earned": coins_earned}
+    # Award coins (subject to cooldown and daily caps, see ledger.reward_gameplay)
+    reward = award_coins(token_email, result.outcome, result.game, client_ip(request))
+    return {
+        "msg": "Result recorded",
+        "session_id": session_id,
+        "coins_earned": reward["coins_earned"],
+        "coins_limited": reward["limited"],
+    }
 
 
 @stats_router.get("/stats/summary")

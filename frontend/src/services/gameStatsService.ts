@@ -183,6 +183,16 @@ export class GameTimer {
 }
 
 /**
+ * Short note on coins for the "game recorded" toast.
+ */
+export function coinNote(earned?: number, limited?: string | null): string {
+  if (earned && earned > 0) return ` +${earned} coins`;
+  if (limited === 'cooldown') return ' (no coins: wait a few seconds between games)';
+  if (limited === 'daily_cap' || limited === 'ip_daily_cap') return " (today's coin limit reached)";
+  return '';
+}
+
+/**
  * Record a completed game result
  */
 export async function recordGame(params: RecordGameParams): Promise<{ success: boolean; sessionId?: number }> {
@@ -212,7 +222,8 @@ export async function recordGame(params: RecordGameParams): Promise<{ success: b
     const data = await response.json();
     // Dispatch toast event for the UI to pick up
     const outcome = params.result;
-    const label = outcome === 'win' ? 'Win recorded! 🏆' : outcome === 'loss' ? 'Loss recorded' : 'Draw recorded';
+    const baseLabel = outcome === 'win' ? 'Win recorded! 🏆' : outcome === 'loss' ? 'Loss recorded' : 'Draw recorded';
+    const label = baseLabel + coinNote(data.coins_earned, data.coins_limited);
     window.dispatchEvent(new CustomEvent('game-recorded', { detail: { outcome, label } }));
     return { success: true, sessionId: data.session_id };
   } catch (error) {

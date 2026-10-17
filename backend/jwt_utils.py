@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, status
+from dotenv import load_dotenv
+
+load_dotenv()  # before reading SECRET_KEY, so a local .env is honoured
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
