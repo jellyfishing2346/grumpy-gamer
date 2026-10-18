@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 
@@ -8,11 +8,31 @@ const Navbar = () => {
   const location = useLocation();
   const [hovered, setHovered] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
 
-  // Close menu on route change
+  // Close menus on route change
   useEffect(() => {
     setMenuOpen(false);
+    setMoreOpen(false);
   }, [location.pathname]);
+
+  // Close the "More" dropdown on outside click or Escape
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMoreOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [moreOpen]);
 
   const navBase: React.CSSProperties = {
     position: "sticky",
@@ -28,6 +48,9 @@ const Navbar = () => {
     height: 60,
     fontFamily: "'DM Sans', 'Inter', sans-serif",
     boxShadow: "0 2px 24px rgba(0,0,0,0.18)",
+    boxSizing: "border-box",
+    width: "100%",
+    gap: "1em",
   };
 
   const logoStyle: React.CSSProperties = {
@@ -73,23 +96,28 @@ const Navbar = () => {
     transition: "all 0.15s ease",
   });
 
+  // `primary` links show in the desktop bar; the rest go under "More".
+  // The mobile menu always lists everything.
   const authenticatedLinks = [
-    { to: "/home", label: "Home", end: true },
-    { to: "/games", label: "Games" },
-    { to: "/dashboard", label: "Dashboard" },
+    { to: "/home", label: "Home", end: true, primary: true },
+    { to: "/games", label: "Games", primary: true },
+    { to: "/dashboard", label: "Dashboard", primary: true },
     { to: "/comparison", label: "Comparison" },
     { to: "/human-vs-ai", label: "Human vs AI" },
     { to: "/replays", label: "Replays" },
     { to: "/profile", label: "Profile" },
     { to: "/about", label: "About" },
     { to: "/ai-metrics", label: "🤖 AI Metrics" },
-    { to: "/multiplayer", label: "⚔️ Multiplayer" },
+    { to: "/multiplayer", label: "⚔️ Multiplayer", primary: true },
     { to: "/store", label: "🛒 Store" },
-    { to: "/tournaments", label: "🏆 Tournaments" },
-    { to: "/predictions", label: "🔮 Predictions" },
+    { to: "/tournaments", label: "🏆 Tournaments", primary: true },
+    { to: "/predictions", label: "🔮 Predictions", primary: true },
     { to: "/finances", label: "💰 Finances" },
     { to: "/settings", label: "Settings" },
   ];
+  const primaryLinks = authenticatedLinks.filter((l) => l.primary);
+  const moreLinks = authenticatedLinks.filter((l) => !l.primary);
+  const moreActive = moreLinks.some((l) => location.pathname.startsWith(l.to));
 
   const publicLinks = [
     { to: "/", label: "Home", end: true },
@@ -137,10 +165,10 @@ const Navbar = () => {
           "@media (max-width: 768px)": { display: "none" },
         } as React.CSSProperties}>
           {/* Hide on mobile via CSS class */}
-          <div className="navbar-desktop-links" style={{ display: "flex", alignItems: "center", gap: "0.15em" }}>
+          <div className="navbar-desktop-links" data-testid="navbar-desktop-links" style={{ display: "flex", alignItems: "center", gap: "0.15em" }}>
             {isAuthenticated ? (
               <>
-                {authenticatedLinks.map(({ to, label, end }) => (
+                {primaryLinks.map(({ to, label, end }) => (
                   <NavLink
                     key={to} to={to} end={end}
                     style={({ isActive }) => getLinkStyle(isActive, label)}
@@ -150,6 +178,41 @@ const Navbar = () => {
                     {label}
                   </NavLink>
                 ))}
+                <div ref={moreRef} style={{ position: "relative" }}>
+                  <button
+                    type="button"
+                    aria-haspopup="menu"
+                    aria-expanded={moreOpen}
+                    onClick={() => setMoreOpen((o) => !o)}
+                    onMouseEnter={() => setHovered("More")}
+                    onMouseLeave={() => setHovered(null)}
+                    style={{ ...getLinkStyle(moreActive || moreOpen, "More"), border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    More {moreOpen ? "▴" : "▾"}
+                  </button>
+                  {moreOpen && (
+                    <div
+                      role="menu"
+                      style={{
+                        position: "absolute", top: "calc(100% + 8px)", right: 0, minWidth: 200,
+                        background: "rgba(22, 26, 35, 0.98)", border: "1px solid rgba(126, 203, 255, 0.16)",
+                        borderRadius: 12, padding: "0.4em", boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
+                        display: "flex", flexDirection: "column", zIndex: 101,
+                      }}
+                    >
+                      {moreLinks.map(({ to, label }) => (
+                        <NavLink
+                          key={to} to={to} role="menuitem"
+                          style={({ isActive }) => ({ ...getLinkStyle(isActive, label), borderBottom: "none", padding: "0.55em 0.85em" })}
+                          onMouseEnter={() => setHovered(label)}
+                          onMouseLeave={() => setHovered(null)}
+                        >
+                          {label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button
                   style={{
                     marginLeft: "0.5em", padding: "0.4em 1em", borderRadius: "8px",
@@ -209,7 +272,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div style={{
+        <div className="navbar-mobile-menu" data-testid="navbar-mobile-menu" style={{
           position: "fixed", top: 60, left: 0, right: 0,
           background: "rgba(15, 17, 23, 0.98)",
           backdropFilter: "blur(16px)",
@@ -278,9 +341,13 @@ const Navbar = () => {
           from { opacity: 0; transform: translateY(-8px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 768px) {
+        /* Below this width the primary links + "More" no longer fit: use the hamburger */
+        @media (max-width: 1100px) {
           .navbar-hamburger { display: flex !important; }
           .navbar-desktop-links { display: none !important; }
+        }
+        @media (min-width: 1101px) {
+          .navbar-mobile-menu { display: none !important; }
         }
       `}</style>
     </>
