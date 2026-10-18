@@ -23,8 +23,8 @@ export async function updateUser({ email, username, newEmail, newUsername, token
   return res.json();
 }
 
-export async function deleteUser(email: string, token: string) {
-  const res = await fetch(`${API_BASE}/user/delete?email=${encodeURIComponent(email)}`, {
+export async function deleteUser(token: string) {
+  const res = await fetch(`${API_BASE}/user/delete`, {
     method: "DELETE",
     headers: {
       "Authorization": `Bearer ${token}`,

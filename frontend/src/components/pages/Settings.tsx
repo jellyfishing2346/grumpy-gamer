@@ -63,7 +63,7 @@ const Settings: React.FC = () => {
     setLoading(true);
     const token = localStorage.getItem("access_token") || "";
     try {
-      await deleteUser(email, token);
+      await deleteUser(token);
       setMessage("Account deleted. Logging you out...");
       setMessageType("success");
       logout();
