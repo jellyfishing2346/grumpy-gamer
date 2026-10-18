@@ -10,9 +10,13 @@ from pydantic import BaseModel
 try:
     from .jwt_utils import verify_access_token
     from .auth import get_db
+    from .ledger import apply_coin_change, client_ip, user_or_ip_key
+    from .limiter import limiter
 except ImportError:
     from jwt_utils import verify_access_token
     from auth import get_db
+    from ledger import apply_coin_change, client_ip, user_or_ip_key
+    from limiter import limiter
 
 payments_router = APIRouter(tags=["Payments"])
 
@@ -61,7 +65,9 @@ class CheckoutRequest(BaseModel):
 
 
 @payments_router.post("/payments/checkout")
+@limiter.limit("10/minute", key_func=user_or_ip_key)
 def create_checkout_session(
+    request: Request,
     req: CheckoutRequest,
     token_email: str = Depends(verify_access_token)
 ):
@@ -104,40 +110,60 @@ def create_checkout_session(
 
 @payments_router.post("/payments/webhook")
 async def stripe_webhook(request: Request):
-    """Handle Stripe webhook events to fulfill orders."""
+    """
+    Fulfil Stripe Checkout purchases.
+
+    Only signature-verified events are accepted: without verification anyone
+    could POST a fake "checkout.session.completed" and credit coins to any
+    account. Each Checkout session is fulfilled at most once, since Stripe
+    retries deliveries and an event can arrive more than once.
+    """
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    if not webhook_secret:
+        raise HTTPException(status_code=503, detail="Webhook not configured")
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
-    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except (stripe.SignatureVerificationError, ValueError):
+        raise HTTPException(status_code=400, detail="Invalid signature")
 
-    if webhook_secret:
-        try:
-            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
-        except stripe.SignatureVerificationError:
-            raise HTTPException(status_code=400, detail="Invalid signature")
-    else:
-        import json
-        event = json.loads(payload)
+    if event["type"] != "checkout.session.completed":
+        return {"status": "ignored"}
 
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        email = session["metadata"].get("email")
-        coins = int(session["metadata"].get("coins_bonus", 0))
-        product_id = session["metadata"].get("product_id")
+    # Newer stripe-python objects aren't dicts (no .get), so convert first.
+    session = event["data"]["object"]
+    session = session.to_dict() if hasattr(session, "to_dict") else dict(session)
+    if session.get("payment_status") != "paid":
+        return {"status": "unpaid"}
+    metadata = session.get("metadata") or {}
+    email = metadata.get("email")
+    product = PRODUCTS.get(metadata.get("product_id", ""))
+    if not email or not product:
+        raise HTTPException(status_code=400, detail="Unknown purchase")
+    coins = product["coins_bonus"]  # from our own catalogue, not the event payload
 
-        if email and coins:
-            conn = get_db()
-            cursor = conn.cursor()
-            cursor.execute(
-                "UPDATE users SET coins_balance = COALESCE(coins_balance, 0) + %s WHERE email = %s",
-                (coins, email)
-            )
-            cursor.execute(
-                "INSERT INTO coin_transactions (email, amount, reason) VALUES (%s, %s, %s)",
-                (email, coins, f"Purchase: {product_id}")
-            )
-            conn.commit()
-            conn.close()
-
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO processed_payments (session_id, email, coins) VALUES (%s, %s, %s)
+               ON CONFLICT (session_id) DO NOTHING RETURNING session_id""",
+            (session["id"], email, coins),
+        )
+        if cursor.fetchone() is None:
+            conn.rollback()
+            return {"status": "already_processed"}
+        apply_coin_change(
+            cursor, email, coins, "purchase", f"Purchase: {metadata.get('product_id')}",
+            client_ip(request), {"stripe_session": session["id"]},
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
     return {"status": "ok"}
 
 

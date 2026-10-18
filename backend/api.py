@@ -38,6 +38,9 @@ try:
     from .coins import coins_router
     from .payments import payments_router
     from .tournaments import tournaments_router
+    from .predictions import predictions_router, init_predictions_db
+    from .ledger import init_ledger_db
+    from .auth import get_db
 except ImportError:
     from replays import replays_router
     from rl_metrics import rl_router
@@ -45,6 +48,9 @@ except ImportError:
     from coins import coins_router
     from payments import payments_router
     from tournaments import tournaments_router
+    from predictions import predictions_router, init_predictions_db
+    from ledger import init_ledger_db
+    from auth import get_db
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
@@ -62,6 +68,8 @@ A full-stack gaming platform where humans challenge AI opponents across 12 class
 - **Replays** — Record and replay game moves
 - **AI Coach** — Claude-powered personalized feedback
 - **Chatbot** — Interactive game assistant
+- **Grumpy Coins** — Earn, spend, and audit virtual currency
+- **Prediction Markets** — Wager coins on AI vs AI matches
 """,
     version="1.0.0",
     contact={
@@ -111,6 +119,7 @@ app.include_router(multiplayer_router, prefix="/api")
 app.include_router(coins_router, prefix="/api")
 app.include_router(payments_router, prefix="/api")
 app.include_router(tournaments_router, prefix="/api")
+app.include_router(predictions_router, prefix="/api")
 
 
 async def keep_alive_ping():
@@ -133,6 +142,14 @@ async def keep_alive_ping():
 async def on_startup():
     try:
         init_db()
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            init_ledger_db(cursor)
+            init_predictions_db(cursor)
+            conn.commit()
+        finally:
+            conn.close()
     except Exception as e:
         print(f"[startup] Warning: Could not initialise database: {e}")
     asyncio.create_task(keep_alive_ping())
