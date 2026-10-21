@@ -403,7 +403,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 ## License
 
-MIT © [Faizan Khan]
+Licensed under the [Apache License 2.0](LICENSE). © 2026 Faizan Khan
 
 ---
 

@@ -97,7 +97,7 @@ Grumpy Gamer is a web-based platform for playing, training, and analyzing variou
 
 ## License
 
-See `LICENSE.md` for licensing information.
+Licensed under the Apache License 2.0. See `LICENSE` for details.
 
 ---
 
