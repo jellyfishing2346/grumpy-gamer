@@ -77,7 +77,8 @@ A full-stack gaming platform where humans challenge AI opponents across 12 class
         "url": "https://grumpy-gamer.vercel.app",
     },
     license_info={
-        "name": "MIT",
+        "name": "Apache 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
     },
 )
 app.state.limiter = limiter
